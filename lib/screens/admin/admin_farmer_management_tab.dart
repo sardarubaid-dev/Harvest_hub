@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../../theme/app_theme.dart';
+import 'package:harvest_hub/theme/app_theme.dart';
 
 class AdminFarmerManagementTab extends StatefulWidget {
   const AdminFarmerManagementTab({super.key});
@@ -12,155 +11,130 @@ class AdminFarmerManagementTab extends StatefulWidget {
 
 class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
   int _selectedFilterIndex = 0;
-  final List<String> _filters = [
-    'All (48)',
-    'Pending Review (6)',
-    'Verified (38)',
-    'Suspended',
-  ];
+  final List<String> _filters = ['All (48)', 'Pending Review (6)', 'Verified (38)', 'Suspended (2)'];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAF3),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: AppColors.background,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {},
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add),
+        label: const Text('Onboard Farmer', style: TextStyle(fontWeight: FontWeight.bold)),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(),
+              const SizedBox(height: 24),
+              _buildSearchBar(),
+              const SizedBox(height: 16),
+              _buildFilters(),
+              const SizedBox(height: 24),
+              _buildActionRequiredSection(),
+              const SizedBox(height: 32),
+              _buildRegisteredDirectorySection(),
+              const SizedBox(height: 64), // For FAB spacing
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppColors.primaryContainer,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(Icons.eco, color: Colors.white, size: 24),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                _buildSearchBar(),
-                const SizedBox(height: 16),
-                _buildFilterChips(),
-                const SizedBox(height: 24),
-                _buildSectionHeader(
-                  'Action Required: 6 Applicants',
-                  'Priority Queue',
-                  showRedDot: true,
+                const Text(
+                  'HarvestHub',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.onSurface,
+                  ),
                 ),
-                const SizedBox(height: 16),
-                _buildActionRequiredCard(
-                  name: 'Indus Valley O...',
-                  details: 'Tariq Alvi • Mirpur Khas',
-                  timeAgo: 'Today, 9:30 AM',
-                  imagePath: 'https://images.unsplash.com/photo-1595842526569-8d77f1cf34f3?w=200&q=80',
-                  tags: [
-                    {
-                      'text': 'Mangoes, Guavas, Citrus',
-                      'icon': Icons.eco_outlined,
-                      'type': 'outline',
-                    },
-                    {
-                      'text': 'CNIC & Land Deed Verified',
-                      'icon': Icons.verified_outlined,
-                      'type': 'filled_green',
-                    },
-                  ],
-                  primaryAction: 'Approve & Stall',
-                  secondaryAction: 'Review Docs',
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondaryContainer,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text(
+                    'ADMIN',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.onSecondaryContainer,
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 16),
-                _buildActionRequiredCard(
-                  name: 'Sindh Bio-Greens',
-                  details: 'Ayesha Baloch • Thatta',
-                  timeAgo: 'Yesterday',
-                  imagePath: 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=200&q=80',
-                  tags: [
-                    {
-                      'text': 'Spinach, Kale, Mint',
-                      'icon': Icons.eco_outlined,
-                      'type': 'outline',
-                    },
-                    {
-                      'text': 'Soil Organic Cert Pending',
-                      'icon': Icons.pending_actions,
-                      'type': 'filled_grey',
-                    },
-                  ],
-                  primaryAction: 'View Details',
-                  secondaryAction: 'Request Info',
-                  greyActions: true,
-                ),
-                const SizedBox(height: 24),
-                _buildSectionHeader(
-                  'Registered Directory',
-                  '38 Verified Active',
-                  isDarkRightText: true,
-                ),
-                const SizedBox(height: 16),
-                _buildVerifiedFarmerCard(
-                  name: 'Green Valley Farm',
-                  details: 'Tariq Mehmood • Stall 14B, Karach...',
-                  rating: '4.8',
-                  reviews: '(120)',
-                  products: '24 Active Products',
-                  revenue: 'Rs. 142k/mo',
-                  imagePath: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=200&q=80',
-                  statusTag: 'Active & Selling',
-                  statusColor: Colors.green,
-                  stallTag: 'Stall 14B',
-                ),
-                const SizedBox(height: 16),
-                _buildVerifiedFarmerCard(
-                  name: 'Indus Organic Fields',
-                  details: 'Rashid Khan • Stall 8A',
-                  rating: '4.9',
-                  reviews: '(84)',
-                  products: '16 Active Products',
-                  revenue: 'Rs. 98k/mo',
-                  imagePath: 'https://images.unsplash.com/photo-1592688755601-3c588e734cf8?w=200&q=80',
-                  statusTag: 'Active',
-                  statusColor: Colors.green,
-                  stallTag: 'Stall 8A',
-                ),
-                const SizedBox(height: 16),
-                _buildVerifiedFarmerCard(
-                  name: 'Meadow Dairy Farm',
-                  details: 'Zubair Ahmed • Stall 3C',
-                  rating: '4.7',
-                  reviews: '(62)',
-                  products: '8 Dairy Products',
-                  revenue: 'Rs. 210k/mo',
-                  imagePath: 'https://images.unsplash.com/photo-1527847263472-aa5338d17f6f?w=200&q=80',
-                  statusTag: 'Low Stock Alert',
-                  statusColor: Colors.red,
-                  stallTag: 'Stall 3C',
-                ),
-                const SizedBox(height: 80), // Space for FAB
               ],
             ),
-          ),
-
-          // Floating Action Button
-          Positioned(
-            bottom: 24,
-            right: 16,
-            child: ElevatedButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text(
-                'Onboard Farmer',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                elevation: 4,
+            const Text(
+              'Farmers',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.onSurfaceVariant,
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+        ),
+        Stack(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.notifications_outlined),
+              onPressed: () {},
+            ),
+            Positioned(
+              right: 8,
+              top: 8,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: AppColors.error,
+                  shape: BoxShape.circle,
+                ),
+                child: const Text(
+                  '3',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(width: 8),
+        const CircleAvatar(
+          backgroundColor: AppColors.primaryContainer,
+          radius: 16,
+          child: Icon(Icons.person, color: Colors.white, size: 20),
+        ),
+      ],
     );
   }
 
@@ -168,147 +142,158 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
     return Row(
       children: [
         Expanded(
-          child: Container(
-            height: 48,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              children: [
-                Icon(Icons.search, color: Colors.grey.shade500),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      border: InputBorder.none,
-                      hintText: 'Search farmer by name, farm, market sta',
-                      hintStyle: TextStyle(
-                        color: Colors.grey.shade400,
-                        fontSize: 14,
-                      ),
-                      isDense: true,
-                    ),
-                  ),
-                ),
-              ],
+          child: TextField(
+            decoration: InputDecoration(
+              hintText: 'Search farmer by name, farm, market sta...',
+              prefixIcon: const Icon(Icons.search, color: AppColors.onSurfaceVariant),
+              filled: true,
+              fillColor: AppColors.surface,
+              contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFD6DDD6)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFD6DDD6)),
+              ),
             ),
           ),
         ),
         const SizedBox(width: 12),
         Container(
-          height: 48,
           width: 48,
+          height: 48,
           decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(12),
+            color: AppColors.surfaceVariant,
+            borderRadius: BorderRadius.circular(8),
           ),
-          child: const Icon(Icons.tune, color: Colors.black87),
+          child: const Icon(Icons.tune, color: AppColors.onSurfaceVariant),
         ),
       ],
     );
   }
 
-  Widget _buildFilterChips() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: _filters.asMap().entries.map((entry) {
-          int idx = entry.key;
-          String label = entry.value;
-          bool isSelected = _selectedFilterIndex == idx;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: GestureDetector(
-              onTap: () => setState(() => _selectedFilterIndex = idx),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primary : Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.black87,
-                    fontWeight: isSelected
-                        ? FontWeight.bold
-                        : FontWeight.normal,
-                    fontSize: 13,
-                  ),
+  Widget _buildFilters() {
+    return SizedBox(
+      height: 32,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: _filters.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final isSelected = index == _selectedFilterIndex;
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedFilterIndex = index;
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.primaryContainer : AppColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                _filters[index],
+                style: TextStyle(
+                  color: isSelected ? Colors.white : AppColors.onSurfaceVariant,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  fontSize: 13,
                 ),
               ),
             ),
           );
-        }).toList(),
+        },
       ),
     );
   }
 
-  Widget _buildSectionHeader(
-    String title,
-    String subtitle, {
-    bool showRedDot = false,
-    bool isDarkRightText = false,
-  }) {
-    return Row(
+  Widget _buildActionRequiredSection() {
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (showRedDot)
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0, right: 8.0),
-            child: Container(
-              width: 10,
-              height: 10,
-              decoration: BoxDecoration(
-                color: Colors.red.shade700,
-                shape: BoxShape.circle,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: const BoxDecoration(color: AppColors.error, shape: BoxShape.circle),
+            ),
+            const SizedBox(width: 8),
+            const Expanded(
+              child: Text(
+                'Action Required: 6 Applicants',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.onSurface),
               ),
             ),
-          ),
-        Expanded(
-          child: Text(
-            title,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              height: 1.2,
+            const Text(
+              'Priority\nQueue',
+              textAlign: TextAlign.right,
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primaryContainer),
             ),
-          ),
+          ],
         ),
-        Text(
-          subtitle,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: isDarkRightText ? FontWeight.normal : FontWeight.bold,
-            color: isDarkRightText ? Colors.black87 : AppColors.primary,
-          ),
+        const SizedBox(height: 16),
+        _buildApplicantCard(
+          name: 'Indus Valley Orchards',
+          owner: 'Tariq Alvi',
+          location: 'Mirpur Khas',
+          time: 'Today, 9:30 AM',
+          products: 'Mangoes, Guavas, Citrus',
+          status: 'CNIC & Land Deed Verified',
+          isStatusGreen: true,
+          button1Label: 'Review Docs',
+          button1Icon: Icons.visibility_outlined,
+          button2Label: 'Approve & Stall',
+          button2Icon: Icons.check_circle_outline,
+          isButton2Primary: true,
+          imageInitials: 'IV',
+        ),
+        const SizedBox(height: 16),
+        _buildApplicantCard(
+          name: 'Sindh Bio-Greens',
+          owner: 'Ayesha Baloch',
+          location: 'Thatta',
+          time: 'Yesterday',
+          products: 'Spinach, Kale, Mint',
+          status: 'Soil Organic Cert Pending',
+          isStatusGreen: false,
+          button1Label: 'Request Info',
+          button1Icon: Icons.info_outline,
+          button2Label: 'View Details',
+          button2Icon: Icons.description_outlined,
+          isButton2Primary: false,
+          imageInitials: 'SB',
         ),
       ],
     );
   }
 
-  Widget _buildActionRequiredCard({
+  Widget _buildApplicantCard({
     required String name,
-    required String details,
-    required String timeAgo,
-    required String imagePath,
-    required List<Map<String, dynamic>> tags,
-    required String primaryAction,
-    required String secondaryAction,
-    bool greyActions = false,
+    required String owner,
+    required String location,
+    required String time,
+    required String products,
+    required String status,
+    required bool isStatusGreen,
+    required String button1Label,
+    required IconData button1Icon,
+    required String button2Label,
+    required IconData button2Icon,
+    required bool isButton2Primary,
+    required String imageInitials,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [BoxShadow(color: Color(0x0A000000), blurRadius: 10, offset: Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -316,52 +301,45 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  imagePath,
-                  width: 48,
-                  height: 48,
-                  fit: BoxFit.cover,
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceVariant,
+                  borderRadius: BorderRadius.circular(8),
                 ),
+                alignment: Alignment.center,
+                child: Text(imageInitials, style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.onSurfaceVariant)),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            name,
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.onSurface),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(color: AppColors.surfaceVariant, borderRadius: BorderRadius.circular(12)),
+                          child: Text(time, style: const TextStyle(fontSize: 10, color: AppColors.onSurfaceVariant)),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 2),
                     Text(
-                      details,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Colors.black87,
-                      ),
+                      '$owner • $location',
+                      style: const TextStyle(fontSize: 13, color: AppColors.onSurfaceVariant),
                     ),
                   ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  timeAgo,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                  ),
                 ),
               ),
             ],
@@ -370,51 +348,50 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: tags.map((tag) {
-              Color bgColor;
-              Color textColor;
-              Color borderColor;
-
-              if (tag['type'] == 'outline') {
-                bgColor = Colors.green.shade50;
-                textColor = Colors.black87;
-                borderColor = Colors.transparent;
-              } else if (tag['type'] == 'filled_green') {
-                bgColor = Colors.green.shade300;
-                textColor = Colors.black87;
-                borderColor = Colors.transparent;
-              } else {
-                bgColor = Colors.grey.shade200;
-                textColor = Colors.black87;
-                borderColor = Colors.transparent;
-              }
-
-              return Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: bgColor,
-                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: const Color(0xFFD6E3D6)),
+                  borderRadius: BorderRadius.circular(12),
+                  color: const Color(0xFFF0F5F0),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(tag['icon'], size: 14, color: textColor),
-                    const SizedBox(width: 6),
+                    const Icon(Icons.eco_outlined, size: 14, color: AppColors.primaryContainer),
+                    const SizedBox(width: 4),
+                    Text(products, style: const TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant)),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isStatusGreen ? AppColors.secondaryContainer : AppColors.surfaceVariant,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isStatusGreen ? Icons.verified_outlined : Icons.assignment_outlined,
+                      size: 14,
+                      color: isStatusGreen ? AppColors.onSecondaryContainer : AppColors.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 4),
                     Text(
-                      tag['text'],
+                      status,
                       style: TextStyle(
-                        fontSize: 12,
-                        color: textColor,
+                        fontSize: 11,
+                        color: isStatusGreen ? AppColors.onSecondaryContainer : AppColors.onSurfaceVariant,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
-              );
-            }).toList(),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           Row(
@@ -422,65 +399,39 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () {},
-                  icon: Icon(
-                    greyActions
-                        ? Icons.info_outline
-                        : Icons.visibility_outlined,
-                    size: 18,
-                    color: Colors.black87,
-                  ),
-                  label: Text(
-                    secondaryAction,
-                    style: const TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  icon: Icon(button1Icon, size: 18),
+                  label: Text(button1Label),
                   style: OutlinedButton.styleFrom(
-                    backgroundColor: greyActions
-                        ? Colors.grey.shade200
-                        : Colors.white,
-                    side: BorderSide(
-                      color: greyActions
-                          ? Colors.transparent
-                          : Colors.grey.shade300,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    foregroundColor: AppColors.onSurface,
+                    side: const BorderSide(color: Color(0xFFD6DDD6)),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    minimumSize: const Size(0, 0),
                   ),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: Icon(
-                    greyActions
-                        ? Icons.description_outlined
-                        : Icons.check_circle_outline,
-                    size: 18,
-                    color: greyActions ? Colors.black87 : Colors.white,
-                  ),
-                  label: Text(
-                    primaryAction,
-                    style: TextStyle(
-                      color: greyActions ? Colors.black87 : Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: greyActions
-                        ? Colors.grey.shade200
-                        : AppColors.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    elevation: 0,
-                  ),
-                ),
+                child: isButton2Primary
+                    ? ElevatedButton.icon(
+                        onPressed: () {},
+                        icon: Icon(button2Icon, size: 18, color: Colors.white),
+                        label: Text(button2Label),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          minimumSize: const Size(0, 0),
+                        ),
+                      )
+                    : OutlinedButton.icon(
+                        onPressed: () {},
+                        icon: Icon(button2Icon, size: 18),
+                        label: Text(button2Label),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.onSurface,
+                          side: const BorderSide(color: Color(0xFFD6DDD6)),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          minimumSize: const Size(0, 0),
+                        ),
+                      ),
               ),
             ],
           ),
@@ -489,38 +440,102 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
     );
   }
 
-  Widget _buildVerifiedFarmerCard({
+  Widget _buildRegisteredDirectorySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: const [
+            Text(
+              'Registered Directory',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.onSurface),
+            ),
+            Text(
+              '38 Verified Active',
+              style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _buildDirectoryCard(
+          name: 'Green Valley Farm',
+          owner: 'Tariq Mehmood',
+          location: 'Stall 14B, Karachi...',
+          rating: '4.8',
+          reviews: '(120)',
+          productsCount: '24 Active Products',
+          revenue: 'Rs. 142k/mo',
+          status: 'Active & Selling',
+          stall: 'Stall 14B',
+          isStatusGreen: true,
+          initials: 'GV',
+        ),
+        const SizedBox(height: 12),
+        _buildDirectoryCard(
+          name: 'Indus Organic Fields',
+          owner: 'Rashid Khan',
+          location: 'Stall 8A',
+          rating: '4.9',
+          reviews: '(84)',
+          productsCount: '16 Active Products',
+          revenue: 'Rs. 98k/mo',
+          status: 'Active',
+          stall: 'Stall 8A',
+          isStatusGreen: true,
+          initials: 'IO',
+        ),
+        const SizedBox(height: 12),
+        _buildDirectoryCard(
+          name: 'Meadow Dairy Farm',
+          owner: 'Zubair Ahmed',
+          location: 'Stall 3C',
+          rating: '4.7',
+          reviews: '(62)',
+          productsCount: '8 Dairy Products',
+          revenue: 'Rs. 210k/mo',
+          status: 'Low Stock Alert',
+          stall: 'Stall 3C',
+          isStatusGreen: false,
+          initials: 'MD',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDirectoryCard({
     required String name,
-    required String details,
+    required String owner,
+    required String location,
     required String rating,
     required String reviews,
-    required String products,
+    required String productsCount,
     required String revenue,
-    required String imagePath,
-    required String statusTag,
-    required Color statusColor,
-    required String stallTag,
+    required String status,
+    required String stall,
+    required bool isStatusGreen,
+    required String initials,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [BoxShadow(color: Color(0x0A000000), blurRadius: 10, offset: Offset(0, 4))],
       ),
       child: Column(
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  imagePath,
-                  width: 48,
-                  height: 48,
-                  fit: BoxFit.cover,
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceVariant,
+                  borderRadius: BorderRadius.circular(8),
                 ),
+                alignment: Alignment.center,
+                child: Text(initials, style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.onSurfaceVariant)),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -531,65 +546,51 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
                       children: [
                         Text(
                           name,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.onSurface),
                         ),
                         const SizedBox(width: 4),
-                        const Icon(
-                          Icons.verified_outlined,
-                          color: Colors.green,
-                          size: 16,
-                        ),
+                        const Icon(Icons.verified, size: 14, color: AppColors.primaryContainer),
+                        const Spacer(),
+                        const Icon(Icons.more_vert, size: 20, color: AppColors.onSurfaceVariant),
                       ],
                     ),
+                    const SizedBox(height: 2),
                     Text(
-                      details,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Colors.black87,
-                      ),
+                      '$owner • $location',
+                      style: const TextStyle(fontSize: 13, color: AppColors.onSurfaceVariant),
                     ),
                   ],
                 ),
               ),
-              const Icon(Icons.more_vert, color: Colors.black54),
             ],
           ),
           const SizedBox(height: 12),
-          Row(
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 4,
+            runSpacing: 4,
             children: [
-              const Icon(Icons.star_border, color: Colors.green, size: 16),
-              const SizedBox(width: 4),
+              const Icon(Icons.star_border, size: 16, color: AppColors.primaryContainer),
               Text(
                 rating,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.onSurface),
               ),
-              const SizedBox(width: 4),
               Text(
                 reviews,
-                style: const TextStyle(color: Colors.black54, fontSize: 13),
+                style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
               ),
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text('|', style: TextStyle(color: Colors.black26)),
+                padding: EdgeInsets.symmetric(horizontal: 4),
+                child: Text('|', style: TextStyle(color: AppColors.surfaceVariant)),
               ),
               Text(
-                products,
-                style: const TextStyle(fontSize: 13, color: Colors.black87),
+                productsCount,
+                style: const TextStyle(fontSize: 13, color: AppColors.onSurfaceVariant),
               ),
-              const Spacer(),
+              const SizedBox(width: 8),
               Text(
                 revenue,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  color: Colors.black87,
-                ),
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.onSurface),
               ),
             ],
           ),
@@ -600,19 +601,24 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(20),
+                  color: isStatusGreen ? AppColors.secondaryContainer : AppColors.errorContainer,
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.circle, color: statusColor, size: 8),
-                    const SizedBox(width: 6),
+                    Icon(
+                      Icons.circle,
+                      size: 8,
+                      color: isStatusGreen ? AppColors.onSecondaryContainer : AppColors.error,
+                    ),
+                    const SizedBox(width: 4),
                     Text(
-                      statusTag,
+                      status,
                       style: TextStyle(
                         fontSize: 11,
+                        color: isStatusGreen ? AppColors.onSecondaryContainer : AppColors.error,
                         fontWeight: FontWeight.bold,
-                        color: statusColor.withOpacity(1.0),
                       ),
                     ),
                   ],
@@ -620,15 +626,11 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
               ),
               Row(
                 children: [
-                  const Icon(
-                    Icons.storefront_outlined,
-                    size: 14,
-                    color: Colors.black54,
-                  ),
+                  const Icon(Icons.storefront_outlined, size: 14, color: AppColors.onSurfaceVariant),
                   const SizedBox(width: 4),
                   Text(
-                    stallTag,
-                    style: const TextStyle(color: Colors.black54, fontSize: 13),
+                    stall,
+                    style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
                   ),
                 ],
               ),
