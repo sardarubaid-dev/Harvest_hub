@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-secondary": "#ffffff", "surface": "#f7faf3", "surface-container": "#ecefe8", "secondary-container": "#9cf49c", "inverse-on-surface": "#eff2eb", "on-primary-container": "#cbffc2", "surface-container-high": "#e6e9e2", "secondary": "#126d27", "background": "#f7faf3", "error-container": "#ffdad6", "on-background": "#191d19", "on-primary-fixed-variant": "#005312", "on-tertiary-container": "#e8f5e9", "secondary-fixed-dim": "#83da85", "outline-variant": "#bfcaba", "inverse-primary": "#88d982", "inverse-surface": "#2d312d", "on-tertiary-fixed-variant": "#3e4a41", "surface-dim": "#d8dbd4", "on-primary": "#ffffff", "on-secondary-fixed-variant": "#005318", "surface-container-lowest": "#ffffff", "on-primary-fixed": "#002204", "on-surface-variant": "#40493d", "on-error-container": "#93000a", "primary-fixed-dim": "#88d982", "surface-tint": "#1b6d24", "on-tertiary-fixed": "#131e17", "tertiary-container": "#657167", "tertiary-fixed-dim": "#bdcabe", "on-surface": "#191d19", "on-secondary-fixed": "#002105", "on-secondary-container": "#19722b", "primary-fixed": "a3f69c", "secondary-fixed": "#9ff79f", "outline": "#707a6c", "tertiary-fixed": "#d9e6da", "surface-variant": "#e0e3dd", "error": "#ba1a1a", "surface-container-low": "#f2f5ee", "tertiary": "#4d5950", "surface-bright": "#f7faf3", "surface-container-highest": "#e0e3dd", "on-tertiary": "#ffffff", "primary": "#0d631b", "on-error": "#ffffff", "primary-container": "#2e7d32" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-xs": "0.25rem", "space-xl": "2rem", "space-lg": "1.5rem", "margin-mobile": "1rem", "gutter-mobile": "1rem", "space-md": "1rem", "space-sm": "0.5rem", "margin": "2rem", "gutter": "1.5rem" }, fontFamily: { "caption": ["Inter"], "headline-md": ["Inter"], "display-lg": ["Inter"], "label-md": ["Inter"], "headline-xl-mobile": ["Inter"], "body-md": ["Inter"], "label-sm": ["Inter"], "body-lg": ["Inter"], "headline-lg": ["Inter"], "label-lg": ["Inter"], "display-lg-mobile": ["Inter"], "body-sm": ["Inter"], "headline-xl": ["Inter"] }, fontSize: { "caption": ["12px", { lineHeight: "16px", fontWeight: "400" }], "headline-md": ["20px", { lineHeight: "28px", letterSpacing: "-0.005em", fontWeight: "600" }], "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }], "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "600" }], "headline-xl-mobile": ["26px", { lineHeight: "34px", letterSpacing: "-0.01em", fontWeight: "600" }], "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }], "label-sm": ["11px", { lineHeight: "14px", letterSpacing: "0.03em", fontWeight: "600" }], "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }], "headline-lg": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }], "label-lg": ["14px", { lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "600" }], "display-lg-mobile": ["36px", { lineHeight: "44px", letterSpacing: "-0.015em", fontWeight: "700" }], "body-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }], "headline-xl": ["32px", { lineHeight: "40px", letterSpacing: "-0.015em", fontWeight: "600" }] } } } }</script><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#f7faf3;color:#191d19;-webkit-tap-highlight-color:transparent;}body{overscroll-behavior-y:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(25,29,25,0.04)]"><div class="h-16 px-margin-mobile flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="HarvestHub Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1XMYBqn5G82BlARkHR2vM_UQw_vWAK1kZjtm5_1YvhdmtTEdEUhQEsngzq5M_4qSJp5V1BIo1UhZiFw-KC6CB_aYby3utZ9c2DqfVfZk4M5g2i3WNv9OlvemAyUXXRbJKpa0r7h4uo7dQzVpEBOeiZZRldoURnrFtLXAPJehD8lxL1yEAYqVGNo9MRuDOp6ub3ouhhI5U_blNVaHLo2CcGqUVegow0CYvVw5KLDd36JIcXChFHMSpv4IE8"/><div class="flex flex-col"><span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold">HarvestHub</span><h1 class="font-headline-md text-headline-md text-on-surface line-clamp-1">Home</h1></div></div><div class="flex items-center gap-space-xs"><button aria-label="Search Marketplace" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:text-primary active:scale-95 transition-all"><span class="material-symbols-outlined text-[24px]">search</span></button><button aria-label="Shopping Cart" class="relative w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:text-primary active:scale-95 transition-all"><span class="material-symbols-outlined text-[24px]">shopping_bag</span><span class="absolute top-2 right-2 w-4 h-4 bg-primary text-on-primary font-label-sm text-label-sm rounded-full flex items-center justify-center text-[10px] leading-none font-bold">2</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-space-xs shadow-sm"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-20 bg-surface"><div class="flex flex-col w-full pb-8">
+<section class="px-margin-mobile pt-3 pb-2 flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<h2 class="font-headline-xl-mobile text-headline-xl-mobile text-on-surface tracking-tight font-semibold">Good morning, Ubaid 👋</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Fresh products from local farmers.</p>
+</div>
+<div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">location_on</span>
+<span class="font-label-sm text-label-sm font-semibold truncate max-w-[130px]">Karachi Farmers</span>
+<span class="w-1 h-1 rounded-full bg-outline"></span>
+<span class="font-label-sm text-label-sm text-secondary font-bold">2.4 km</span>
+</div>
+</div>
+<div class="flex items-center gap-2 mt-1">
+<div class="flex-1 flex items-center gap-2.5 px-3.5 h-12 rounded-xl bg-surface-container-lowest shadow-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px] text-outline">search</span>
+<input class="w-full bg-transparent font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none" placeholder="Search fruits, vegetables, farmers..." type="text"/>
+</div>
+<button aria-label="Filter products" class="w-12 h-12 flex items-center justify-center rounded-xl bg-surface-container-low text-primary hover:bg-surface-container-high active:scale-95 transition-transform shadow-sm">
+<span class="material-symbols-outlined text-[22px]">tune</span>
+</button>
+</div>
+</section>
+<!-- Categories Horizontal List -->
+<section class="mt-2 pl-margin-mobile">
+<div class="flex items-center gap-2 overflow-x-auto no-scrollbar pr-margin-mobile py-1">
+<button class="flex items-center gap-1.5 px-4 h-10 rounded-full bg-primary-container text-on-primary shadow-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[18px]">apps</span>
+<span class="font-label-lg text-label-lg whitespace-nowrap">All</span>
+</button>
+<button class="flex items-center gap-1.5 px-4 h-10 rounded-full bg-surface-container-lowest text-on-surface hover:bg-surface-container-low active:scale-95 transition-transform shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-secondary">nutrition</span>
+<span class="font-label-lg text-label-lg whitespace-nowrap">Fruits</span>
+</button>
+<button class="flex items-center gap-1.5 px-4 h-10 rounded-full bg-surface-container-lowest text-on-surface hover:bg-surface-container-low active:scale-95 transition-transform shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-secondary">eco</span>
+<span class="font-label-lg text-label-lg whitespace-nowrap">Vegetables</span>
+</button>
+<button class="flex items-center gap-1.5 px-4 h-10 rounded-full bg-surface-container-lowest text-on-surface hover:bg-surface-container-low active:scale-95 transition-transform shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-secondary">water_drop</span>
+<span class="font-label-lg text-label-lg whitespace-nowrap">Dairy</span>
+</button>
+<button class="flex items-center gap-1.5 px-4 h-10 rounded-full bg-surface-container-lowest text-on-surface hover:bg-surface-container-low active:scale-95 transition-transform shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-secondary">grain</span>
+<span class="font-label-lg text-label-lg whitespace-nowrap">Grains</span>
+</button>
+<button class="flex items-center gap-1.5 px-4 h-10 rounded-full bg-surface-container-lowest text-on-surface hover:bg-surface-container-low active:scale-95 transition-transform shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-secondary">local_florist</span>
+<span class="font-label-lg text-label-lg whitespace-nowrap">Herbs</span>
+</button>
+<button class="flex items-center gap-1.5 px-4 h-10 rounded-full bg-surface-container-lowest text-on-surface hover:bg-surface-container-low active:scale-95 transition-transform shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-secondary">verified</span>
+<span class="font-label-lg text-label-lg whitespace-nowrap">Organic</span>
+</button>
+</div>
+</section>
+<!-- Fresh Near You -->
+<section class="mt-6 px-margin-mobile flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<h3 class="font-headline-md text-headline-md text-on-surface">Fresh Near You</h3>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold">Today</span>
+</div>
+<a class="font-label-lg text-label-lg text-secondary flex items-center gap-0.5 font-semibold" href="#">
+        See All
+        <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</a>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<!-- Card 1 -->
+<div class="group bg-surface-container-lowest rounded-xl p-2.5 flex flex-col shadow-sm relative transition-all duration-200 hover:shadow-md">
+<div class="relative w-full aspect-[4/3] rounded-lg overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Vibrant cluster of ripe red vine tomatoes with dewdrops under gentle morning sunlight, direct from Pakistan farm harvest, fresh rustic setting, photorealistic high definition." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUsDrDypI6wODzwrzfqIqTiaHHp2cM6JMBcog78eomCSik3OFLc4oEDIhML7PiZGJZgDeUq_QKbuflEiLzROIFio-JHk3kenjn7bU7DSXVgJ3S-yUCw_EalHVRReFwpREt7BLZivu99TiI4ojkyL5QVkOZvqmMWhCV_QUymdU6e8U2sFBq2jJnu6D0ID2-cfyuUjAaRDEgVdylfnId6ConvIjk8mGmaolAJyCxZjipCNyG0rXABy4t"/>
+<button aria-label="Add to wishlist" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-surface-container-lowest/90 backdrop-blur-md flex items-center justify-center text-on-surface-variant hover:text-error active:scale-90 transition-all shadow-sm">
+<span class="material-symbols-outlined text-[16px]">favorite</span>
+</button>
+<div class="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-surface-container-lowest/90 backdrop-blur-md flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm font-semibold text-secondary">12 kg available</span>
+</div>
+</div>
+<div class="mt-2.5 flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Vegetables</span>
+<h4 class="font-body-md text-body-md font-semibold text-on-surface truncate mt-0.5">Fresh Tomatoes</h4>
+<div class="flex items-center gap-1 mt-0.5 text-on-surface-variant">
+<span class="font-caption text-caption truncate max-w-[105px]">Green Valley Farm</span>
+<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="mt-3 pt-2 flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Price</span>
+<span class="font-headline-md text-headline-md text-on-surface font-bold tracking-tight">Rs. 280<span class="font-label-sm text-label-sm text-on-surface-variant font-normal"> / kg</span></span>
+</div>
+<button aria-label="Add Fresh Tomatoes to basket" class="w-9 h-9 rounded-full bg-primary-container text-on-primary flex items-center justify-center active:scale-95 hover:bg-primary transition-all shadow-sm">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group bg-surface-container-lowest rounded-xl p-2.5 flex flex-col shadow-sm relative transition-all duration-200 hover:shadow-md">
+<div class="relative w-full aspect-[4/3] rounded-lg overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Freshly harvested crisp vibrant green spinach bunch with earth tones and natural morning mist, organic agricultural setting, rich textures, bright natural lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDh5CrI2Y5T_j753P3IHqMJVjwE6CjFQsPPolTVKsRyjCrLHEWRYUI6UZ4jLoHxLa69aMWMtwss2ngwW4r9dvklQKCSGdWX4B4FNBWMVuUym9Gfqls-1RUKpmsdrZlaexZI9dk8mOOLwSRQYvBpyguwYlFjyYL96u4I8cqvTJyZjyw0Am7SuWQzXZEktO44OwGLuLFLLsN3L2K-gaD0W-wBodIdrdQEIuem37QXumKqpu94gKOaa5IA"/>
+<button aria-label="Add to wishlist" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-surface-container-lowest/90 backdrop-blur-md flex items-center justify-center text-on-surface-variant hover:text-error active:scale-90 transition-all shadow-sm">
+<span class="material-symbols-outlined text-[16px]">favorite</span>
+</button>
+<div class="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-surface-container-lowest/90 backdrop-blur-md flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm font-semibold text-secondary">8 bunches left</span>
+</div>
+</div>
+<div class="mt-2.5 flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Vegetables</span>
+<h4 class="font-body-md text-body-md font-semibold text-on-surface truncate mt-0.5">Organic Spinach</h4>
+<div class="flex items-center gap-1 mt-0.5 text-on-surface-variant">
+<span class="font-caption text-caption truncate max-w-[105px]">Indus Organic Fields</span>
+<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="mt-3 pt-2 flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Price</span>
+<span class="font-headline-md text-headline-md text-on-surface font-bold tracking-tight">Rs. 140<span class="font-label-sm text-label-sm text-on-surface-variant font-normal"> / bunch</span></span>
+</div>
+<button aria-label="Add Organic Spinach to basket" class="w-9 h-9 rounded-full bg-primary-container text-on-primary flex items-center justify-center active:scale-95 hover:bg-primary transition-all shadow-sm">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Popular Farmers -->
+<section class="mt-7 flex flex-col gap-3">
+<div class="px-margin-mobile flex items-center justify-between">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Popular Farmers</h3>
+<p class="font-caption text-caption text-on-surface-variant">Verified growers with highest community ratings</p>
+</div>
+<a class="font-label-lg text-label-lg text-secondary flex items-center gap-0.5 font-semibold" href="#">
+        Explore
+        <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</a>
+</div>
+<div class="flex items-stretch gap-3 overflow-x-auto no-scrollbar pl-margin-mobile pr-margin-mobile py-1">
+<!-- Farmer Card 1 -->
+<div class="min-w-[270px] bg-surface-container-lowest rounded-xl p-3.5 flex flex-col justify-between shadow-sm">
+<div class="flex items-start gap-3">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container shrink-0">
+<img class="w-full h-full object-cover" data-alt="Portrait of a smiling mature organic farmer outdoors in agricultural field with green farmland background, warm sunny day, documentary editorial photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4Qqd4nautNNzJnXYsynIc7XH2HlbgIspEzOTob9wrGyHHBRqCQ6Quf9dNL2uv3T96qfO2ZG9va330M7IEs9kb9OeEfGt6ItT0GkYnv5BpDcD_qHKrGkoIPWbu_vSZ_LuJ2PqqxqXlOpOPLzKXjAAvQzmxND1ovrCEImERsnUFGp9nkFUqpzw-CG5Uz47eFFOYO5IuLxPHh6gZOx7rmm8dBmspVJcOIn6U4KRKNpNqtfQHNsGhl9v8"/>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1">
+<h4 class="font-body-md text-body-md font-semibold text-on-surface truncate">Green Valley Farm</h4>
+<span class="material-symbols-outlined text-[16px] text-secondary shrink-0" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant mt-0.5">
+<span class="material-symbols-outlined text-[14px] text-amber-500" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm font-bold text-on-surface">4.8</span>
+<span class="font-caption text-caption text-outline">(120 reviews)</span>
+</div>
+<span class="font-caption text-caption text-on-surface-variant flex items-center gap-1 mt-1 truncate">
+<span class="material-symbols-outlined text-[13px] text-outline">location_on</span>
+              Karachi Farmers Market
+            </span>
+</div>
+</div>
+<div class="mt-3 pt-2.5 flex items-center justify-between">
+<span class="px-2 py-1 rounded-md bg-on-tertiary-container text-secondary font-label-sm text-label-sm font-semibold truncate max-w-[160px]">
+            Fresh Vegetables &amp; Berries
+          </span>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-high text-on-surface font-label-sm text-label-sm font-semibold hover:bg-secondary-container hover:text-on-secondary-container active:scale-95 transition-all">
+            Follow
+          </button>
+</div>
+</div>
+<!-- Farmer Card 2 -->
+<div class="min-w-[270px] bg-surface-container-lowest rounded-xl p-3.5 flex flex-col justify-between shadow-sm">
+<div class="flex items-start gap-3">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container shrink-0">
+<img class="w-full h-full object-cover" data-alt="Portrait of a joyful female agro-ecologist holding citrus harvest in orchard, warm daylight, natural soft bokeh, Pakistani local farm." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcxaiEBXYi1UBV_GUuLbkuXTpKpOxHCsRiFJ6QcUHGZ6eKLRuYuwgKVXZBHLdx3cXS20aWKixl7x04IgC7Vs-2EDUEpcZlI0N72393L6aID9Sc-tA_D7mA5Gt9QWwhsZL3zmgjHpELDGHezd0SiVW2ctfoPYPIC5hdJhI-KNK-0JdtmxmEk-hNUotsalY5oQSri4pQucxgCLFwYDKWHUvOzcD1EtJZimGhuJuoS5GJVoBs24t4FoNT"/>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1">
+<h4 class="font-body-md text-body-md font-semibold text-on-surface truncate">Sunridge Orchards</h4>
+<span class="material-symbols-outlined text-[16px] text-secondary shrink-0" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant mt-0.5">
+<span class="material-symbols-outlined text-[14px] text-amber-500" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm font-bold text-on-surface">4.9</span>
+<span class="font-caption text-caption text-outline">(88 reviews)</span>
+</div>
+<span class="font-caption text-caption text-on-surface-variant flex items-center gap-1 mt-1 truncate">
+<span class="material-symbols-outlined text-[13px] text-outline">location_on</span>
+              Malir Agro Zone
+            </span>
+</div>
+</div>
+<div class="mt-3 pt-2.5 flex items-center justify-between">
+<span class="px-2 py-1 rounded-md bg-on-tertiary-container text-secondary font-label-sm text-label-sm font-semibold truncate max-w-[160px]">
+            Citrus &amp; Stone Fruits
+          </span>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-high text-on-surface font-label-sm text-label-sm font-semibold hover:bg-secondary-container hover:text-on-secondary-container active:scale-95 transition-all">
+            Follow
+          </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Recently Restocked -->
+<section class="mt-7 px-margin-mobile flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<h3 class="font-headline-md text-headline-md text-on-surface">Recently Restocked</h3>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-bold">New Batch</span>
+</div>
+<a class="font-label-lg text-label-lg text-secondary flex items-center gap-0.5 font-semibold" href="#">
+        See All
+        <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</a>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<!-- Card 3 -->
+<div class="group bg-surface-container-lowest rounded-xl p-2.5 flex flex-col shadow-sm relative transition-all duration-200 hover:shadow-md">
+<div class="relative w-full aspect-[4/3] rounded-lg overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Traditional 1 liter glass bottle filled with chilled fresh cow milk on a clean wooden tabletop, farm freshness background, clean daylight styling." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZuJNaCZl7OZDwbO-d7KCeMRY5a7logtzSDkN3_n2Tvcwgv5Yc3rxCpfqjYOF68yMgeo_ML7X7NG7cMrKOyhHwZEy6XkiqEpIsSAJIsmvpzWGPB_eaNcOjw3B8OXPeY55aYPO8DSW506DcufJBIyTF_LjOd5Blbur24F21m4mUepAxqz1VhV0nqX6VGG-1qxcMSvVZVX4HS7yiN6LFZEtnl9JwT-u7bck86b3ZjT3uz9N4SpAMwsdr"/>
+<button aria-label="Add to wishlist" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-surface-container-lowest/90 backdrop-blur-md flex items-center justify-center text-on-surface-variant hover:text-error active:scale-90 transition-all shadow-sm">
+<span class="material-symbols-outlined text-[16px]">favorite</span>
+</button>
+<div class="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-surface-container-lowest/90 backdrop-blur-md flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm font-semibold text-secondary">15 L available</span>
+</div>
+</div>
+<div class="mt-2.5 flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Dairy</span>
+<h4 class="font-body-md text-body-md font-semibold text-on-surface truncate mt-0.5">Pure Farm Cow Milk</h4>
+<div class="flex items-center gap-1 mt-0.5 text-on-surface-variant">
+<span class="font-caption text-caption truncate max-w-[105px]">Meadow Dairy Farm</span>
+<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="mt-3 pt-2 flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Price</span>
+<span class="font-headline-md text-headline-md text-on-surface font-bold tracking-tight">Rs. 220<span class="font-label-sm text-label-sm text-on-surface-variant font-normal"> / L</span></span>
+</div>
+<button aria-label="Add Pure Cow Milk to basket" class="w-9 h-9 rounded-full bg-primary-container text-on-primary flex items-center justify-center active:scale-95 hover:bg-primary transition-all shadow-sm">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="group bg-surface-container-lowest rounded-xl p-2.5 flex flex-col shadow-sm relative transition-all duration-200 hover:shadow-md">
+<div class="relative w-full aspect-[4/3] rounded-lg overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Glass jar of golden raw wildflower honey with wooden honey dipper beside honeycomb, rustic warm sunlight, organic produce presentation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCltVIiza_jg8m-c2bFIYXmpaPMVf-HDK3uiGeayJVslcB1yBSRGpxOVkZoizuHwZ5JYmv3ciBkGG6AS4gCdh_wAf7P9xOTlGhDq-9YKYNKWvnR0Ho2yY-HVf7GOnuI1EQm5bSDuNc5qcXo7QxfHB7_sB6cPDu2crAo_fUN7Pj-TQD2-d6e_DnSWs0N56AAWqWehSEUoXEdbxq9_xo71mYHohj8SKQL76dqiymAy9MHlzbVOwpeSWgl"/>
+<button aria-label="Add to wishlist" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-surface-container-lowest/90 backdrop-blur-md flex items-center justify-center text-on-surface-variant hover:text-error active:scale-90 transition-all shadow-sm">
+<span class="material-symbols-outlined text-[16px]">favorite</span>
+</button>
+<div class="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-surface-container-lowest/90 backdrop-blur-md flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm font-semibold text-secondary">5 jars left</span>
+</div>
+</div>
+<div class="mt-2.5 flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Organic</span>
+<h4 class="font-body-md text-body-md font-semibold text-on-surface truncate mt-0.5">Raw Wildflower Honey</h4>
+<div class="flex items-center gap-1 mt-0.5 text-on-surface-variant">
+<span class="font-caption text-caption truncate max-w-[105px]">Mountain Bee Apiary</span>
+<span class="material-symbols-outlined text-[14px] text-secondary" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="mt-3 pt-2 flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Price</span>
+<span class="font-headline-md text-headline-md text-on-surface font-bold tracking-tight">Rs. 950<span class="font-label-sm text-label-sm text-on-surface-variant font-normal"> / jar</span></span>
+</div>
+<button aria-label="Add Wildflower Honey to basket" class="w-9 h-9 rounded-full bg-primary-container text-on-primary flex items-center justify-center active:scale-95 hover:bg-primary transition-all shadow-sm">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Community Impact Banner -->
+<section class="mt-7 mx-margin-mobile p-4 rounded-xl bg-surface-container-low flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container shrink-0">
+<span class="material-symbols-outlined text-[22px]">compost</span>
+</div>
+<div class="flex flex-col">
+<h4 class="font-label-lg text-label-lg font-semibold text-on-surface">100% Direct-from-Farm</h4>
+<p class="font-caption text-caption text-on-surface-variant leading-tight mt-0.5">Your orders directly empower sustainable regional farmers and promote organic soil revitalization.</p>
+</div>
+</section>
+</div>
+<script>
+  // Interactive category selection toggle
+  document.querySelectorAll('section:nth-of-type(2) button').forEach((btn) => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('section:nth-of-type(2) button').forEach((b) => {
+        b.className = 'flex items-center gap-1.5 px-4 h-10 rounded-full bg-surface-container-lowest text-on-surface hover:bg-surface-container-low active:scale-95 transition-transform shadow-sm';
+      });
+      this.className = 'flex items-center gap-1.5 px-4 h-10 rounded-full bg-primary-container text-on-primary shadow-sm active:scale-95 transition-transform';
+    });
+  });
+
+  // Simple feedback on basket click
+  document.querySelectorAll('button[aria-label^="Add"]').forEach((addBtn) => {
+    addBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const icon = this.querySelector('.material-symbols-outlined');
+      if (icon) {
+        icon.textContent = 'check';
+        setTimeout(() => {
+          icon.textContent = 'add';
+        }, 1200);
+      }
+    });
+  });
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/85 backdrop-blur-xl shadow-[0_-2px_12px_rgba(25,29,25,0.05)]" data-active-classes="text-primary font-semibold"><div class="flex justify-around items-center h-16 px-space-xs"><a aria-current="page" class="flex flex-col items-center justify-center flex-1 h-full py-1 active:scale-95 transition-transform text-primary font-semibold" data-path="home" href="#"><span class="material-symbols-outlined text-[24px]">home</span><span class="font-label-sm text-label-sm tracking-tight">Home</span></a><a class="flex flex-col items-center justify-center flex-1 h-full py-1 text-on-surface-variant active:scale-95 transition-transform" data-path="categories" href="#"><span class="material-symbols-outlined text-[24px]">grid_view</span><span class="font-label-sm text-label-sm tracking-tight">Categories</span></a><a class="flex flex-col items-center justify-center flex-1 h-full py-1 text-on-surface-variant active:scale-95 transition-transform" data-path="wishlist" href="#"><span class="material-symbols-outlined text-[24px]">favorite</span><span class="font-label-sm text-label-sm tracking-tight">Wishlist</span></a><a class="flex flex-col items-center justify-center flex-1 h-full py-1 text-on-surface-variant active:scale-95 transition-transform" data-path="orders" href="#"><span class="material-symbols-outlined text-[24px]">receipt_long</span><span class="font-label-sm text-label-sm tracking-tight">Orders</span></a><a class="flex flex-col items-center justify-center flex-1 h-full py-1 text-on-surface-variant active:scale-95 transition-transform" data-path="profile" href="#"><span class="material-symbols-outlined text-[24px]">person</span><span class="font-label-sm text-label-sm tracking-tight">Profile</span></a></div></nav></body></html>

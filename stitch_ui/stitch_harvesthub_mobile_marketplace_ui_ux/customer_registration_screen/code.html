@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-container-low": "#f2f5ee", "primary-fixed": "#a3f69c", "outline": "#707a6c", "primary-fixed-dim": "#88d982", "surface-container-high": "#e6e9e2", "secondary-container": "#9cf49c", "on-tertiary-fixed": "#131e17", "secondary": "#126d27", "surface-variant": "#e0e3dd", "on-tertiary-fixed-variant": "#3e4a41", "surface-dim": "#d8dbd4", "on-secondary-fixed": "#002105", "surface-tint": "#1b6d24", "on-primary": "#ffffff", "on-secondary": "#ffffff", "on-surface-variant": "#40493d", "primary-container": "#2e7d32", "inverse-primary": "#88d982", "tertiary-fixed": "#d9e6da", "error-container": "#ffdad6", "on-tertiary": "#ffffff", "on-surface": "#191d19", "background": "#f7faf3", "inverse-surface": "#2d312d", "inverse-on-surface": "#eff2eb", "tertiary": "#4d5950", "surface": "#f7faf3", "surface-bright": "#f7faf3", "on-error-container": "#93000a", "tertiary-container": "#657167", "tertiary-fixed-dim": "#bdcabe", "secondary-fixed-dim": "#83da85", "on-primary-fixed-variant": "#005312", "outline-variant": "#bfcaba", "on-secondary-container": "#19722b", "on-primary-fixed": "#002204", "surface-container": "#ecefe8", "on-background": "#191d19", "surface-container-lowest": "#ffffff", "on-tertiary-container": "#e8f5e9", "surface-container-highest": "#e0e3dd", "secondary-fixed": "#9ff79f", "on-primary-container": "#cbffc2", "error": "#ba1a1a", "on-error": "#ffffff", "primary": "#0d631b", "on-secondary-fixed-variant": "#005318" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "gutter": "1.5rem", "margin": "2rem", "space-xs": "0.25rem", "space-md": "1rem", "margin-mobile": "1rem", "space-sm": "0.5rem", "space-xl": "2rem", "gutter-mobile": "1rem", "space-lg": "1.5rem" }, fontFamily: { "headline-lg": ["Inter"], "headline-md": ["Inter"], "headline-xl-mobile": ["Inter"], "display-lg": ["Inter"], "label-md": ["Inter"], "caption": ["Inter"], "label-lg": ["Inter"], "display-lg-mobile": ["Inter"], "headline-xl": ["Inter"], "body-md": ["Inter"], "body-sm": ["Inter"], "label-sm": ["Inter"], "body-lg": ["Inter"] }, fontSize: { "headline-lg": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }], "headline-md": ["20px", { lineHeight: "28px", letterSpacing: "-0.005em", fontWeight: "600" }], "headline-xl-mobile": ["26px", { lineHeight: "34px", letterSpacing: "-0.01em", fontWeight: "600" }], "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }], "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "600" }], "caption": ["12px", { lineHeight: "16px", fontWeight: "400" }], "label-lg": ["14px", { lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "600" }], "display-lg-mobile": ["36px", { lineHeight: "44px", letterSpacing: "-0.015em", fontWeight: "700" }], "headline-xl": ["32px", { lineHeight: "40px", letterSpacing: "-0.015em", fontWeight: "600" }], "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }], "body-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }], "label-sm": ["11px", { lineHeight: "14px", letterSpacing: "0.03em", fontWeight: "600" }], "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }] } } } };</script><style>@layer base { html, body { margin: 0; padding: 0; min-height: 100%; background-color: #f7faf3; } .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); } .pt-safe { padding-top: env(safe-area-inset-top, 0px); } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-16 px-gutter-mobile flex items-center justify-between"><div class="flex items-center gap-space-sm"><button aria-label="Go back" class="w-11 h-11 -ml-space-xs flex items-center justify-center text-on-surface hover:text-primary transition-colors" onclick="history.back()" type="button"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><img alt="HarvestHub official logo with deep green icon badge featuring clean geometric dual leaf sprout and refined modern typography wordmark" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1WcikHZagj-KoRhjVBDm6at2NOHcXjYnCWepE3lxRCEWD4ObszqsN-UdexcTA_zfxU7522Au2GTuBUkZyv3NGl50YqrmtHvC1xIC_40970fm1M4odMHTlLj3w_QfVaB1Une6uOWCVG8piIUGlG0gn57L6xi5--HTziIL0Eq6bFl3QFTMXSMnbQvNbND9cnByI-HPtqCIlFvCL5jpxLPaqR5dPwilfrk5YbvEFzqsZ6gGZ4Rk6s9UbRUMeM"/><span class="font-headline-md text-headline-md text-on-surface tracking-tight truncate max-w-[140px]">Create Account</span></div><div class="flex items-center"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-safe bg-surface"><div class="flex flex-col w-full px-gutter-mobile pb-space-xl">
+<!-- Warm Welcome Greeting -->
+<div class="flex flex-col mt-space-md mb-space-lg">
+<div class="inline-flex items-center gap-space-xs self-start px-space-sm py-1 rounded-full bg-secondary-container text-on-secondary-container mb-space-sm">
+<span class="material-symbols-outlined text-[16px]">eco</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Fresh • Direct • Honest</span>
+</div>
+<h1 class="font-headline-xl-mobile text-headline-xl-mobile text-on-surface tracking-tight">Create Your Account</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Join HarvestHub to buy fresh, organic produce straight from local growers.</p>
+</div>
+<!-- Ambient Visual Accent / Direct from Soil Card -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container-low p-space-md shadow-sm mb-space-lg">
+<div class="flex items-center gap-space-md">
+<div class="relative w-14 h-14 rounded-lg overflow-hidden shrink-0 shadow-sm">
+<img class="w-full h-full object-cover" data-alt="A lush morning harvest basket brimming with freshly plucked dewy carrots, heirloom tomatoes, and crisp wild greens on rich dark loam soil under soft sunrise warmth, editorial agrarian style, natural sunlight." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHMJxuTfOGKTG3QT04LzLMrj8XzWS2ZQEgTsgwZj_1xnptCgCZjYU8MD1TvXAmZWQg77xLAz_5NozviVmTHH3uqg2NNpDXMD_BCac2v6d4GxQ9p-QQdd19y42f1ORpPhxN-KgmVNSY_wk2HpQWmYMkwpQ5sGpZ0r6jh8qzwFcGxf9zN1L-TPl8ivrm9XJIYZmas2iFsQZALSVi_8K2-JvaYkeqfWTXoK96aWXcWZG1VUV2uLc23NmD"/>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold truncate">Rooted in Community</span>
+<p class="font-caption text-caption text-on-surface-variant line-clamp-2">Direct farm gates, zero intermediaries, guaranteed harvest-day freshness.</p>
+</div>
+</div>
+</div>
+<!-- Sign Up Form -->
+<form class="flex flex-col gap-space-md" id="signupForm" onsubmit="event.preventDefault(); triggerSuccessCelebration();">
+<!-- Full Name -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-lg text-label-lg text-on-surface flex items-center justify-between" for="fullName">
+<span>Full Name</span>
+<span class="font-caption text-caption text-on-surface-variant">Required</span>
+</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-tertiary text-[20px] pointer-events-none">person</span>
+<input class="w-full bg-surface-container-lowest text-on-surface placeholder:text-outline-variant font-body-md text-body-md pl-10 pr-4 py-3 rounded-lg shadow-sm outline-none focus:bg-surface-container-lowest focus:shadow-md transition-all duration-200" id="fullName" name="fullName" placeholder="e.g. Ubaid Rehman" required="" type="text"/>
+</div>
+</div>
+<!-- Email Address -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-lg text-label-lg text-on-surface flex items-center justify-between" for="email">
+<span>Email Address</span>
+<span class="font-caption text-caption text-on-surface-variant">Order receipt &amp; updates</span>
+</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-tertiary text-[20px] pointer-events-none">mail</span>
+<input class="w-full bg-surface-container-lowest text-on-surface placeholder:text-outline-variant font-body-md text-body-md pl-10 pr-4 py-3 rounded-lg shadow-sm outline-none focus:bg-surface-container-lowest focus:shadow-md transition-all duration-200" id="email" name="email" placeholder="e.g. ubaid@example.com" required="" type="email"/>
+</div>
+</div>
+<!-- Mobile Number -->
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<label class="font-label-lg text-label-lg text-on-surface" for="mobile">Mobile Number</label>
+<span class="font-label-sm text-label-sm text-secondary flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[13px]">sms</span>
+          Pickup SMS OTPs
+        </span>
+</div>
+<div class="flex items-center gap-2">
+<!-- Leading Country Code -->
+<div class="flex items-center gap-1 bg-surface-container-high px-3 py-3 rounded-lg shrink-0 shadow-sm">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold">+92</span>
+<span class="material-symbols-outlined text-outline text-[16px]">expand_more</span>
+</div>
+<!-- Phone Input -->
+<div class="relative flex items-center flex-1 min-w-0">
+<span class="material-symbols-outlined absolute left-3 text-tertiary text-[20px] pointer-events-none">phone_iphone</span>
+<input class="w-full bg-surface-container-lowest text-on-surface placeholder:text-outline-variant font-body-md text-body-md pl-10 pr-4 py-3 rounded-lg shadow-sm outline-none focus:bg-surface-container-lowest focus:shadow-md transition-all duration-200" id="mobile" name="mobile" placeholder="300 1234567" required="" type="tel"/>
+</div>
+</div>
+<p class="font-caption text-caption text-on-surface-variant pl-1">Required for rapid gate pass code &amp; farm locker collection.</p>
+</div>
+<!-- Delivery / Pickup Area -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-lg text-label-lg text-on-surface flex items-center justify-between" for="address">
+<span>Delivery / Pickup Area</span>
+<button class="text-primary hover:text-secondary font-label-sm text-label-sm flex items-center gap-1 transition-colors" onclick="detectUserLocation()" type="button">
+<span class="material-symbols-outlined text-[14px]">my_location</span>
+          Use Current
+        </button>
+</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-tertiary text-[20px] pointer-events-none">location_on</span>
+<input class="w-full bg-surface-container-lowest text-on-surface placeholder:text-outline-variant font-body-md text-body-md pl-10 pr-10 py-3 rounded-lg shadow-sm outline-none focus:bg-surface-container-lowest focus:shadow-md transition-all duration-200" id="address" name="address" placeholder="e.g. DHA Phase 6, Karachi" required="" type="text"/>
+<span class="material-symbols-outlined absolute right-3 text-outline text-[20px]">near_me</span>
+</div>
+</div>
+<!-- Password with dynamic strength meter -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-lg text-label-lg text-on-surface" for="password">Password</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-tertiary text-[20px] pointer-events-none">lock</span>
+<input class="w-full bg-surface-container-lowest text-on-surface placeholder:text-outline-variant font-body-md text-body-md pl-10 pr-11 py-3 rounded-lg shadow-sm outline-none focus:bg-surface-container-lowest focus:shadow-md transition-all duration-200" id="password" name="password" oninput="updatePasswordStrength(this.value)" placeholder="At least 8 characters" required="" type="password"/>
+<button aria-label="Toggle password visibility" class="absolute right-3 text-outline hover:text-on-surface transition-colors p-1" onclick="togglePasswordVisibility()" type="button">
+<span class="material-symbols-outlined text-[20px]" id="pwdIcon">visibility</span>
+</button>
+</div>
+<!-- Password Strength Indicator -->
+<div class="flex flex-col gap-1.5 mt-1 bg-surface-container-low p-2.5 rounded-lg shadow-sm">
+<div class="flex items-center gap-1.5 w-full">
+<div class="h-1.5 flex-1 rounded-full bg-surface-dim transition-all duration-300" id="bar1"></div>
+<div class="h-1.5 flex-1 rounded-full bg-surface-dim transition-all duration-300" id="bar2"></div>
+<div class="h-1.5 flex-1 rounded-full bg-surface-dim transition-all duration-300" id="bar3"></div>
+<div class="h-1.5 flex-1 rounded-full bg-surface-dim transition-all duration-300" id="bar4"></div>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1" id="strengthText">
+<span class="material-symbols-outlined text-[13px] text-outline">shield</span>
+            Password strength
+          </span>
+<span class="font-caption text-caption text-outline" id="strengthAdvice">Min. 8 characters</span>
+</div>
+</div>
+</div>
+<!-- Terms and Conditions Checkbox -->
+<div class="flex items-start gap-space-sm mt-1">
+<div class="relative flex items-center pt-0.5">
+<input class="w-5 h-5 rounded cursor-pointer accent-primary" id="terms" required="" type="checkbox"/>
+</div>
+<label class="font-body-sm text-body-sm text-on-surface cursor-pointer select-none leading-relaxed" for="terms">
+        I agree to the <a class="text-primary font-semibold underline underline-offset-2" href="#">Terms of Service</a> &amp; <a class="text-primary font-semibold underline underline-offset-2" href="#">Privacy Policy</a>
+</label>
+</div>
+<!-- Actions Container -->
+<div class="flex flex-col gap-space-sm pt-space-sm">
+<!-- Primary Action CTA -->
+<button class="w-full h-12 bg-primary-container text-on-primary font-label-lg text-label-lg rounded-lg shadow-md hover:bg-primary active:scale-[0.98] transition-all flex items-center justify-center gap-2" id="submitBtn" type="submit">
+<span>Create Account</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+<!-- Reassurance Pill -->
+<div class="flex items-center justify-center gap-2 py-2 px-3 rounded-full bg-surface-container-high self-center">
+<span class="text-[14px]">🌾</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">100% Free registration • No hidden fees</span>
+</div>
+</div>
+</form>
+<!-- Farm Direct Assurance Highlights -->
+<div class="grid grid-cols-2 gap-space-sm mt-space-lg mb-space-lg">
+<div class="bg-surface-container-low p-space-sm rounded-xl flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container shrink-0">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm font-semibold text-on-surface truncate">Verified Farms</span>
+<span class="font-caption text-caption text-on-surface-variant">100% organic audits</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded-xl flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container shrink-0">
+<span class="material-symbols-outlined text-[18px]">local_shipping</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm font-semibold text-on-surface truncate">Same-Day Pickup</span>
+<span class="font-caption text-caption text-on-surface-variant">Hub lock-in slots</span>
+</div>
+</div>
+</div>
+<!-- Bottom Switcher -->
+<div class="mt-auto pt-space-sm pb-space-md text-center">
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+      Already registered? 
+      <a class="text-primary font-semibold underline underline-offset-2 hover:text-secondary ml-1 transition-colors" href="#">Sign In</a>
+</p>
+</div>
+<!-- Delight Micro-Interaction Modal (Triggered on Registration) -->
+<div class="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm hidden items-end justify-center p-gutter-mobile" id="welcomeDrawer">
+<div class="bg-surface-container-lowest rounded-2xl w-full max-w-md p-space-lg shadow-2xl flex flex-col items-center text-center animate-bounce-short">
+<div class="w-16 h-16 rounded-full bg-primary-container text-on-primary flex items-center justify-center mb-space-md shadow-md">
+<span class="material-symbols-outlined text-[36px]">check_circle</span>
+</div>
+<span class="font-headline-md text-headline-md text-on-surface">Welcome to the Soil!</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 mb-space-lg">Your account has been prepared. We've sent a 6-digit confirmation code to your phone.</p>
+<div class="w-full bg-surface-container-low p-space-md rounded-xl flex items-center gap-space-md mb-space-lg">
+<div class="w-10 h-10 rounded-lg overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="Close up Macro shot of fresh emerald green mint leaves and morning dew droplets reflecting radiant morning light in an organic farm nursery." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeRZdlL21b3b5J6hLqZ29QtObpfsf27YnGAMdkCq6vrAvhRupc3o4Uv9kxcFY0CsDfkcdtRkknWxDQkEpHT1nnM9_nWmxkP6uq51BYQ9MozrG-EshVNEUB1diwau_T3fgjodx1XaZ9v6SVM_NtnhEkCqJ64rQAsCXgtMVjpq3GMlLb5M6pY5HGDRObFJ2RUoDI7bWEmjDqtwWDZuAqX66J4cb0vWuCnS6h22Tj0QnnntFNDNf36fSO"/>
+</div>
+<div class="flex flex-col text-left">
+<span class="font-label-sm text-label-sm text-primary font-semibold">First-Order Fresh Perk</span>
+<span class="font-body-sm text-body-sm text-on-surface font-semibold">Free organic herb bundle included</span>
+</div>
+</div>
+<button class="w-full h-12 bg-primary text-on-primary font-label-lg text-label-lg rounded-lg shadow hover:bg-primary-container transition-all" onclick="closeDrawer()" type="button">
+        Go to Local Harvests
+      </button>
+</div>
+</div>
+</div>
+<script>
+  function togglePasswordVisibility() {
+    const pwdInput = document.getElementById('password');
+    const pwdIcon = document.getElementById('pwdIcon');
+    if (pwdInput.type === 'password') {
+      pwdInput.type = 'text';
+      pwdIcon.textContent = 'visibility_off';
+    } else {
+      pwdInput.type = 'password';
+      pwdIcon.textContent = 'visibility';
+    }
+  }
+
+  function updatePasswordStrength(val) {
+    const b1 = document.getElementById('bar1');
+    const b2 = document.getElementById('bar2');
+    const b3 = document.getElementById('bar3');
+    const b4 = document.getElementById('bar4');
+    const strengthText = document.getElementById('strengthText');
+    const strengthAdvice = document.getElementById('strengthAdvice');
+
+    // Reset base colors
+    [b1, b2, b3, b4].forEach(b => {
+      b.className = 'h-1.5 flex-1 rounded-full bg-surface-dim transition-all duration-300';
+    });
+
+    if (!val || val.length === 0) {
+      strengthText.innerHTML = '<span class="material-symbols-outlined text-[13px] text-outline">shield</span> Password strength';
+      strengthAdvice.textContent = 'Min. 8 characters';
+      return;
+    }
+
+    let score = 0;
+    if (val.length >= 6) score++;
+    if (val.length >= 8) score++;
+    if (/[0-9]/.test(val) && /[a-zA-Z]/.test(val)) score++;
+    if (/[^a-zA-Z0-9]/.test(val)) score++;
+
+    if (score === 1) {
+      b1.className = 'h-1.5 flex-1 rounded-full bg-error transition-all duration-300';
+      strengthText.innerHTML = '<span class="material-symbols-outlined text-[13px] text-error">shield</span> Weak';
+      strengthAdvice.textContent = 'Add numbers & letters';
+    } else if (score === 2) {
+      b1.className = 'h-1.5 flex-1 rounded-full bg-error-container transition-all duration-300';
+      b2.className = 'h-1.5 flex-1 rounded-full bg-error-container transition-all duration-300';
+      strengthText.innerHTML = '<span class="material-symbols-outlined text-[13px] text-secondary">shield</span> Fair';
+      strengthAdvice.textContent = 'Make it 8+ chars';
+    } else if (score === 3) {
+      b1.className = 'h-1.5 flex-1 rounded-full bg-secondary transition-all duration-300';
+      b2.className = 'h-1.5 flex-1 rounded-full bg-secondary transition-all duration-300';
+      b3.className = 'h-1.5 flex-1 rounded-full bg-secondary transition-all duration-300';
+      strengthText.innerHTML = '<span class="material-symbols-outlined text-[13px] text-secondary">shield</span> Good';
+      strengthAdvice.textContent = 'Add special symbol';
+    } else if (score >= 4) {
+      [b1, b2, b3, b4].forEach(b => {
+        b.className = 'h-1.5 flex-1 rounded-full bg-primary transition-all duration-300';
+      });
+      strengthText.innerHTML = '<span class="material-symbols-outlined text-[13px] text-primary">verified_user</span> Strong • 8+ characters';
+      strengthAdvice.textContent = 'Excellent!';
+    }
+  }
+
+  function detectUserLocation() {
+    const addressInput = document.getElementById('address');
+    addressInput.value = 'Locating area...';
+    setTimeout(() => {
+      addressInput.value = 'DHA Phase 6, Karachi';
+    }, 700);
+  }
+
+  function triggerSuccessCelebration() {
+    const drawer = document.getElementById('welcomeDrawer');
+    drawer.classList.remove('hidden');
+    drawer.classList.add('flex');
+  }
+
+  function closeDrawer() {
+    const drawer = document.getElementById('welcomeDrawer');
+    drawer.classList.add('hidden');
+    drawer.classList.remove('flex');
+  }
+</script></main></body></html>

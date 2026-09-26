@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-secondary": "#ffffff", "surface": "#f7faf3", "surface-container": "#ecefe8", "secondary-container": "#9cf49c", "inverse-on-surface": "#eff2eb", "on-primary-container": "#cbffc2", "surface-container-high": "#e6e9e2", "secondary": "#126d27", "background": "#f7faf3", "error-container": "#ffdad6", "on-background": "#191d19", "on-primary-fixed-variant": "#005312", "on-tertiary-container": "#e8f5e9", "secondary-fixed-dim": "#83da85", "outline-variant": "#bfcaba", "inverse-primary": "#88d982", "inverse-surface": "#2d312d", "on-tertiary-fixed-variant": "#3e4a41", "surface-dim": "#d8dbd4", "on-primary": "#ffffff", "on-secondary-fixed-variant": "#005318", "surface-container-lowest": "#ffffff", "on-primary-fixed": "#002204", "on-surface-variant": "#40493d", "on-error-container": "#93000a", "primary-fixed-dim": "#88d982", "surface-tint": "#1b6d24", "on-tertiary-fixed": "#131e17", "tertiary-container": "#657167", "tertiary-fixed-dim": "#bdcabe", "on-surface": "#191d19", "on-secondary-fixed": "#002105", "on-secondary-container": "#19722b", "primary-fixed": "#a3f69c", "secondary-fixed": "#9ff79f", "outline": "#707a6c", "tertiary-fixed": "#d9e6da", "surface-variant": "#e0e3dd", "error": "#ba1a1a", "surface-container-low": "#f2f5ee", "tertiary": "#4d5950", "surface-bright": "#f7faf3", "surface-container-highest": "#e0e3dd", "on-tertiary": "#ffffff", "primary": "#0d631b", "on-error": "#ffffff", "primary-container": "#2e7d32" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-xs": "0.25rem", "space-xl": "2rem", "space-lg": "1.5rem", "margin-mobile": "1rem", "gutter-mobile": "1rem", "space-md": "1rem", "space-sm": "0.5rem", "margin": "2rem", "gutter": "1.5rem" }, fontFamily: { "caption": ["Inter"], "headline-md": ["Inter"], "display-lg": ["Inter"], "label-md": ["Inter"], "headline-xl-mobile": ["Inter"], "body-md": ["Inter"], "label-sm": ["Inter"], "body-lg": ["Inter"], "headline-lg": ["Inter"], "label-lg": ["Inter"], "display-lg-mobile": ["Inter"], "body-sm": ["Inter"], "headline-xl": ["Inter"] }, fontSize: { "caption": ["12px", { lineHeight: "16px", fontWeight: "400" }], "headline-md": ["20px", { lineHeight: "28px", letterSpacing: "-0.005em", fontWeight: "600" }], "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }], "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "600" }], "headline-xl-mobile": ["26px", { lineHeight: "34px", letterSpacing: "-0.01em", fontWeight: "600" }], "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }], "label-sm": ["11px", { lineHeight: "14px", letterSpacing: "0.03em", fontWeight: "600" }], "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }], "headline-lg": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }], "label-lg": ["14px", { lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "600" }], "display-lg-mobile": ["36px", { lineHeight: "44px", letterSpacing: "-0.015em", fontWeight: "700" }], "body-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }], "headline-xl": ["32px", { lineHeight: "40px", letterSpacing: "-0.015em", fontWeight: "600" }] } } } }</script><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#f7faf3;color:#191d19;-webkit-tap-highlight-color:transparent;}body{overscroll-behavior-y:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(25,29,25,0.04)]"><div class="h-16 px-margin-mobile flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-xs"><button aria-label="Go Back" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface active:bg-surface-container active:scale-95 transition-all" onclick="history.back()"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><img alt="HarvestHub Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1XMYBqn5G82BlARkHR2vM_UQw_vWAK1kZjtm5_1YvhdmtTEdEUhQEsngzq5M_4qSJp5V1BIo1UhZiFw-KC6CB_aYby3utZ9c2DqfVfZk4M5g2i3WNv9OlvemAyUXXRbJKpa0r7h4uo7dQzVpEBOeiZZRldoURnrFtLXAPJehD8lxL1yEAYqVGNo9MRuDOp6ub3ouhhI5U_blNVaHLo2CcGqUVegow0CYvVw5KLDd36JIcXChFHMSpv4IE8"/><h1 class="font-headline-md text-headline-md text-on-surface line-clamp-1 ml-space-xs">Cart Checkout</h1></div><div class="flex items-center gap-space-xs"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 bg-surface"><div class="flex flex-col w-full px-margin-mobile pb-space-xl">
+<!-- Subtle Trust Banner / Freshness Delight -->
+<div class="mt-space-sm mb-space-md p-space-sm bg-secondary-container/30 rounded-xl flex items-center gap-space-sm shadow-sm">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-primary text-[18px]">eco</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-sm text-label-sm text-on-secondary-container">Harvested fresh today from local Sindh growers</p>
+<p class="font-caption text-caption text-on-surface-variant truncate">Zero storage transit • Handled with clean organic care</p>
+</div>
+<span class="material-symbols-outlined text-secondary text-[20px] shrink-0">verified</span>
+</div>
+<!-- Cart Items List Container -->
+<div class="flex flex-col gap-space-sm mb-space-lg">
+<div class="flex items-center justify-between px-space-xs">
+<h2 class="font-label-lg text-label-lg text-on-surface">Items in Basket</h2>
+<span class="font-caption text-caption text-secondary font-semibold" id="cart-item-count">2 local items</span>
+</div>
+<!-- Item 1: Tomatoes -->
+<div class="relative bg-surface-container-lowest rounded-xl p-space-sm shadow-sm flex gap-space-sm items-center transition-all duration-300" id="cart-item-1">
+<div class="relative w-20 h-20 rounded-lg overflow-hidden shrink-0 bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Vibrant cluster of ripe heirloom red tomatoes still glistening with morning dew drops, resting on raw burlap in a sun-drenched Karachi organic farm greenhouse. High resolution, organic produce photography with rich ruby reds and vibrant emerald greens." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfslduZNqyibFrMiyKdy1Bwov-n03Fl6VSa2mKcMKzHHLE_IN98swMk_mjIbVOrQfAk8i9nDo9Qp9zMT_IjctVddmA0n5LzoiYJIL2gYT6x4DydVlXIWC9dgBUjOsCJ3RHgqkKTo9Vj5hlasCZ9Ew9ocjnbqxkxc6hySReHO5UyrfiqHQLmLIeeYUUnD-tYyYDUrbzVmGHeDEdgjDyGP1ecBogzOLVDuWTGy5vBVCmatW8uVwFs7Nx"/>
+<div class="absolute top-1 left-1 bg-surface-container-lowest/90 backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+<span class="material-symbols-outlined text-secondary text-[10px]" style="font-variation-settings: 'FILL' 1;">local_florist</span>
+<span class="font-label-sm text-[9px] text-secondary">Organic</span>
+</div>
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-between h-20 py-0.5">
+<div>
+<div class="flex items-start justify-between gap-space-xs">
+<h3 class="font-headline-md text-body-md font-semibold text-on-surface truncate">Fresh Tomatoes (1 kg)</h3>
+<button aria-label="Remove Fresh Tomatoes" class="text-outline hover:text-error transition-colors p-1 -mr-1" onclick="removeItem('cart-item-1', 280)">
+<span class="material-symbols-outlined text-[18px]">delete_outline</span>
+</button>
+</div>
+<p class="font-caption text-caption text-on-surface-variant flex items-center gap-1 mt-0.5 truncate">
+<span class="material-symbols-outlined text-[14px] text-secondary">agriculture</span>
+            From Green Valley Farm
+          </p>
+</div>
+<div class="flex items-center justify-between pt-1">
+<div class="flex items-baseline gap-1">
+<span class="font-headline-md text-label-lg text-primary font-bold">Rs. <span id="item-1-price">280</span></span>
+</div>
+<!-- Stepper -->
+<div class="flex items-center bg-surface-container-low rounded-lg p-0.5 shadow-inner">
+<button class="w-7 h-7 rounded-md bg-surface-container-lowest text-on-surface flex items-center justify-center active:scale-90 transition-transform shadow-xs" onclick="updateQty('item-1', -1, 280)">
+<span class="material-symbols-outlined text-[16px]">remove</span>
+</button>
+<span class="w-8 text-center font-label-md text-label-md text-on-surface" id="item-1-qty">1</span>
+<button class="w-7 h-7 rounded-md bg-surface-container-lowest text-on-surface flex items-center justify-center active:scale-90 transition-transform shadow-xs" onclick="updateQty('item-1', 1, 280)">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Item 2: Spinach -->
+<div class="relative bg-surface-container-lowest rounded-xl p-space-sm shadow-sm flex gap-space-sm items-center transition-all duration-300" id="cart-item-2">
+<div class="relative w-20 h-20 rounded-lg overflow-hidden shrink-0 bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Lush, freshly harvested bundles of deep green organic spinach leaves tied with natural jute twine, captured in soft morning field lighting. Crisp texture with natural earthy details, natural farm basket backdrop." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7M7nzSQj6SlYfdT_tISLaX0LofNL3TFB8r4HmS837BHd7Blt0aHpmjbHFpDZlT4mFXvTEpKGETfEXsEPKRPOpdDx5EtO8L0HbyWLjaXHHvqZpLV3J810JuUDoneQ9NDvtYB3CIPGQNjz6jPBkVLdxLgiZ-1ndC1nO5RCVxL7rErR2fqv3b3n5b7QNe8HuE-if4Uzd8cAEwmhhU8GhNtJ0ZggZD9-i2OFmBX6oUMWlUtlX6Qs3C2Mf"/>
+<div class="absolute top-1 left-1 bg-surface-container-lowest/90 backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+<span class="material-symbols-outlined text-secondary text-[10px]" style="font-variation-settings: 'FILL' 1;">spa</span>
+<span class="font-label-sm text-[9px] text-secondary">Fresh</span>
+</div>
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-between h-20 py-0.5">
+<div>
+<div class="flex items-start justify-between gap-space-xs">
+<h3 class="font-headline-md text-body-md font-semibold text-on-surface truncate">Organic Spinach (2 bunches)</h3>
+<button aria-label="Remove Organic Spinach" class="text-outline hover:text-error transition-colors p-1 -mr-1" onclick="removeItem('cart-item-2', 280)">
+<span class="material-symbols-outlined text-[18px]">delete_outline</span>
+</button>
+</div>
+<p class="font-caption text-caption text-on-surface-variant flex items-center gap-1 mt-0.5 truncate">
+<span class="material-symbols-outlined text-[14px] text-secondary">agriculture</span>
+            From Indus Organic Fields
+          </p>
+</div>
+<div class="flex items-center justify-between pt-1">
+<div class="flex flex-col">
+<span class="font-headline-md text-label-lg text-primary font-bold">Rs. <span id="item-2-price">280</span></span>
+<span class="font-caption text-[10px] text-on-surface-variant -mt-1 leading-none">(Rs. 140 each)</span>
+</div>
+<!-- Stepper -->
+<div class="flex items-center bg-surface-container-low rounded-lg p-0.5 shadow-inner">
+<button class="w-7 h-7 rounded-md bg-surface-container-lowest text-on-surface flex items-center justify-center active:scale-90 transition-transform shadow-xs" onclick="updateQty('item-2', -1, 140)">
+<span class="material-symbols-outlined text-[16px]">remove</span>
+</button>
+<span class="w-8 text-center font-label-md text-label-md text-on-surface" id="item-2-qty">2</span>
+<button class="w-7 h-7 rounded-md bg-surface-container-lowest text-on-surface flex items-center justify-center active:scale-90 transition-transform shadow-xs" onclick="updateQty('item-2', 1, 140)">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Pickup Slot Selection Card -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md mb-space-lg shadow-sm">
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-7 h-7 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">event_available</span>
+</div>
+<h2 class="font-label-lg text-label-lg text-on-surface">Pickup Slot Selection</h2>
+</div>
+<span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2.5 py-1 rounded-full">
+        Today, Oct 24
+      </span>
+</div>
+<!-- Time slot selection pills -->
+<p class="font-caption text-caption text-on-surface-variant mb-space-xs">Available collection windows:</p>
+<div class="grid grid-cols-1 gap-2 mb-space-md">
+<!-- Highlighted selected slot -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-secondary-container/40 shadow-sm cursor-pointer">
+<div class="flex items-center gap-space-sm">
+<div class="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary text-[14px]">check</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface font-semibold">5:30 PM — 6:00 PM</p>
+<p class="font-caption text-caption text-secondary">Recommended • Farmer crates arrive by 5:15 PM</p>
+</div>
+</div>
+<span class="font-label-sm text-[10px] uppercase font-bold text-on-secondary-container bg-surface-container-lowest px-2 py-0.5 rounded-full">Selected</span>
+</div>
+<!-- Alternate slot option -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-low opacity-75 hover:opacity-100 transition-opacity cursor-pointer">
+<div class="flex items-center gap-space-sm">
+<div class="w-5 h-5 rounded-full bg-surface-variant flex items-center justify-center"></div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">6:00 PM — 6:30 PM</p>
+<p class="font-caption text-caption text-on-surface-variant">Evening collection</p>
+</div>
+</div>
+<span class="font-caption text-caption text-outline">Open</span>
+</div>
+</div>
+<!-- Pickup Location Point -->
+<div class="p-space-sm bg-surface-container-low rounded-lg flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px] shrink-0 mt-0.5">location_on</span>
+<div class="flex-1 min-w-0">
+<p class="font-label-sm text-label-sm text-on-surface font-semibold">Karachi Farmers Market - Stall 14B &amp; Hub Counter</p>
+<p class="font-caption text-caption text-on-surface-variant">Plot 12-C, Khayaban-e-Seher, Phase 6, DHA, Karachi</p>
+<div class="flex items-center gap-1.5 mt-1.5 text-secondary font-label-sm text-[11px]">
+<span class="material-symbols-outlined text-[14px]">directions</span>
+<span>Open in navigation map</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Customer Details & Address -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md mb-space-lg shadow-sm">
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-7 h-7 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">badge</span>
+</div>
+<h2 class="font-label-lg text-label-lg text-on-surface">Pickup Contact Details</h2>
+</div>
+<button class="font-label-sm text-label-sm text-primary font-medium hover:underline">Edit</button>
+</div>
+<div class="space-y-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">person</span>
+<p class="font-body-md text-body-md text-on-surface font-medium">Ubaid Rehman • <span class="text-on-surface-variant font-normal">+92 300 1234567</span></p>
+</div>
+<div class="flex items-start gap-space-sm pt-1">
+<span class="material-symbols-outlined text-secondary text-[18px] shrink-0 mt-0.5">sms</span>
+<div class="flex-1 min-w-0">
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+            Pickup Contact: Notification will be sent via SMS when packed
+          </p>
+<p class="font-caption text-caption text-secondary font-medium mt-0.5 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+            SMS order PIN code will be required at counter
+          </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Bill Details Card -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md mb-space-md shadow-sm">
+<div class="flex items-center gap-space-xs mb-space-md">
+<div class="w-7 h-7 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+</div>
+<h2 class="font-label-lg text-label-lg text-on-surface">Bill Breakdown</h2>
+</div>
+<div class="space-y-2 pb-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Items Total</span>
+<span class="font-body-sm text-body-sm text-on-surface font-semibold">Rs. <span id="bill-items-total">560</span></span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
+          Marketplace Service Fee
+          <span class="material-symbols-outlined text-[14px] text-outline" title="Supports platform logistics &amp; direct farmer payout systems">info</span>
+</span>
+<span class="font-body-sm text-body-sm text-on-surface font-semibold">Rs. 20</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Farmer Packaging (Bio-Crates)</span>
+<span class="font-label-sm text-label-sm text-secondary font-bold uppercase tracking-wider bg-secondary-container/40 px-2 py-0.5 rounded-full">FREE</span>
+</div>
+</div>
+<!-- Subtotal Divider Shift -->
+<div class="bg-surface-container-low p-space-sm rounded-lg flex items-center justify-between mt-space-xs">
+<div>
+<span class="font-label-lg text-label-lg text-on-surface font-bold block">Total Payable at Pickup</span>
+<span class="font-caption text-caption text-on-surface-variant">Inclusive of all local hub surcharges</span>
+</div>
+<div class="text-right">
+<span class="font-headline-lg text-headline-md text-primary font-bold">Rs. <span id="bill-grand-total">580</span></span>
+</div>
+</div>
+</div>
+<!-- Notice Callout -->
+<div class="bg-secondary-container/25 rounded-xl p-space-md mb-space-lg flex items-start gap-space-sm">
+<div class="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">payments</span>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="font-label-md text-label-md text-on-surface font-bold flex items-center gap-1">
+        Pay on Pickup Guaranteed
+      </h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-snug">
+        No advance online payment required. Pay farmer directly via Cash or QR upon collecting fresh produce.
+      </p>
+</div>
+</div>
+<!-- Empty State (Hidden by default, triggered if all items removed) -->
+<div class="hidden flex-col items-center justify-center py-space-xl text-center" id="cart-empty-state">
+<div class="w-20 h-20 rounded-full bg-surface-container-high flex items-center justify-center mb-space-md text-primary">
+<span class="material-symbols-outlined text-[40px]">shopping_basket</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface font-bold">Your basket feels light</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-xs mt-1 mb-space-md">
+      Support local grower fields today with crisp morning greens and heirloom produce.
+    </p>
+<button class="bg-primary text-on-primary font-label-lg text-label-lg px-space-lg py-3 rounded-xl shadow-md active:scale-95 transition-all" onclick="location.reload()">
+      Explore Karachi Harvests
+    </button>
+</div>
+<!-- Sticky Bottom Checkout Bar -->
+<div class="sticky bottom-0 left-0 right-0 pt-space-xs pb-safe bg-surface/90 backdrop-blur-xl">
+<button class="w-full bg-primary hover:bg-secondary text-on-primary font-label-lg text-label-lg h-12 rounded-xl shadow-md flex items-center justify-between px-space-md active:scale-98 transition-all" id="confirm-order-btn" onclick="handleOrderSubmit()">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+<span>Confirm Pickup Order</span>
+</div>
+<span class="font-headline-md text-label-lg font-bold" id="btn-total-display">• Rs. 580</span>
+</button>
+</div>
+</div>
+<script>
+  // Simple reactive state for delight micro-interactions
+  const state = {
+    'item-1': { qty: 1, unitPrice: 280 },
+    'item-2': { qty: 2, unitPrice: 140 },
+    fee: 20
+  };
+
+  function updateQty(id, delta, unitPrice) {
+    if (!state[id]) return;
+    const newQty = state[id].qty + delta;
+    if (newQty < 1) {
+      // Prompt removal visual feedback
+      return;
+    }
+    state[id].qty = newQty;
+    document.getElementById(id + '-qty').innerText = newQty;
+    const itemTotal = newQty * unitPrice;
+    document.getElementById(id + '-price').innerText = itemTotal;
+    recalculateTotals();
+  }
+
+  function removeItem(elementId, amount) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    
+    // Playful fade scale out
+    el.style.transform = 'scale(0.95)';
+    el.style.opacity = '0';
+    setTimeout(() => {
+      el.remove();
+      if (elementId === 'cart-item-1') delete state['item-1'];
+      if (elementId === 'cart-item-2') delete state['item-2'];
+      
+      const count = Object.keys(state).filter(k => k.startsWith('item-')).length;
+      const countLabel = document.getElementById('cart-item-count');
+      if (countLabel) countLabel.innerText = count + ' local item' + (count === 1 ? '' : 's');
+
+      if (count === 0) {
+        document.getElementById('cart-empty-state').classList.remove('hidden');
+        document.getElementById('cart-empty-state').classList.add('flex');
+        document.getElementById('confirm-order-btn').disabled = true;
+        document.getElementById('confirm-order-btn').classList.add('opacity-50', 'pointer-events-none');
+      }
+      recalculateTotals();
+    }, 250);
+  }
+
+  function recalculateTotals() {
+    let itemsTotal = 0;
+    if (state['item-1']) itemsTotal += state['item-1'].qty * state['item-1'].unitPrice;
+    if (state['item-2']) itemsTotal += state['item-2'].qty * state['item-2'].unitPrice;
+
+    const grandTotal = itemsTotal > 0 ? itemsTotal + state.fee : 0;
+    
+    const itemsTotalEl = document.getElementById('bill-items-total');
+    const grandTotalEl = document.getElementById('bill-grand-total');
+    const btnDisplay = document.getElementById('btn-total-display');
+
+    if (itemsTotalEl) itemsTotalEl.innerText = itemsTotal;
+    if (grandTotalEl) grandTotalEl.innerText = grandTotal;
+    if (btnDisplay) btnDisplay.innerText = grandTotal > 0 ? '• Rs. ' + grandTotal : '• Empty';
+  }
+
+  function handleOrderSubmit() {
+    const btn = document.getElementById('confirm-order-btn');
+    btn.innerHTML = `
+      <span class="flex items-center justify-center gap-2 w-full">
+        <span class="w-4 h-4 rounded-full border-2 border-on-primary border-t-transparent animate-spin"></span>
+        Locking Farm Slot...
+      </span>
+    `;
+    setTimeout(() => {
+      btn.classList.remove('bg-primary');
+      btn.classList.add('bg-secondary');
+      btn.innerHTML = `
+        <span class="flex items-center justify-center gap-2 w-full">
+          <span class="material-symbols-outlined text-[20px]">task_alt</span>
+          Order Confirmed! SMS Sent
+        </span>
+      `;
+    }, 800);
+  }
+</script></main></body></html>

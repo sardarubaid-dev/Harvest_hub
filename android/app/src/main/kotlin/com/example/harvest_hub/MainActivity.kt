@@ -1,0 +1,5 @@
+package com.example.harvest_hub
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity : FlutterActivity()

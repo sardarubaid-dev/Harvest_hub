@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;min-height:100vh;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-secondary-fixed": "#002105", "on-primary-container": "#cbffc2", "tertiary-fixed-dim": "#bdcabe", "inverse-primary": "#88d982", "tertiary-container": "#657167", "outline-variant": "#bfcaba", "on-surface-variant": "#40493d", "on-error-container": "#93000a", "on-primary": "#ffffff", "secondary-fixed-dim": "#83da85", "inverse-surface": "#2d312d", "on-secondary": "#ffffff", "on-tertiary": "#ffffff", "outline": "#707a6c", "on-primary-fixed-variant": "#005312", "surface-container-high": "#e6e9e2", "on-tertiary-fixed-variant": "#3e4a41", "background": "#f7faf3", "error-container": "#ffdad6", "on-tertiary-container": "#e8f5e9", "primary": "#0d631b", "surface-container": "#ecefe8", "secondary-container": "#9cf49c", "primary-fixed": "#a3f69c", "surface-variant": "#e0e3dd", "primary-container": "#2e7d32", "surface": "#f7faf3", "on-secondary-fixed-variant": "#005318", "secondary": "#126d27", "inverse-on-surface": "#eff2eb", "surface-tint": "#1b6d24", "tertiary": "#4d5950", "error": "#ba1a1a", "on-primary-fixed": "#002204", "surface-bright": "#f7faf3", "on-error": "#ffffff", "surface-dim": "#d8dbd4", "primary-fixed-dim": "#88d982", "surface-container-low": "#f2f5ee", "surface-container-lowest": "#ffffff", "on-tertiary-fixed": "#131e17", "surface-container-highest": "#e0e3dd", "on-surface": "#191d19", "secondary-fixed": "#9ff79f", "tertiary-fixed": "#d9e6da", "on-secondary-container": "#19722b", "on-background": "#191d19" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-xl": "2rem", "space-xs": "0.25rem", "margin": "2rem", "gutter": "1.5rem", "space-lg": "1.5rem", "space-sm": "0.5rem", "gutter-mobile": "1rem", "margin-mobile": "1rem", "space-md": "1rem" }, "fontFamily": { "headline-xl-mobile": ["Inter"], "headline-md": ["Inter"], "body-sm": ["Inter"], "label-lg": ["Inter"], "display-lg": ["Inter"], "body-md": ["Inter"], "display-lg-mobile": ["Inter"], "label-sm": ["Inter"], "body-lg": ["Inter"], "label-md": ["Inter"], "headline-xl": ["Inter"], "caption": ["Inter"], "headline-lg": ["Inter"] }, "fontSize": { "headline-xl-mobile": ["26px", { "lineHeight": "34px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }], "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "display-lg-mobile": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.015em", "fontWeight": "700" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.03em", "fontWeight": "600" }], "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "caption": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter-mobile flex items-center justify-between"><div class="flex items-center gap-space-xs"><button aria-label="Go back" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface hover:text-primary transition-colors" onclick="history.back()"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><img alt="HarvestHub official logo with deep green icon badge featuring clean geometric dual leaf sprout and refined modern typography wordmark" class="h-7 w-auto object-contain hidden sm:block" src="https://lh3.googleusercontent.com/aida/AEtjO1WcikHZagj-KoRhjVBDm6at2NOHcXjYnCWepE3lxRCEWD4ObszqsN-UdexcTA_zfxU7522Au2GTuBUkZyv3NGl50YqrmtHvC1xIC_40970fm1M4odMHTlLj3w_QfVaB1Une6uOWCVG8piIUGlG0gn57L6xi5--HTziIL0Eq6bFl3QFTMXSMnbQvNbND9cnByI-HPtqCIlFvCL5jpxLPaqR5dPwilfrk5YbvEFzqsZ6gGZ4Rk6s9UbRUMeM"/><h1 class="font-headline-md text-headline-md text-on-surface truncate max-w-[200px]">Farmer Chat</h1></div><div class="flex items-center gap-space-xs"><button aria-label="Share" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined text-[22px]">share</span></button><button aria-label="Basket" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:text-primary transition-colors relative"><span class="material-symbols-outlined text-[22px]">shopping_basket</span><span class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-primary"></span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-space-xs"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-safe bg-surface min-h-screen"><div class="flex flex-col w-full relative">
+<!-- Interactive Confetti / Sprout Canvas container for micro-delights -->
+<div class="pointer-events-none fixed inset-0 z-0 overflow-hidden" id="ambient-particles"></div>
+<!-- Hero Header Greeting & Status -->
+<div class="px-gutter-mobile pt-space-sm pb-space-md flex flex-col gap-space-xs relative z-10">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">eco</span>
+          Agri-Intelligence 3.2
+        </span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+          Live Farm Feeds Active
+        </span>
+</div>
+<button aria-label="Clear chat history" class="w-8 h-8 rounded-full bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-on-surface-variant transition-colors" id="reset-history">
+<span class="material-symbols-outlined text-[18px]">history</span>
+</button>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Harvest Assistant</h2>
+<span class="material-symbols-outlined text-primary text-[22px] animate-bounce" style="font-variation-settings: 'FILL' 1;">arrow_back_ios_new</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+        Your local agricultural guide for seasonal freshness, nutrition &amp; storage.
+      </p>
+</div>
+</div>
+<!-- Prompt Carousel with Playful Micro-Pills -->
+<div class="relative z-10 w-full mb-space-sm">
+<div class="flex items-center justify-between px-gutter-mobile mb-1.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">lightbulb</span>
+        Suggested Inquiries
+      </span>
+<span class="font-caption text-caption text-on-surface-variant">Tap to ask</span>
+</div>
+<div class="flex overflow-x-auto no-scrollbar gap-2 px-gutter-mobile pb-1 snap-x scroll-smooth" id="suggested-chips">
+<button class="snap-start shrink-0 flex items-center gap-1.5 bg-surface-container-lowest hover:bg-surface-container-high text-on-surface py-2 px-3 rounded-full shadow-sm text-label-md font-label-md transition-all active:scale-95" onclick="handleChipClick(this)">
+<span>🍅</span>
+<span>How should I store tomatoes?</span>
+</button>
+<button class="snap-start shrink-0 flex items-center gap-1.5 bg-surface-container-lowest hover:bg-surface-container-high text-on-surface py-2 px-3 rounded-full shadow-sm text-label-md font-label-md transition-all active:scale-95" onclick="handleChipClick(this)">
+<span>🥬</span>
+<span>What are the benefits of spinach?</span>
+</button>
+<button class="snap-start shrink-0 flex items-center gap-1.5 bg-surface-container-lowest hover:bg-surface-container-high text-on-surface py-2 px-3 rounded-full shadow-sm text-label-md font-label-md transition-all active:scale-95" onclick="handleChipClick(this)">
+<span>📅</span>
+<span>Vegetables in season in Sindh?</span>
+</button>
+<button class="snap-start shrink-0 flex items-center gap-1.5 bg-surface-container-lowest hover:bg-surface-container-high text-on-surface py-2 px-3 rounded-full shadow-sm text-label-md font-label-md transition-all active:scale-95" onclick="handleChipClick(this)">
+<span>🥛</span>
+<span>Raw vs pasteurized farm milk?</span>
+</button>
+<button class="snap-start shrink-0 flex items-center gap-1.5 bg-surface-container-lowest hover:bg-surface-container-high text-on-surface py-2 px-3 rounded-full shadow-sm text-label-md font-label-md transition-all active:scale-95" onclick="handleChipClick(this)">
+<span>🔍</span>
+<span>Diagnose leaf curl fungus</span>
+</button>
+</div>
+</div>
+<!-- Chat History Stream -->
+<div class="px-gutter-mobile flex flex-col gap-space-md pb-28 relative z-10" id="chat-stream">
+<!-- Timestamp divider -->
+<div class="flex items-center justify-center my-0.5">
+<span class="px-3 py-1 bg-surface-container text-on-surface-variant rounded-full font-label-sm text-label-sm">
+        Today • Morning Harvest Batch
+      </span>
+</div>
+<!-- Message 1: User Message Bubble -->
+<div class="flex flex-col items-end w-full group">
+<div class="flex items-end gap-1.5 max-w-[85%]">
+<div class="bg-primary text-on-primary rounded-2xl rounded-tr-none px-4 py-3 shadow-md flex flex-col gap-1">
+<p class="font-body-md text-body-md leading-relaxed">
+            What's the best way to store fresh farm tomatoes so they don't lose flavor?
+          </p>
+<span class="text-right text-[10px] text-on-primary-container font-caption">10:14 AM</span>
+</div>
+</div>
+</div>
+<!-- Message 2: Assistant Message Bubble with Product Card -->
+<div class="flex flex-col items-start w-full">
+<div class="flex items-start gap-2 max-w-[96%]">
+<!-- Assistant Avatar -->
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">psychiatry</span>
+</div>
+<!-- Assistant Bubble Body -->
+<div class="bg-surface-container-lowest text-on-surface rounded-2xl rounded-tl-none p-4 shadow-sm flex flex-col gap-3">
+<div class="flex items-center justify-between pb-1">
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+              Harvest Produce Specialist
+            </span>
+<span class="text-[10px] text-on-surface-variant font-caption">10:14 AM</span>
+</div>
+<p class="font-body-md text-body-md leading-relaxed">
+            Great question, Ubaid! Fresh local tomatoes should <strong class="font-label-lg text-primary">NEVER be refrigerated</strong> if they are still ripening. Chilling under 12°C permanently shuts down enzymatic volatile production, which destroys their sweet fragrance!
+          </p>
+<div class="bg-surface-container-low rounded-xl p-3 flex flex-col gap-2">
+<span class="font-label-md text-label-md text-on-surface flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-primary">tips_and_updates</span>
+              Optimal Storage Ritual:
+            </span>
+<ul class="flex flex-col gap-2 font-body-sm text-body-sm text-on-surface-variant">
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary shrink-0 mt-0.5">check_circle</span>
+<span><strong>Stem-side down</strong> at room temperature (20–22°C) away from direct sun to lock moisture around the stem scar.</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary shrink-0 mt-0.5">check_circle</span>
+<span>Only refrigerate if fully softened ripe and you won’t consume them within <strong>2 days</strong>.</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary shrink-0 mt-0.5">check_circle</span>
+<span><strong>Flavor restoration tip:</strong> Let cold tomatoes rest on the kitchen counter for 30 minutes before slicing to revive natural sugars.</span>
+</li>
+</ul>
+</div>
+<!-- Contextual Marketplace Widget -->
+<div class="mt-1 bg-surface-container rounded-xl p-3 flex flex-col gap-2.5">
+<div class="flex items-center justify-between">
+<span class="px-2 py-0.5 bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm rounded-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">agriculture</span>
+                Picked 4 Hours Ago
+              </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Stall 14B • 6 km away</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 relative bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="Close up high-angle natural light shot of plump organic crimson heirloom tomatoes freshly picked with green vine calyxes in a rustic bamboo harvest basket with subtle dew drops, agricultural clean depth of field" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhXZJy0br0bnrdbFX49JnMef5OC_1i3-G8fCkYv1pzgyzZN5evLpYxMyTsDRHSMeRs7AL2l4YPXEbPhUECs-XBLQU1y-MdnkElDvIUTLnoSyZuJAMcCMBGR85TDX-BOGD6mvJhzqWGLNY4Kjz_9jM92gy9G7l-3EL0JHfElU1yK7XhlKrJZmkSYpmd3GV0cHiS-9w36e6UbHSBDl65ExDto3SI7J4YnwU0S6ldMMmcQtvxKYsj-g4d"/>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<h4 class="font-headline-md text-headline-md text-on-surface text-[15px] truncate">Indus Vine Heirloom Tomatoes</h4>
+<p class="font-caption text-caption text-on-surface-variant truncate">Green Valley Farm • Organic Verified</p>
+<div class="flex items-baseline gap-1 mt-0.5">
+<span class="font-label-lg text-label-lg text-primary">Rs. 280</span>
+<span class="font-caption text-caption text-on-surface-variant">/ kg</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 pt-1">
+<button class="flex-1 bg-primary hover:bg-secondary text-on-primary py-2 px-3 rounded-lg font-label-md text-label-md flex items-center justify-center gap-1.5 transition-transform active:scale-98 shadow-sm">
+<span class="material-symbols-outlined text-[16px]">shopping_basket</span>
+<span>Add 1 kg to Basket</span>
+</button>
+<button class="bg-surface-container-highest hover:bg-surface-variant text-on-surface py-2 px-3 rounded-lg font-label-md text-label-md transition-colors flex items-center justify-center">
+<span>View Stall</span>
+</button>
+</div>
+</div>
+<!-- Micro-feedback -->
+<div class="flex items-center justify-between pt-1 text-on-surface-variant font-caption text-caption">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">format_image_left</span> Verified by Karachi Agri Council
+            </span>
+<div class="flex items-center gap-2">
+<button aria-label="Helpful response" class="hover:text-primary transition-colors flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[15px]">thumb_up</span>
+</button>
+<button aria-label="Not helpful response" class="hover:text-primary transition-colors flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[15px]">thumb_down</span>
+</button>
+<button aria-label="Copy tip" class="hover:text-primary transition-colors flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[15px]">content_copy</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Message 3: Second User Message Bubble -->
+<div class="flex flex-col items-end w-full group">
+<div class="flex items-end gap-1.5 max-w-[85%]">
+<div class="bg-primary text-on-primary rounded-2xl rounded-tr-none px-4 py-3 shadow-md flex flex-col gap-1">
+<p class="font-body-md text-body-md leading-relaxed">
+            Which local greens have the highest iron content right now?
+          </p>
+<span class="text-right text-[10px] text-on-primary-container font-caption">10:16 AM</span>
+</div>
+</div>
+</div>
+<!-- Message 4: Assistant Streaming / Active Typing Card -->
+<div class="flex flex-col items-start w-full">
+<div class="flex items-start gap-2 max-w-[96%]">
+<!-- Assistant Avatar with pulsating badge -->
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0 shadow-sm relative">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">psychiatry</span>
+<span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-primary rounded-full ring-2 ring-surface"></span>
+</div>
+<!-- Assistant Live Card -->
+<div class="bg-surface-container-lowest text-on-surface rounded-2xl rounded-tl-none p-4 shadow-sm flex flex-col gap-3 w-full">
+<div class="flex items-center justify-between pb-1">
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+              Generating Agri-Nutrient Profile...
+            </span>
+<span class="text-[10px] text-on-surface-variant font-caption">Just now</span>
+</div>
+<div class="flex flex-col gap-2">
+<p class="font-body-md text-body-md leading-relaxed">
+              Currently in peak season: <strong class="font-label-lg text-primary">Indigenous Spinach (Palak)</strong> and <strong class="font-label-lg text-primary">Methi (Fenugreek leaves)</strong> from Indus Organic Fields lead the charts:
+            </p>
+<!-- Nutritional Comparison Pill Strip -->
+<div class="grid grid-cols-2 gap-2 mt-1">
+<div class="bg-surface-container-low p-2.5 rounded-xl flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-bold">Sindh Methi</span>
+<span class="text-[10px] font-label-sm px-1.5 py-0.2 bg-secondary-container text-on-secondary-container rounded">#1 Iron</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="font-headline-md text-headline-md text-primary text-[18px]">4.1 mg</span>
+<span class="font-caption text-caption text-on-surface-variant">/ 100g</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 mt-0.5 overflow-hidden">
+<div class="bg-primary h-full rounded-full w-[88%]"></div>
+</div>
+<span class="font-caption text-caption text-on-surface-variant text-[11px] mt-0.5">High folate &amp; calcium retention</span>
+</div>
+<div class="bg-surface-container-low p-2.5 rounded-xl flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-bold">Desi Palak</span>
+<span class="text-[10px] font-label-sm px-1.5 py-0.2 bg-surface-container-high text-on-surface-variant rounded">Peak Crisp</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="font-headline-md text-headline-md text-primary text-[18px]">3.6 mg</span>
+<span class="font-caption text-caption text-on-surface-variant">/ 100g</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 mt-0.5 overflow-hidden">
+<div class="bg-secondary-container h-full rounded-full w-[74%]"></div>
+</div>
+<span class="font-caption text-caption text-on-surface-variant text-[11px] mt-0.5">Rich Vitamin C aids absorption</span>
+</div>
+</div>
+<!-- Pro-Tip Box -->
+<div class="flex items-start gap-2 bg-on-tertiary-container/30 p-2.5 rounded-lg mt-1">
+<span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">wb_sunny</span>
+<p class="font-caption text-caption text-on-surface leading-tight">
+<strong>Bio-availability Tip:</strong> Squeeze fresh lime juice (Vitamin C) over raw Methi salad to triple your dietary iron uptake efficiency!
+              </p>
+</div>
+</div>
+<!-- Typing Bouncing Dots indicator -->
+<div class="flex items-center gap-1.5 pt-1 text-on-surface-variant">
+<span class="w-2 h-2 rounded-full bg-primary/70 animate-bounce" style="animation-delay: 0ms;"></span>
+<span class="w-2 h-2 rounded-full bg-primary/70 animate-bounce" style="animation-delay: 150ms;"></span>
+<span class="w-2 h-2 rounded-full bg-primary/70 animate-bounce" style="animation-delay: 300ms;"></span>
+<span class="font-caption text-caption text-on-surface-variant ml-1">Analyzing soil test reports from Malir basin...</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Floating Input Bar Dock -->
+<div class="fixed bottom-0 left-0 right-0 z-40 bg-surface/95 backdrop-blur-lg pb-safe">
+<!-- Quick Attachment Tray (Collapsible/Interactive Demo) -->
+<div class="hidden px-gutter-mobile py-2 bg-surface-container-low flex items-center gap-2 overflow-x-auto no-scrollbar" id="quick-action-tray">
+<button class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-highest text-on-surface text-label-sm font-label-sm hover:bg-surface-variant transition-colors" onclick="simulatePhotoScan()">
+<span class="material-symbols-outlined text-[16px] text-primary">macro_auto</span>
+        Diagnose Leaf Disease
+      </button>
+<button class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-highest text-on-surface text-label-sm font-label-sm hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[16px] text-primary">local_shipping</span>
+        Check Malir Market Arrivals
+      </button>
+<button class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-highest text-on-surface text-label-sm font-label-sm hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[16px] text-primary">skillet</span>
+        Farm-to-Table Recipe
+      </button>
+</div>
+<!-- Main Message Input Row -->
+<div class="px-gutter-mobile py-2.5 flex items-center gap-2">
+<!-- Camera/Visual Inspection Trigger -->
+<button aria-label="Attach produce photo for visual leaf and disease inspection" class="w-11 h-11 shrink-0 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant flex items-center justify-center transition-all active:scale-95 relative" id="photo-trigger-btn" onclick="toggleActionTray()">
+<span class="material-symbols-outlined text-[22px]">photo_camera</span>
+<span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary"></span>
+</button>
+<!-- Text Input Pill -->
+<div class="flex-1 bg-surface-container-lowest rounded-full px-3.5 py-1.5 shadow-sm flex items-center gap-2 focus-within:shadow-md transition-shadow">
+<input aria-label="Ask Harvest Assistant question" class="flex-1 bg-transparent text-on-surface placeholder:text-on-surface-variant font-body-sm text-body-sm outline-none py-1" id="assistant-user-input" placeholder="Ask about fresh produce, recipes, storage..." type="text"/>
+<!-- Voice Input Button -->
+<button aria-label="Speak query" class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" id="voice-input-btn" onclick="triggerVoicePulse()">
+<span class="material-symbols-outlined text-[20px]" id="mic-icon">mic</span>
+</button>
+</div>
+<!-- Send Action Button -->
+<button aria-label="Send query" class="w-11 h-11 shrink-0 rounded-full bg-primary hover:bg-primary-container text-on-primary flex items-center justify-center transition-transform active:scale-90 shadow-md" id="send-msg-btn" onclick="sendHarvestMessage()">
+<span class="material-symbols-outlined text-[20px]">send</span>
+</button>
+</div>
+</div>
+<!-- Interactive Voice Modal / Feedback Overlay (Hidden by default) -->
+<div class="hidden fixed inset-0 z-50 bg-inverse-surface/60 backdrop-blur-sm flex flex-col items-center justify-end pb-24 px-gutter-mobile" id="voice-feedback-overlay">
+<div class="bg-surface-container-lowest rounded-3xl p-6 w-full max-w-sm flex flex-col items-center text-center gap-4 shadow-xl">
+<div class="w-16 h-16 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center animate-pulse">
+<span class="material-symbols-outlined text-[32px]">mic</span>
+</div>
+<div class="flex flex-col gap-1">
+<h3 class="font-headline-md text-headline-md text-on-surface">Listening to your question...</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Try saying: "How do I keep fresh coriander crisp for two weeks?"</p>
+</div>
+<!-- Waveform Simulation -->
+<div class="flex items-center gap-1.5 h-8">
+<span class="w-1 bg-primary rounded-full animate-bounce h-4"></span>
+<span class="w-1 bg-primary rounded-full animate-bounce h-7" style="animation-delay: 100ms;"></span>
+<span class="w-1 bg-primary rounded-full animate-bounce h-5" style="animation-delay: 200ms;"></span>
+<span class="w-1 bg-primary rounded-full animate-bounce h-8" style="animation-delay: 300ms;"></span>
+<span class="w-1 bg-primary rounded-full animate-bounce h-3" style="animation-delay: 400ms;"></span>
+</div>
+<button class="w-full bg-surface-container-high text-on-surface py-2.5 rounded-full font-label-md text-label-md mt-2" onclick="closeVoiceModal()">
+        Done Speaking
+      </button>
+</div>
+</div>
+<script>
+    // Visual Micro-Interactions for Delight
+    function handleChipClick(element) {
+      const text = element.innerText.replace(/^[^\w\s]+/, '').trim();
+      const input = document.getElementById('assistant-user-input');
+      input.value = text;
+      input.focus();
+      triggerSproutBurst(element);
+    }
+
+    function toggleActionTray() {
+      const tray = document.getElementById('quick-action-tray');
+      tray.classList.toggle('hidden');
+    }
+
+    function triggerVoicePulse() {
+      const modal = document.getElementById('voice-feedback-overlay');
+      modal.classList.remove('hidden');
+    }
+
+    function closeVoiceModal() {
+      const modal = document.getElementById('voice-feedback-overlay');
+      modal.classList.add('hidden');
+      const input = document.getElementById('assistant-user-input');
+      input.value = "How to preserve fresh mint and coriander?";
+      sendHarvestMessage();
+    }
+
+    function sendHarvestMessage() {
+      const input = document.getElementById('assistant-user-input');
+      const val = input.value.trim();
+      if (!val) return;
+
+      const stream = document.getElementById('chat-stream');
+
+      // Append user bubble
+      const userBubble = document.createElement('div');
+      userBubble.className = "flex flex-col items-end w-full";
+      userBubble.innerHTML = `
+        <div class="flex items-end gap-1.5 max-w-[85%]">
+          <div class="bg-primary text-on-primary rounded-2xl rounded-tr-none px-4 py-3 shadow-md flex flex-col gap-1">
+            <p class="font-body-md text-body-md leading-relaxed">${escapeHtml(val)}</p>
+            <span class="text-right text-[10px] text-on-primary-container font-caption">Just now</span>
+          </div>
+        </div>
+      `;
+      stream.appendChild(userBubble);
+      input.value = '';
+
+      // Smooth scroll bottom
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+
+      // Simulate quick playful response
+      setTimeout(() => {
+        const replyBubble = document.createElement('div');
+        replyBubble.className = "flex flex-col items-start w-full animate-fade-in";
+        replyBubble.innerHTML = `
+          <div class="flex items-start gap-2 max-w-[96%]">
+            <div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+              <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">psychiatry</span>
+            </div>
+            <div class="bg-surface-container-lowest text-on-surface rounded-2xl rounded-tl-none p-4 shadow-sm flex flex-col gap-2">
+              <div class="flex items-center justify-between pb-1">
+                <span class="font-label-sm text-label-sm text-primary flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                  Harvest Assistant
+                </span>
+                <span class="text-[10px] text-on-surface-variant font-caption">Just now</span>
+              </div>
+              <p class="font-body-md text-body-md leading-relaxed">
+                Consulting fresh crop yield tables for <strong>"${escapeHtml(val)}"</strong>. Stand by as we fetch real-time guidance from local growers!
+              </p>
+            </div>
+          </div>
+        `;
+        stream.appendChild(replyBubble);
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      }, 700);
+    }
+
+    function simulatePhotoScan() {
+      toggleActionTray();
+      const input = document.getElementById('assistant-user-input');
+      input.value = "📸 [Produce Leaf Scan] Attached tomato leaf photo: check yellow spots";
+      sendHarvestMessage();
+    }
+
+    function triggerSproutBurst(btn) {
+      const rect = btn.getBoundingClientRect();
+      const container = document.getElementById('ambient-particles');
+      for (let i = 0; i < 6; i++) {
+        const particle = document.createElement('span');
+        particle.textContent = ['🌱', '🌿', '✨'][Math.floor(Math.random() * 3)];
+        particle.className = 'fixed text-xs select-none pointer-events-none transition-all duration-700 ease-out z-50';
+        particle.style.left = `${rect.left + rect.width / 2}px`;
+        particle.style.top = `${rect.top}px`;
+        container.appendChild(particle);
+
+        const angle = (Math.PI * 2 * i) / 6;
+        const dist = 30 + Math.random() * 20;
+        requestAnimationFrame(() => {
+          particle.style.transform = `translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist - 20}px) scale(0)`;
+          particle.style.opacity = '0';
+        });
+
+        setTimeout(() => particle.remove(), 750);
+      }
+    }
+
+    function escapeHtml(string) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return string.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // Enter key triggers sending
+    document.getElementById('assistant-user-input')?.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        sendHarvestMessage();
+      }
+    });
+  </script>
+</div></main></body></html>
