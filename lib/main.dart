@@ -9,6 +9,7 @@ import 'providers/auth_provider.dart';
 import 'providers/cart_provider.dart';
 import 'services/database_service.dart';
 import 'router/app_router.dart';
+
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:go_router/go_router.dart';
 
@@ -16,9 +17,7 @@ void main() async {
   await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   try {
     final dbService = DatabaseService();
@@ -63,40 +62,38 @@ class _HarvestHubAppRouterState extends State<HarvestHubAppRouter> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-            title: 'HarvestHub',
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            routerConfig: router,
-            builder: (context, child) => ResponsiveBreakpoints.builder(
-              child: Builder(
-                builder: (context) {
-                  return MaxWidthBox(
-                    maxWidth: 1200,
-                    backgroundColor: const Color(0xFFF7FAF3),
-                    child: ResponsiveScaledBox(
-                      width: ResponsiveValue<double>(context, defaultValue: 390, conditionalValues: [
-                        Condition.equals(name: MOBILE, value: 390),
-                        Condition.between(start: 451, end: 800, value: 600),
-                        Condition.between(start: 801, end: 1920, value: 800),
-                      ]).value,
-                      child: child!,
-                    ),
-                  );
-                },
+      title: 'HarvestHub',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.lightTheme,
+      routerConfig: router,
+      builder: (context, child) => ResponsiveBreakpoints.builder(
+        child: Builder(
+          builder: (context) {
+            return MaxWidthBox(
+              maxWidth: 1200,
+              backgroundColor: const Color(0xFFF7FAF3),
+              child: ResponsiveScaledBox(
+                width: ResponsiveValue<double>(
+                  context,
+                  defaultValue: 390,
+                  conditionalValues: [
+                    Condition.equals(name: MOBILE, value: 390),
+                    Condition.between(start: 451, end: 800, value: 600),
+                    Condition.between(start: 801, end: 1920, value: 800),
+                  ],
+                ).value,
+                child: child!,
               ),
-              breakpoints: [
-                const Breakpoint(start: 0, end: 450, name: MOBILE),
-                const Breakpoint(start: 451, end: 800, name: TABLET),
-                const Breakpoint(start: 801, end: 1920, name: DESKTOP),
-                const Breakpoint(start: 1921, end: double.infinity, name: '4K'),
-              ],
-            ),
-          );
+            );
+          },
+        ),
+        breakpoints: [
+          const Breakpoint(start: 0, end: 450, name: MOBILE),
+          const Breakpoint(start: 451, end: 800, name: TABLET),
+          const Breakpoint(start: 801, end: 1920, name: DESKTOP),
+          const Breakpoint(start: 1921, end: double.infinity, name: '4K'),
+        ],
+      ),
+    );
   }
 }
-
-
-
-
-
-

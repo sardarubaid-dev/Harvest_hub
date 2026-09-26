@@ -33,15 +33,24 @@ class ProductModel {
     return ProductModel(
       id: id,
       farmerId: map['farmerId'] ?? map['Farmer_Id'] ?? '',
-      categoryId: map['categoryId'] ?? map['Category_Id'] ?? map['category'] ?? map['Category'] ?? '',
+      categoryId:
+          map['categoryId'] ??
+          map['Category_Id'] ??
+          map['category'] ??
+          map['Category'] ??
+          '',
       categoryName: map['categoryName'] ?? map['Category'] ?? '',
       name: map['name'] ?? map['Item_Name'] ?? map['itemName'] ?? '',
       description: map['description'] ?? map['Description'] ?? '',
-      price: (map['price'] ?? map['Price_Per_Unit'] ?? map['pricePerUnit'] ?? 0).toDouble(),
+      price: (map['price'] ?? map['Price_Per_Unit'] ?? map['pricePerUnit'] ?? 0)
+          .toDouble(),
       unit: map['unit'] ?? map['Unit'] ?? 'kg',
-      quantity: (map['quantity'] ?? map['Stock_Qty'] ?? map['stockQty'] ?? 0).toDouble(),
+      quantity: (map['quantity'] ?? map['Stock_Qty'] ?? map['stockQty'] ?? 0)
+          .toDouble(),
       imageUrl: map['imageUrl'] ?? map['Image_Url'],
-      isAvailable: map['isAvailable'] ?? ((map['quantity'] ?? map['Stock_Qty'] ?? 0) > 0),
+      isAvailable:
+          map['isAvailable'] ??
+          ((map['quantity'] ?? map['Stock_Qty'] ?? 0) > 0),
       farmerName: map['farmerName'] ?? map['Farmer_Name'],
       createdAt: map['createdAt'] != null
           ? DateTime.tryParse(map['createdAt'].toString())
@@ -68,7 +77,8 @@ class ProductModel {
       'Image_Url': imageUrl,
       'isAvailable': isAvailable && quantity > 0,
       'farmerName': farmerName,
-      'createdAt': createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
+      'createdAt':
+          createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
     };
   }
 

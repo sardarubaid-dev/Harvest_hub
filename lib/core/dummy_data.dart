@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../models/user_model.dart';
 import '../models/farmer_model.dart';
 import '../models/product_model.dart';
@@ -31,7 +32,8 @@ class DummyData {
       'unit': '/ kg',
       'stockBadge': '12 kg available',
       'isFavorite': false,
-      'imageColor': Color(0xFFEF9A9A), 'imageUrl': 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=400&auto=format&fit=crop',
+      'imageColor': Color(0xFFEF9A9A),
+      'imageUrl': 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=400&auto=format&fit=crop',
     },
     {
       'id': 'p2',
@@ -42,7 +44,8 @@ class DummyData {
       'unit': '/ bunch',
       'stockBadge': '8 bunches left',
       'isFavorite': true,
-      'imageColor': Color(0xFFA5D6A7), 'imageUrl': 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?q=80&w=400&auto=format&fit=crop',
+      'imageColor': Color(0xFFA5D6A7),
+      'imageUrl': 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?q=80&w=400&auto=format&fit=crop',
     },
     {
       'id': 'p3',
@@ -53,7 +56,8 @@ class DummyData {
       'unit': '/ kg',
       'stockBadge': '20 kg available',
       'isFavorite': false,
-      'imageColor': Color(0xFFFFCC80), 'imageUrl': 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?q=80&w=400&auto=format&fit=crop',
+      'imageColor': Color(0xFFFFCC80),
+      'imageUrl': 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?q=80&w=400&auto=format&fit=crop',
     },
     {
       'id': 'p4',
@@ -64,7 +68,8 @@ class DummyData {
       'unit': '/ L',
       'stockBadge': '15 L available',
       'isFavorite': false,
-      'imageColor': Color(0xFFD7CCC8), 'imageUrl': 'https://images.unsplash.com/photo-1563636619-e9143da7973b?q=80&w=400&auto=format&fit=crop',
+      'imageColor': Color(0xFFD7CCC8),
+      'imageUrl': 'https://images.unsplash.com/photo-1563636619-e9143da7973b?q=80&w=400&auto=format&fit=crop',
     },
     {
       'id': 'p5',
@@ -75,7 +80,8 @@ class DummyData {
       'unit': '/ jar',
       'stockBadge': '5 jars left',
       'isFavorite': false,
-      'imageColor': Color(0xFFFFE082), 'imageUrl': 'https://images.unsplash.com/photo-1628151015968-3a4429e9ef04?q=80&w=400&auto=format&fit=crop',
+      'imageColor': Color(0xFFFFE082),
+      'imageUrl': 'https://images.unsplash.com/photo-1628151015968-3a4429e9ef04?q=80&w=400&auto=format&fit=crop',
     },
     {
       'id': 'p6',
@@ -86,7 +92,8 @@ class DummyData {
       'unit': '/ kg',
       'stockBadge': '30 kg available',
       'isFavorite': true,
-      'imageColor': Color(0xFFEF5350), 'imageUrl': 'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?q=80&w=400&auto=format&fit=crop',
+      'imageColor': Color(0xFFEF5350),
+      'imageUrl': 'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?q=80&w=400&auto=format&fit=crop',
     },
     {
       'id': 'p7',
@@ -370,12 +377,6 @@ class DummyData {
 
   // 10. Cart Items
   static List<CartItemModel> get seedCartItems => [
-        CartItemModel(
-          product: seedProducts[0],
-          quantity: 2,
-        ),
-      ];
+    CartItemModel(product: seedProducts[0], quantity: 2),
+  ];
 }
-
-
-

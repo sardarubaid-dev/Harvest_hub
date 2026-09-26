@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:harvest_hub/screens/customer/customer_home_screen.dart';
+
 import 'dart:async';
+
 import 'package:go_router/go_router.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -10,7 +12,8 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with TickerProviderStateMixin {
   late AnimationController _logoController;
   late Animation<double> _logoScaleAnimation;
   late Animation<double> _logoOpacityAnimation;
@@ -22,32 +25,37 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    
+
     _logoController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1400),
     );
-    
+
     _logoScaleAnimation = Tween<double>(begin: 0.3, end: 1.0).animate(
       CurvedAnimation(parent: _logoController, curve: Curves.elasticOut),
     );
-    
+
     _logoOpacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _logoController, curve: const Interval(0.0, 0.6, curve: Curves.easeIn)),
+      CurvedAnimation(
+        parent: _logoController,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeIn),
+      ),
     );
 
     _textController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    
-    _textSlideAnimation = Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(
-      CurvedAnimation(parent: _textController, curve: Curves.easeOutCubic),
-    );
-    
-    _textOpacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _textController, curve: Curves.easeIn),
-    );
+
+    _textSlideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(
+          CurvedAnimation(parent: _textController, curve: Curves.easeOutCubic),
+        );
+
+    _textOpacityAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _textController, curve: Curves.easeIn));
 
     _startAnimations();
   }
@@ -55,21 +63,13 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   void _startAnimations() async {
     await Future.delayed(const Duration(milliseconds: 300));
     _logoController.forward();
-    
+
     await Future.delayed(const Duration(milliseconds: 600));
     _textController.forward();
 
     Timer(const Duration(milliseconds: 3500), () {
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const CustomerHomeScreen(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-            transitionDuration: const Duration(milliseconds: 800),
-          ),
-        );
+        context.go('/customer');
       }
     });
   }
@@ -111,7 +111,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
               ),
             ),
           ),
-          
+
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -150,9 +150,9 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                     );
                   },
                 ),
-                
+
                 const SizedBox(height: 48),
-                
+
                 AnimatedBuilder(
                   animation: _textController,
                   builder: (context, child) {
@@ -173,11 +173,17 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                             ),
                             const SizedBox(height: 16),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 8,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.15),
                                 borderRadius: BorderRadius.circular(30),
-                                border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.3),
+                                  width: 1,
+                                ),
                               ),
                               child: const Text(
                                 'Cultivating Connections',
@@ -203,4 +209,3 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     );
   }
 }
-

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../providers/auth_provider.dart';
 
 class RegisterFarmerScreen extends StatefulWidget {
@@ -78,10 +79,7 @@ class _RegisterFarmerScreenState extends State<RegisterFarmerScreen> {
             children: [
               const Text(
                 "Register as a Farmer",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               const Text(
@@ -94,9 +92,12 @@ class _RegisterFarmerScreenState extends State<RegisterFarmerScreen> {
                 decoration: InputDecoration(
                   labelText: "Owner / Farmer Name",
                   prefixIcon: const Icon(Icons.person),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                validator: (val) => val == null || val.trim().isEmpty ? "Name required" : null,
+                validator: (val) =>
+                    val == null || val.trim().isEmpty ? "Name required" : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -104,9 +105,13 @@ class _RegisterFarmerScreenState extends State<RegisterFarmerScreen> {
                 decoration: InputDecoration(
                   labelText: "Farm / Business Name",
                   prefixIcon: const Icon(Icons.store),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                validator: (val) => val == null || val.trim().isEmpty ? "Farm name required" : null,
+                validator: (val) => val == null || val.trim().isEmpty
+                    ? "Farm name required"
+                    : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -115,9 +120,13 @@ class _RegisterFarmerScreenState extends State<RegisterFarmerScreen> {
                 decoration: InputDecoration(
                   labelText: "Email Address",
                   prefixIcon: const Icon(Icons.email),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                validator: (val) => val == null || !val.contains("@") ? "Valid email required" : null,
+                validator: (val) => val == null || !val.contains("@")
+                    ? "Valid email required"
+                    : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -126,9 +135,13 @@ class _RegisterFarmerScreenState extends State<RegisterFarmerScreen> {
                 decoration: InputDecoration(
                   labelText: "Contact Phone Number",
                   prefixIcon: const Icon(Icons.phone),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                validator: (val) => val == null || val.trim().isEmpty ? "Contact number required" : null,
+                validator: (val) => val == null || val.trim().isEmpty
+                    ? "Contact number required"
+                    : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -136,9 +149,13 @@ class _RegisterFarmerScreenState extends State<RegisterFarmerScreen> {
                 decoration: InputDecoration(
                   labelText: "Farm Location / Market Address",
                   prefixIcon: const Icon(Icons.location_on),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                validator: (val) => val == null || val.trim().isEmpty ? "Location required" : null,
+                validator: (val) => val == null || val.trim().isEmpty
+                    ? "Location required"
+                    : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -147,7 +164,9 @@ class _RegisterFarmerScreenState extends State<RegisterFarmerScreen> {
                 decoration: InputDecoration(
                   labelText: "Farm Description",
                   prefixIcon: const Icon(Icons.description),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -158,27 +177,43 @@ class _RegisterFarmerScreenState extends State<RegisterFarmerScreen> {
                   labelText: "Password",
                   prefixIcon: const Icon(Icons.lock),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                    ),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
                   ),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                validator: (val) => val == null || val.length < 6 ? "Minimum 6 characters" : null,
+                validator: (val) => val == null || val.length < 6
+                    ? "Minimum 6 characters"
+                    : null,
               ),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: authProvider.isLoading ? null : _handleFarmerRegister,
+                onPressed: authProvider.isLoading
+                    ? null
+                    : _handleFarmerRegister,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
                 child: authProvider.isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text(
                         "Submit Farmer Registration",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
               ),
             ],

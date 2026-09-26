@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../models/user_model.dart';
 import '../models/customer_model.dart';
 import '../models/farmer_model.dart';
@@ -19,9 +20,12 @@ class DatabaseService {
   CollectionReference get _productsRef => _firestore.collection('products');
   CollectionReference get _ordersRef => _firestore.collection('orders');
   CollectionReference get _categoriesRef => _firestore.collection('categories');
-  CollectionReference get _marketsRef => _firestore.collection('farmers_markets');
-  CollectionReference get _pickupSlotsRef => _firestore.collection('pickup_slots');
-  CollectionReference get _notificationsRef => _firestore.collection('notifications');
+  CollectionReference get _marketsRef =>
+      _firestore.collection('farmers_markets');
+  CollectionReference get _pickupSlotsRef =>
+      _firestore.collection('pickup_slots');
+  CollectionReference get _notificationsRef =>
+      _firestore.collection('notifications');
 
   Stream<UserModel?> streamUser(String uid) {
     return _usersRef.doc(uid).snapshots().map((doc) {
@@ -52,7 +56,10 @@ class DatabaseService {
   Stream<List<UserModel>> streamAllUsers() {
     return _usersRef.snapshots().map((snapshot) {
       return snapshot.docs
-          .map((doc) => UserModel.fromMap(doc.id, doc.data() as Map<String, dynamic>))
+          .map(
+            (doc) =>
+                UserModel.fromMap(doc.id, doc.data() as Map<String, dynamic>),
+          )
           .toList();
     });
   }
@@ -60,7 +67,10 @@ class DatabaseService {
   Stream<List<FarmerModel>> streamAllFarmers() {
     return _farmersRef.snapshots().map((snapshot) {
       return snapshot.docs
-          .map((doc) => FarmerModel.fromMap(doc.id, doc.data() as Map<String, dynamic>))
+          .map(
+            (doc) =>
+                FarmerModel.fromMap(doc.id, doc.data() as Map<String, dynamic>),
+          )
           .toList();
     });
   }
@@ -72,11 +82,15 @@ class DatabaseService {
     } catch (_) {}
     // -------------------------
 
-    QuerySnapshot snap =
-        await _farmersRef.where('userId', isEqualTo: userId).limit(1).get();
+    QuerySnapshot snap = await _farmersRef
+        .where('userId', isEqualTo: userId)
+        .limit(1)
+        .get();
     if (snap.docs.isNotEmpty) {
       return FarmerModel.fromMap(
-          snap.docs.first.id, snap.docs.first.data() as Map<String, dynamic>);
+        snap.docs.first.id,
+        snap.docs.first.data() as Map<String, dynamic>,
+      );
     }
     return null;
   }
@@ -114,24 +128,37 @@ class DatabaseService {
     await _farmersRef.doc(farmerId).update({'isApproved': isApproved});
   }
 
-  Future<void> toggleFollowFarmer(String customerUserId, String farmerId) async {
-    DocumentSnapshot customerDoc = await _customersRef.doc(customerUserId).get();
+  Future<void> toggleFollowFarmer(
+    String customerUserId,
+    String farmerId,
+  ) async {
+    DocumentSnapshot customerDoc = await _customersRef
+        .doc(customerUserId)
+        .get();
     if (customerDoc.exists) {
-      List<String> followed =
-          List<String>.from(customerDoc.get('followedFarmers') ?? []);
+      List<String> followed = List<String>.from(
+        customerDoc.get('followedFarmers') ?? [],
+      );
       if (followed.contains(farmerId)) {
         followed.remove(farmerId);
       } else {
         followed.add(farmerId);
       }
-      await _customersRef.doc(customerUserId).update({'followedFarmers': followed});
+      await _customersRef.doc(customerUserId).update({
+        'followedFarmers': followed,
+      });
     }
   }
 
   Stream<List<CategoryModel>> streamCategories() {
     return _categoriesRef.snapshots().map((snapshot) {
       return snapshot.docs
-          .map((doc) => CategoryModel.fromMap(doc.id, doc.data() as Map<String, dynamic>))
+          .map(
+            (doc) => CategoryModel.fromMap(
+              doc.id,
+              doc.data() as Map<String, dynamic>,
+            ),
+          )
           .toList();
     });
   }
@@ -152,7 +179,10 @@ class DatabaseService {
   Stream<List<MarketModel>> streamMarkets() {
     return _marketsRef.snapshots().map((snapshot) {
       return snapshot.docs
-          .map((doc) => MarketModel.fromMap(doc.id, doc.data() as Map<String, dynamic>))
+          .map(
+            (doc) =>
+                MarketModel.fromMap(doc.id, doc.data() as Map<String, dynamic>),
+          )
           .toList();
     });
   }
@@ -173,18 +203,27 @@ class DatabaseService {
   Stream<List<ProductModel>> streamAllProducts() {
     return _productsRef.snapshots().map((snapshot) {
       return snapshot.docs
-          .map((doc) => ProductModel.fromMap(doc.id, doc.data() as Map<String, dynamic>))
+          .map(
+            (doc) => ProductModel.fromMap(
+              doc.id,
+              doc.data() as Map<String, dynamic>,
+            ),
+          )
           .toList();
     });
   }
 
   Stream<List<ProductModel>> streamProductsByFarmer(String farmerId) {
-    return _productsRef
-        .where('farmerId', isEqualTo: farmerId)
-        .snapshots()
-        .map((snapshot) {
+    return _productsRef.where('farmerId', isEqualTo: farmerId).snapshots().map((
+      snapshot,
+    ) {
       return snapshot.docs
-          .map((doc) => ProductModel.fromMap(doc.id, doc.data() as Map<String, dynamic>))
+          .map(
+            (doc) => ProductModel.fromMap(
+              doc.id,
+              doc.data() as Map<String, dynamic>,
+            ),
+          )
           .toList();
     });
   }
@@ -194,10 +233,15 @@ class DatabaseService {
         .where('categoryId', isEqualTo: categoryId)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => ProductModel.fromMap(doc.id, doc.data() as Map<String, dynamic>))
-          .toList();
-    });
+          return snapshot.docs
+              .map(
+                (doc) => ProductModel.fromMap(
+                  doc.id,
+                  doc.data() as Map<String, dynamic>,
+                ),
+              )
+              .toList();
+        });
   }
 
   Future<void> addProduct(ProductModel product) async {
@@ -240,7 +284,8 @@ class DatabaseService {
       List<String> wishlist = List<String>.from(data['wishlist'] ?? []);
       List<String> followed = List<String>.from(data['followedFarmers'] ?? []);
 
-      if (wishlist.contains(product.id) || followed.contains(product.farmerId)) {
+      if (wishlist.contains(product.id) ||
+          followed.contains(product.farmerId)) {
         await sendNotification(
           userId: doc.id,
           title: "Item Restocked! 🌾",
@@ -274,7 +319,10 @@ class DatabaseService {
         bool matchesCategory = p.categoryName.toLowerCase().contains(q);
         bool matchesDesc = p.description.toLowerCase().contains(q);
         bool matchesFarmer = (p.farmerName ?? '').toLowerCase().contains(q);
-        if (!matchesName && !matchesCategory && !matchesDesc && !matchesFarmer) {
+        if (!matchesName &&
+            !matchesCategory &&
+            !matchesDesc &&
+            !matchesFarmer) {
           return false;
         }
       }
@@ -292,13 +340,19 @@ class DatabaseService {
 
     return _customersRef.doc(userId).snapshots().map((doc) {
       if (doc.exists) {
-        return CustomerModel.fromMap(userId, doc.data() as Map<String, dynamic>);
+        return CustomerModel.fromMap(
+          userId,
+          doc.data() as Map<String, dynamic>,
+        );
       }
       return null;
     });
   }
 
-  Future<void> toggleWishlistProduct(String customerUserId, String productId) async {
+  Future<void> toggleWishlistProduct(
+    String customerUserId,
+    String productId,
+  ) async {
     DocumentSnapshot doc = await _customersRef.doc(customerUserId).get();
     if (doc.exists) {
       List<String> wishlist = List<String>.from(doc.get('wishlist') ?? []);
@@ -322,18 +376,23 @@ class DatabaseService {
     String? marketId,
   }) async {
     for (var item in items) {
-      DocumentSnapshot productDoc = await _productsRef.doc(item.productId).get();
+      DocumentSnapshot productDoc = await _productsRef
+          .doc(item.productId)
+          .get();
       if (productDoc.exists) {
         double currentStock = (productDoc.get('quantity') ?? 0).toDouble();
         if (currentStock < item.quantity) {
           throw Exception(
-              "Insufficient stock for ${item.productName}. Available: $currentStock");
+            "Insufficient stock for ${item.productName}. Available: $currentStock",
+          );
         }
       }
     }
 
     for (var item in items) {
-      DocumentSnapshot productDoc = await _productsRef.doc(item.productId).get();
+      DocumentSnapshot productDoc = await _productsRef
+          .doc(item.productId)
+          .get();
       if (productDoc.exists) {
         double currentStock = (productDoc.get('quantity') ?? 0).toDouble();
         double newStock = currentStock - item.quantity;
@@ -391,23 +450,30 @@ class DatabaseService {
         .where('customerId', isEqualTo: customerId)
         .snapshots()
         .map((snapshot) {
-      List<OrderModel> orders = snapshot.docs
-          .map((doc) => OrderModel.fromMap(doc.id, doc.data() as Map<String, dynamic>))
-          .toList();
-      orders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      return orders;
-    });
+          List<OrderModel> orders = snapshot.docs
+              .map(
+                (doc) => OrderModel.fromMap(
+                  doc.id,
+                  doc.data() as Map<String, dynamic>,
+                ),
+              )
+              .toList();
+          orders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return orders;
+        });
   }
 
   Stream<List<OrderModel>> streamFarmerOrders(String farmerId) {
     return _ordersRef.snapshots().map((snapshot) {
       List<OrderModel> orders = [];
       for (var doc in snapshot.docs) {
-        OrderModel order =
-            OrderModel.fromMap(doc.id, doc.data() as Map<String, dynamic>);
+        OrderModel order = OrderModel.fromMap(
+          doc.id,
+          doc.data() as Map<String, dynamic>,
+        );
         bool containsFarmerItems =
             order.items.any((item) => item.farmerId == farmerId) ||
-                order.farmerId == farmerId;
+            order.farmerId == farmerId;
         if (containsFarmerItems) {
           orders.add(order);
         }
@@ -420,7 +486,10 @@ class DatabaseService {
   Stream<List<OrderModel>> streamAllOrders() {
     return _ordersRef.snapshots().map((snapshot) {
       List<OrderModel> orders = snapshot.docs
-          .map((doc) => OrderModel.fromMap(doc.id, doc.data() as Map<String, dynamic>))
+          .map(
+            (doc) =>
+                OrderModel.fromMap(doc.id, doc.data() as Map<String, dynamic>),
+          )
           .toList();
       orders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return orders;
@@ -432,10 +501,7 @@ class DatabaseService {
     String status, {
     String? cancellationReason,
   }) async {
-    Map<String, dynamic> updateData = {
-      'status': status,
-      'Status': status,
-    };
+    Map<String, dynamic> updateData = {'status': status, 'Status': status};
     if (cancellationReason != null) {
       updateData['cancellationReason'] = cancellationReason;
     }
@@ -461,10 +527,15 @@ class DatabaseService {
         .where('marketId', isEqualTo: marketId)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => PickupSlotModel.fromMap(doc.id, doc.data() as Map<String, dynamic>))
-          .toList();
-    });
+          return snapshot.docs
+              .map(
+                (doc) => PickupSlotModel.fromMap(
+                  doc.id,
+                  doc.data() as Map<String, dynamic>,
+                ),
+              )
+              .toList();
+        });
   }
 
   Future<void> addPickupSlot(PickupSlotModel slot) async {
@@ -492,17 +563,20 @@ class DatabaseService {
   }
 
   Stream<List<NotificationModel>> streamUserNotifications(String userId) {
-    return _notificationsRef
-        .where('userId', isEqualTo: userId)
-        .snapshots()
-        .map((snapshot) {
-      List<NotificationModel> list = snapshot.docs
-          .map((doc) =>
-              NotificationModel.fromMap(doc.id, doc.data() as Map<String, dynamic>))
-          .toList();
-      list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      return list;
-    });
+    return _notificationsRef.where('userId', isEqualTo: userId).snapshots().map(
+      (snapshot) {
+        List<NotificationModel> list = snapshot.docs
+            .map(
+              (doc) => NotificationModel.fromMap(
+                doc.id,
+                doc.data() as Map<String, dynamic>,
+              ),
+            )
+            .toList();
+        list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        return list;
+      },
+    );
   }
 
   Future<void> markNotificationAsRead(String notificationId) async {
@@ -515,41 +589,32 @@ class DatabaseService {
       List<Map<String, String>> sampleCats = [
         {
           'name': 'Fruits',
-          'imageUrl':
-              'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=500'
+          'imageUrl': 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=500',
         },
         {
           'name': 'Vegetables',
-          'imageUrl':
-              'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500'
+          'imageUrl': 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500',
         },
         {
           'name': 'Organic Products',
-          'imageUrl':
-              'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=500'
+          'imageUrl': 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=500',
         },
         {
           'name': 'Dairy',
-          'imageUrl':
-              'https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=500'
+          'imageUrl': 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=500',
         },
         {
           'name': 'Pulses & Grains',
-          'imageUrl':
-              'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500'
+          'imageUrl': 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500',
         },
         {
           'name': 'Herbs & Spices',
-          'imageUrl':
-              'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=500'
+          'imageUrl': 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=500',
         },
       ];
       for (var cat in sampleCats) {
         DocumentReference ref = _categoriesRef.doc();
-        await ref.set({
-          'name': cat['name'],
-          'imageUrl': cat['imageUrl'],
-        });
+        await ref.set({'name': cat['name'], 'imageUrl': cat['imageUrl']});
       }
     }
 
@@ -562,7 +627,8 @@ class DatabaseService {
           'gpsCoordinates': '33.6844, 73.0479',
           'operatingHours': '7:00 AM - 4:00 PM (Sat-Sun)',
           'activeStatus': true,
-          'description': 'Fresh local produce straight from regional organic farms.'
+          'description':
+              'Fresh local produce straight from regional organic farms.',
         },
         {
           'name': 'Sunny Acres Farm Stand',
@@ -570,8 +636,9 @@ class DatabaseService {
           'gpsCoordinates': '33.7294, 73.0931',
           'operatingHours': '8:00 AM - 6:00 PM (Daily)',
           'activeStatus': true,
-          'description': 'Specializing in fresh dairy, honey, and fresh fruit harvest.'
-        }
+          'description':
+              'Specializing in fresh dairy, honey, and fresh fruit harvest.',
+        },
       ];
       for (var mkt in sampleMarkets) {
         DocumentReference ref = _marketsRef.doc();

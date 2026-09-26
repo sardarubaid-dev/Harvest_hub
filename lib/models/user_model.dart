@@ -51,7 +51,8 @@ class UserModel {
       'photoUrl': photoUrl,
       'address': address,
       'isActive': isActive,
-      'createdAt': createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
+      'createdAt':
+          createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
     };
   }
 

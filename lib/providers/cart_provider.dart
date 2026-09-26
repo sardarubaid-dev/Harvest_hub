@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+
 import '../models/product_model.dart';
 import '../models/cart_item_model.dart';
 import '../models/order_model.dart';
@@ -29,19 +30,15 @@ class CartProvider with ChangeNotifier {
       }
       _items.update(
         product.id,
-        (existing) => CartItemModel(
-          product: product,
-          quantity: newQty,
-        ),
+        (existing) => CartItemModel(product: product, quantity: newQty),
       );
     } else {
-      double initialQty = quantity > product.quantity ? product.quantity : quantity;
+      double initialQty = quantity > product.quantity
+          ? product.quantity
+          : quantity;
       _items.putIfAbsent(
         product.id,
-        () => CartItemModel(
-          product: product,
-          quantity: initialQty,
-        ),
+        () => CartItemModel(product: product, quantity: initialQty),
       );
     }
     notifyListeners();
@@ -59,10 +56,8 @@ class CartProvider with ChangeNotifier {
 
       _items.update(
         productId,
-        (existing) => CartItemModel(
-          product: existing.product,
-          quantity: finalQty,
-        ),
+        (existing) =>
+            CartItemModel(product: existing.product, quantity: finalQty),
       );
     }
     notifyListeners();

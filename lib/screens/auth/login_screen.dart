@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../providers/auth_provider.dart';
 import '../../services/auth_service.dart';
 import 'register_customer_screen.dart';
@@ -39,7 +40,9 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(authProvider.errorMessage ?? "Login failed. Check credentials."),
+          content: Text(
+            authProvider.errorMessage ?? "Login failed. Check credentials.",
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -73,11 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: Colors.green.shade100,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.eco,
-                    size: 56,
-                    color: Colors.green,
-                  ),
+                  child: const Icon(Icons.eco, size: 56, color: Colors.green),
                 ),
                 const SizedBox(height: 16),
                 const Text(
@@ -91,10 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const Text(
                   "Fresh from Farms, Direct to You",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
                 ),
                 const SizedBox(height: 32),
 
@@ -114,7 +110,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               _selectedRoleTab = role;
                               if (role == 'Admin') {
                                 _emailController.text = AuthService.adminEmail;
-                                _passwordController.text = AuthService.adminPassword;
+                                _passwordController.text =
+                                    AuthService.adminPassword;
                               }
                             });
                           },
@@ -122,7 +119,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             duration: const Duration(milliseconds: 200),
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
-                              color: isSelected ? Colors.green : Colors.transparent,
+                              color: isSelected
+                                  ? Colors.green
+                                  : Colors.transparent,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -130,7 +129,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: isSelected ? Colors.white : Colors.black87,
+                                color: isSelected
+                                    ? Colors.white
+                                    : Colors.black87,
                               ),
                             ),
                           ),
@@ -211,7 +212,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 20),
                           ElevatedButton(
-                            onPressed: authProvider.isLoading ? null : _handleLogin,
+                            onPressed: authProvider.isLoading
+                                ? null
+                                : _handleLogin,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green,
                               foregroundColor: Colors.white,
@@ -298,7 +301,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 if (_selectedRoleTab == 'Admin')
                   TextButton.icon(
                     onPressed: _fillAdminCredentials,
-                    icon: const Icon(Icons.admin_panel_settings, color: Colors.green),
+                    icon: const Icon(
+                      Icons.admin_panel_settings,
+                      color: Colors.green,
+                    ),
                     label: const Text(
                       "Fill Pre-configured Admin Credentials",
                       style: TextStyle(color: Colors.green),

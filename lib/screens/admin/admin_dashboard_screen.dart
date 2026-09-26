@@ -7,6 +7,7 @@ import 'package:harvest_hub/models/user_model.dart';
 import 'package:harvest_hub/models/product_model.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+
 import 'admin_farmer_management_tab.dart';
 
 // --- Simulated Service to mimic Backend Fetching ---
@@ -68,44 +69,53 @@ class MockAdminService {
     final pendingFarmersCount = farmers.where((f) => !f.isApproved).length;
     final activeFarmersCount = farmers.where((f) => f.isApproved).length;
     final activeBuyersCount = users.where((u) => u.role == 'customer').length;
-    
+
     final totalGmv = orders.fold(0.0, (sum, order) => sum + order.totalAmount);
     final completedOrders = orders.where((o) => o.status == 'Completed').length;
-    final completionRate = orders.isEmpty ? 0.0 : (completedOrders / orders.length) * 100;
+    final completionRate = orders.isEmpty
+        ? 0.0
+        : (completedOrders / orders.length) * 100;
 
     // Synthesize Activities from DB records
     List<MarketplaceActivity> activities = [];
-    
+
     // Add restock from products
     if (products.isNotEmpty) {
-      activities.add(MarketplaceActivity(
-        type: 'restock',
-        title: products.first.farmerName ?? 'Farm',
-        description: 'Restocked ${products.first.quantity.toInt()}${products.first.unit} ${products.first.name}',
-        badgeText: 'Batch #GV-902',
-        subtext: 'Stall 4A',
-        timeAgo: const Duration(minutes: 12),
-      ));
+      activities.add(
+        MarketplaceActivity(
+          type: 'restock',
+          title: products.first.farmerName ?? 'Farm',
+          description:
+              'Restocked ${products.first.quantity.toInt()}${products.first.unit} ${products.first.name}',
+          badgeText: 'Batch #GV-902',
+          subtext: 'Stall 4A',
+          timeAgo: const Duration(minutes: 12),
+        ),
+      );
     }
 
     // Add pending apps
     if (pendingFarmersCount > 0) {
       final pendingF = farmers.firstWhere((f) => !f.isApproved);
-      activities.add(MarketplaceActivity(
-        type: 'application',
-        title: 'New Application Received',
-        description: '${pendingF.farmName} (${pendingF.location})',
-        badgeText: 'Tier-1 Pending Review',
-        timeAgo: const Duration(minutes: 35),
-      ));
+      activities.add(
+        MarketplaceActivity(
+          type: 'application',
+          title: 'New Application Received',
+          description: '${pendingF.farmName} (${pendingF.location})',
+          badgeText: 'Tier-1 Pending Review',
+          timeAgo: const Duration(minutes: 35),
+        ),
+      );
     } else {
-       activities.add(MarketplaceActivity(
-        type: 'application',
-        title: 'New Application Received',
-        description: 'Indus Organic Orchard (Hyderabad District)',
-        badgeText: 'Tier-1 Pending Review',
-        timeAgo: const Duration(minutes: 35),
-      ));
+      activities.add(
+        MarketplaceActivity(
+          type: 'application',
+          title: 'New Application Received',
+          description: 'Indus Organic Orchard (Hyderabad District)',
+          badgeText: 'Tier-1 Pending Review',
+          timeAgo: const Duration(minutes: 35),
+        ),
+      );
     }
 
     // Add order collection
@@ -114,36 +124,41 @@ class MockAdminService {
       if (shortId.length > 4) {
         shortId = shortId.substring(0, 4);
       }
-      
-      activities.add(MarketplaceActivity(
-        type: 'order',
-        title: 'Order #$shortId Collected',
-        description: 'Direct collection completed at Stall 14B',
-        subtext: 'Buyer: ${orders.first.customerName} • ${orders.first.items.length} items',
-        timeAgo: const Duration(minutes: 48),
-      ));
+
+      activities.add(
+        MarketplaceActivity(
+          type: 'order',
+          title: 'Order #$shortId Collected',
+          description: 'Direct collection completed at Stall 14B',
+          subtext:
+              'Buyer: ${orders.first.customerName} • ${orders.first.items.length} items',
+          timeAgo: const Duration(minutes: 48),
+        ),
+      );
     }
 
-    activities.add(MarketplaceActivity(
-      type: 'flag',
-      title: 'Price Flag Resolved',
-      description: 'Pure Cow Milk fair ceiling approved across...',
-      badgeText: 'Auto-reconciled',
-      timeAgo: const Duration(hours: 1),
-    ));
+    activities.add(
+      MarketplaceActivity(
+        type: 'flag',
+        title: 'Price Flag Resolved',
+        description: 'Pure Cow Milk fair ceiling approved across...',
+        badgeText: 'Auto-reconciled',
+        timeAgo: const Duration(hours: 1),
+      ),
+    );
 
-    // If counts are very low (because dummy data only has 1 or 2 items), 
+    // If counts are very low (because dummy data only has 1 or 2 items),
     // we use a mix of computed and design-specific fallback logic to make the UI look good as requested.
     // The user requested using DummyData as the DB.
     return AdminDashboardData(
-      pendingApplications: pendingFarmersCount > 0 ? pendingFarmersCount : 6, 
-      hubCapacity: 84.0, 
-      totalGmv: totalGmv > 0 ? totalGmv : 1420000, 
-      totalOrders: orders.length > 1 ? orders.length : 1842, 
-      orderCompletionRate: completionRate > 0 ? completionRate : 94.2, 
-      activeFarmers: activeFarmersCount > 1 ? activeFarmersCount : 48, 
-      pendingFarmers: pendingFarmersCount > 0 ? pendingFarmersCount : 6, 
-      activeBuyers: activeBuyersCount > 1 ? activeBuyersCount : 3210, 
+      pendingApplications: pendingFarmersCount > 0 ? pendingFarmersCount : 6,
+      hubCapacity: 84.0,
+      totalGmv: totalGmv > 0 ? totalGmv : 1420000,
+      totalOrders: orders.length > 1 ? orders.length : 1842,
+      orderCompletionRate: completionRate > 0 ? completionRate : 94.2,
+      activeFarmers: activeFarmersCount > 1 ? activeFarmersCount : 48,
+      pendingFarmers: pendingFarmersCount > 0 ? pendingFarmersCount : 6,
+      activeBuyers: activeBuyersCount > 1 ? activeBuyersCount : 3210,
       hubEfficiency: 98.2,
       activities: activities,
     );
@@ -181,28 +196,40 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   int _getTabIndexFromString(String tab) {
     switch (tab) {
-      case 'dashboard': return 0;
-      case 'farmers': return 1;
-      case 'orders': return 2;
-      case 'reports': return 3;
-      default: return 0;
+      case 'dashboard':
+        return 0;
+      case 'farmers':
+        return 1;
+      case 'orders':
+        return 2;
+      case 'reports':
+        return 3;
+      default:
+        return 0;
     }
   }
 
   String _getAppBarSubtitle() {
     switch (_currentTabIndex) {
-      case 0: return 'Dashboard';
-      case 1: return 'Farmers';
-      case 2: return 'Orders';
-      case 3: return 'Reports';
-      default: return 'Dashboard';
+      case 0:
+        return 'Dashboard';
+      case 1:
+        return 'Farmers';
+      case 2:
+        return 'Orders';
+      case 3:
+        return 'Reports';
+      default:
+        return 'Dashboard';
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAF3), // Very light green/off-white background
+      backgroundColor: const Color(
+        0xFFF7FAF3,
+      ), // Very light green/off-white background
       appBar: _buildAppBar(),
       body: _buildBody(),
       bottomNavigationBar: _buildBottomNav(),
@@ -229,8 +256,22 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('HarvestHub', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
-              Text('LOCAL FARM MARKETPLACE', style: TextStyle(fontSize: 7, color: Colors.black54, letterSpacing: 0.5)),
+              Text(
+                'HarvestHub',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
+              ),
+              Text(
+                'LOCAL FARM MARKETPLACE',
+                style: TextStyle(
+                  fontSize: 7,
+                  color: Colors.black54,
+                  letterSpacing: 0.5,
+                ),
+              ),
             ],
           ),
           const SizedBox(width: 12),
@@ -238,8 +279,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Harv...', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87), overflow: TextOverflow.ellipsis),
-                Text(_getAppBarSubtitle(), style: const TextStyle(fontSize: 9, color: Colors.black54)),
+                const Text(
+                  'Harv...',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.black87,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  _getAppBarSubtitle(),
+                  style: const TextStyle(fontSize: 9, color: Colors.black54),
+                ),
               ],
             ),
           ),
@@ -250,7 +302,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               color: Colors.green.shade200,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Text('ADMIN', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.green)),
+            child: const Text(
+              'ADMIN',
+              style: TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.bold,
+                color: Colors.green,
+              ),
+            ),
           ),
         ],
       ),
@@ -259,7 +318,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           alignment: Alignment.center,
           children: [
             IconButton(
-              icon: const Icon(Icons.notifications_none, color: Colors.black87, size: 28),
+              icon: const Icon(
+                Icons.notifications_none,
+                color: Colors.black87,
+                size: 28,
+              ),
               onPressed: () {},
             ),
             Positioned(
@@ -271,7 +334,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   color: Colors.red,
                   shape: BoxShape.circle,
                 ),
-                child: const Text('3', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  '3',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ],
@@ -304,7 +374,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       future: _adminService.fetchDashboardData(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+          return const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          );
         }
         if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
@@ -325,7 +397,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               const SizedBox(height: 16),
               _buildEfficiencyCard(data),
               const SizedBox(height: 24),
-              const Text('Administrative Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const Text(
+                'Administrative Actions',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 12),
               _buildActionsRow(),
               const SizedBox(height: 24),
@@ -336,14 +411,26 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 children: [
                   const Row(
                     children: [
-                      Text('Recent Marketplace Activity', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text(
+                        'Recent Marketplace Activity',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       SizedBox(width: 8),
                       Icon(Icons.circle, color: AppColors.primary, size: 10),
                     ],
                   ),
                   TextButton(
                     onPressed: () {},
-                    child: const Text('View All', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      'View All',
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -364,12 +451,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Marketplace Ov...', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800)),
+            const Text(
+              'Marketplace Ov...',
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
+            ),
             const SizedBox(height: 8),
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.green.shade200,
                     borderRadius: BorderRadius.circular(20),
@@ -378,12 +471,27 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     children: [
                       Icon(Icons.circle, color: AppColors.primary, size: 8),
                       SizedBox(width: 6),
-                      Text('Live Platform\nNormal', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary, height: 1.1)),
+                      Text(
+                        'Live Platform\nNormal',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                          height: 1.1,
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Text('• Latency\n42ms', style: TextStyle(fontSize: 11, color: Colors.black54, height: 1.1)),
+                const Text(
+                  '• Latency\n42ms',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.black54,
+                    height: 1.1,
+                  ),
+                ),
               ],
             ),
           ],
@@ -398,7 +506,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             children: [
               const Icon(Icons.calendar_today, size: 16, color: Colors.black87),
               const SizedBox(width: 8),
-              Text(_selectedMonth, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+              Text(
+                _selectedMonth,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
               const Icon(Icons.arrow_drop_down, color: Colors.black87),
             ],
           ),
@@ -420,7 +534,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: Colors.red.shade700, borderRadius: BorderRadius.circular(8)),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade700,
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 child: const Icon(Icons.assignment_late, color: Colors.white),
               ),
               const SizedBox(width: 12),
@@ -428,8 +545,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('${data.pendingApplications} Applications Pending', style: TextStyle(color: Colors.red.shade900, fontWeight: FontWeight.bold, fontSize: 15)),
-                    Text('Farmer documentation awaiting KYC ...', style: TextStyle(color: Colors.red.shade700, fontSize: 12)),
+                    Text(
+                      '${data.pendingApplications} Applications Pending',
+                      style: TextStyle(
+                        color: Colors.red.shade900,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    Text(
+                      'Farmer documentation awaiting KYC ...',
+                      style: TextStyle(
+                        color: Colors.red.shade700,
+                        fontSize: 12,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -438,11 +568,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red.shade700,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   minimumSize: const Size(0, 36),
                 ),
-                child: const Text('Review', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Review',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
@@ -458,7 +593,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(8)),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 child: const Icon(Icons.warehouse, color: Colors.white),
               ),
               const SizedBox(width: 12),
@@ -466,15 +604,37 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Karachi Farmers Hub at ${data.hubCapacity.toInt()}% Capacity', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87)),
-                    const Text('Cold chain staging bays near maximum thr...', style: TextStyle(fontSize: 12, color: Colors.black54)),
+                    Text(
+                      'Karachi Farmers Hub at ${data.hubCapacity.toInt()}% Capacity',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const Text(
+                      'Cold chain staging bays near maximum thr...',
+                      style: TextStyle(fontSize: 12, color: Colors.black54),
+                    ),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(20)),
-                child: Text('${data.hubCapacity.toInt()}%', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${data.hubCapacity.toInt()}%',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
               ),
             ],
           ),
@@ -489,6 +649,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       if (amount >= 1000) return '${(amount / 1000).toStringAsFixed(1)}K';
       return amount.toStringAsFixed(0);
     }
+
     final NumberFormat formatter = NumberFormat('#,##0');
 
     return GridView.count(
@@ -507,8 +668,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             children: [
               Icon(Icons.trending_up, color: AppColors.primary, size: 14),
               SizedBox(width: 4),
-              Text('+18.4%', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
-              Text(' vs mo', style: TextStyle(color: Colors.black54, fontSize: 12)),
+              Text(
+                '+18.4%',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+              Text(
+                ' vs mo',
+                style: TextStyle(color: Colors.black54, fontSize: 12),
+              ),
             ],
           ),
         ),
@@ -520,7 +691,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             children: [
               const Icon(Icons.circle, color: AppColors.primary, size: 8),
               const SizedBox(width: 4),
-              Text('${data.orderCompletionRate.toStringAsFixed(1)}% completed', style: const TextStyle(color: Colors.black87, fontSize: 12)),
+              Text(
+                '${data.orderCompletionRate.toStringAsFixed(1)}% completed',
+                style: const TextStyle(color: Colors.black87, fontSize: 12),
+              ),
             ],
           ),
         ),
@@ -530,8 +704,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           icon: Icons.agriculture_outlined,
           bottomWidget: Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(color: Colors.red.shade100, borderRadius: BorderRadius.circular(4)),
-            child: Text('${data.pendingFarmers} Pending', style: TextStyle(color: Colors.red.shade900, fontSize: 10, fontWeight: FontWeight.bold)),
+            decoration: BoxDecoration(
+              color: Colors.red.shade100,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              '${data.pendingFarmers} Pending',
+              style: TextStyle(
+                color: Colors.red.shade900,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
         _buildStatCard(
@@ -542,8 +726,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             children: [
               Icon(Icons.arrow_upward, color: AppColors.primary, size: 14),
               SizedBox(width: 4),
-              Text('+142', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
-              Text(' new', style: TextStyle(color: Colors.black54, fontSize: 12)),
+              Text(
+                '+142',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+              Text(
+                ' new',
+                style: TextStyle(color: Colors.black54, fontSize: 12),
+              ),
             ],
           ),
         ),
@@ -551,7 +745,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildStatCard({required String title, required String value, required IconData icon, required Widget bottomWidget}) {
+  Widget _buildStatCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Widget bottomWidget,
+  }) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -566,15 +765,28 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(title, style: const TextStyle(color: Colors.black87, fontSize: 12)),
+              Text(
+                title,
+                style: const TextStyle(color: Colors.black87, fontSize: 12),
+              ),
               Container(
                 padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(4)),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(4),
+                ),
                 child: Icon(icon, color: AppColors.primary, size: 16),
               ),
             ],
           ),
-          Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
           bottomWidget,
         ],
       ),
@@ -604,7 +816,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   strokeWidth: 4,
                 ),
               ),
-              Text('${data.hubEfficiency.toInt()}%', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              Text(
+                '${data.hubEfficiency.toInt()}%',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
             ],
           ),
           const SizedBox(width: 16),
@@ -612,15 +830,31 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Hub Fulfillment Efficiency', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                Text('98.2% on-time stall pickup across 4 d...', style: TextStyle(fontSize: 12, color: Colors.black54)),
+                Text(
+                  'Hub Fulfillment Efficiency',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                Text(
+                  '98.2% on-time stall pickup across 4 d...',
+                  style: TextStyle(fontSize: 12, color: Colors.black54),
+                ),
               ],
             ),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(color: Colors.green.shade200, borderRadius: BorderRadius.circular(20)),
-            child: const Text('Optimal', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary)),
+            decoration: BoxDecoration(
+              color: Colors.green.shade200,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Text(
+              'Optimal',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+                color: AppColors.primary,
+              ),
+            ),
           ),
         ],
       ),
@@ -631,15 +865,40 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildActionItem('Verify\nFarmers', Icons.verified_outlined, Colors.green.shade100, AppColors.primary),
-        _buildActionItem('Broadcast\nNotice', Icons.campaign_outlined, Colors.grey.shade100, Colors.black87),
-        _buildActionItem('Categories', Icons.category_outlined, Colors.grey.shade100, Colors.black87),
-        _buildActionItem('Audit Logs', Icons.shield_outlined, Colors.grey.shade100, Colors.black87),
+        _buildActionItem(
+          'Verify\nFarmers',
+          Icons.verified_outlined,
+          Colors.green.shade100,
+          AppColors.primary,
+        ),
+        _buildActionItem(
+          'Broadcast\nNotice',
+          Icons.campaign_outlined,
+          Colors.grey.shade100,
+          Colors.black87,
+        ),
+        _buildActionItem(
+          'Categories',
+          Icons.category_outlined,
+          Colors.grey.shade100,
+          Colors.black87,
+        ),
+        _buildActionItem(
+          'Audit Logs',
+          Icons.shield_outlined,
+          Colors.grey.shade100,
+          Colors.black87,
+        ),
       ],
     );
   }
 
-  Widget _buildActionItem(String label, IconData icon, Color bgColor, Color iconColor) {
+  Widget _buildActionItem(
+    String label,
+    IconData icon,
+    Color bgColor,
+    Color iconColor,
+  ) {
     return Container(
       width: 80,
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -656,7 +915,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             child: Icon(icon, color: iconColor, size: 24),
           ),
           const SizedBox(height: 8),
-          Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, height: 1.2)),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              height: 1.2,
+            ),
+          ),
         ],
       ),
     );
@@ -670,7 +937,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             image: const DecorationImage(
-              image: NetworkImage('https://images.unsplash.com/photo-1586880244406-556ebe35f282?w=800&q=80'),
+              image: NetworkImage(
+                'https://images.unsplash.com/photo-1586880244406-556ebe35f282?w=800&q=80',
+              ),
               fit: BoxFit.cover,
             ),
           ),
@@ -693,14 +962,42 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('PRIMARY TRANSIT NODE', style: TextStyle(color: Colors.greenAccent, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1)),
-                    Text('Malir Collection Center', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text(
+                      'PRIMARY TRANSIT NODE',
+                      style: TextStyle(
+                        color: Colors.greenAccent,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                    Text(
+                      'Malir Collection Center',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.9), borderRadius: BorderRadius.circular(4)),
-                  child: const Text('Active Depots: 4/4', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text(
+                    'Active Depots: 4/4',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -712,15 +1009,33 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           children: [
             const Row(
               children: [
-                Icon(Icons.local_shipping_outlined, color: AppColors.primary, size: 16),
+                Icon(
+                  Icons.local_shipping_outlined,
+                  color: AppColors.primary,
+                  size: 16,
+                ),
                 SizedBox(width: 8),
-                Text('18 outbound transport vans en route', style: TextStyle(fontSize: 13, color: Colors.black87)),
+                Text(
+                  '18 outbound transport vans en route',
+                  style: TextStyle(fontSize: 13, color: Colors.black87),
+                ),
               ],
             ),
             TextButton(
               onPressed: () {},
-              style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-              child: const Text('Inspect Hubs', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13)),
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: const Text(
+                'Inspect Hubs',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
             ),
           ],
         ),
@@ -764,7 +1079,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: iconBg, shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  shape: BoxShape.circle,
+                ),
                 child: Icon(icon, color: iconColor, size: 20),
               ),
               const SizedBox(width: 12),
@@ -775,12 +1093,30 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(activity.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                        Text('${activity.timeAgo.inMinutes > 59 ? '${activity.timeAgo.inHours}h' : '${activity.timeAgo.inMinutes}m'} ago', style: const TextStyle(color: Colors.black54, fontSize: 12)),
+                        Text(
+                          activity.title,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                        Text(
+                          '${activity.timeAgo.inMinutes > 59 ? '${activity.timeAgo.inHours}h' : '${activity.timeAgo.inMinutes}m'} ago',
+                          style: const TextStyle(
+                            color: Colors.black54,
+                            fontSize: 12,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 2),
-                    Text(activity.description, style: const TextStyle(fontSize: 13, color: Colors.black87)),
+                    Text(
+                      activity.description,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.black87,
+                      ),
+                    ),
                     if (activity.badgeText != null || activity.subtext != null)
                       const SizedBox(height: 6),
                     if (activity.badgeText != null || activity.subtext != null)
@@ -788,16 +1124,39 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         children: [
                           if (activity.badgeText != null)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
-                                color: activity.type == 'application' ? Colors.red.shade100 : Colors.grey.shade200,
+                                color: activity.type == 'application'
+                                    ? Colors.red.shade100
+                                    : Colors.grey.shade200,
                                 borderRadius: BorderRadius.circular(4),
                               ),
-                              child: Text(activity.badgeText!, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: activity.type == 'application' ? Colors.red.shade900 : Colors.black87)),
+                              child: Text(
+                                activity.badgeText!,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: activity.type == 'application'
+                                      ? Colors.red.shade900
+                                      : Colors.black87,
+                                ),
+                              ),
                             ),
-                          if (activity.badgeText != null && activity.subtext != null) const SizedBox(width: 8),
+                          if (activity.badgeText != null &&
+                              activity.subtext != null)
+                            const SizedBox(width: 8),
                           if (activity.subtext != null)
-                            Text(activity.subtext!, style: const TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.bold)),
+                            Text(
+                              activity.subtext!,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                         ],
                       ),
                   ],
@@ -823,19 +1182,35 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       selectedItemColor: AppColors.primary,
       unselectedItemColor: Colors.black54,
       showUnselectedLabels: true,
-      selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+      selectedLabelStyle: const TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 12,
+      ),
+      unselectedLabelStyle: const TextStyle(
+        fontWeight: FontWeight.w500,
+        fontSize: 12,
+      ),
       type: BottomNavigationBarType.fixed,
       backgroundColor: const Color(0xFFF7FAF3),
       elevation: 8,
       items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
-        BottomNavigationBarItem(icon: Icon(Icons.agriculture_outlined), label: 'Farmers'),
-        BottomNavigationBarItem(icon: Icon(Icons.receipt_long_outlined), label: 'Orders'),
-        BottomNavigationBarItem(icon: Icon(Icons.bar_chart_outlined), label: 'Reports'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.dashboard),
+          label: 'Dashboard',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.agriculture_outlined),
+          label: 'Farmers',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.receipt_long_outlined),
+          label: 'Orders',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.bar_chart_outlined),
+          label: 'Reports',
+        ),
       ],
     );
   }
 }
-
-

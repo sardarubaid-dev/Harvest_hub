@@ -3,11 +3,7 @@ class CategoryModel {
   final String name;
   final String? imageUrl;
 
-  CategoryModel({
-    required this.id,
-    required this.name,
-    this.imageUrl,
-  });
+  CategoryModel({required this.id, required this.name, this.imageUrl});
 
   factory CategoryModel.fromMap(String id, Map<String, dynamic> map) {
     return CategoryModel(
@@ -18,9 +14,6 @@ class CategoryModel {
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'name': name,
-      'imageUrl': imageUrl,
-    };
+    return {'name': name, 'imageUrl': imageUrl};
   }
 }

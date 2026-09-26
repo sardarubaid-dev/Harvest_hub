@@ -46,7 +46,8 @@ class CustomerModel {
       'address': address,
       'wishlist': wishlist,
       'followedFarmers': followedFarmers,
-      'createdAt': createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
+      'createdAt':
+          createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
     };
   }
 

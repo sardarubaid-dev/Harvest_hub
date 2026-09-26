@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 
 class AuthInterceptor {
-  static Future<bool> executeAction(BuildContext context, VoidCallback action) async {
-    if (FirebaseAuth.instance.currentUser != null) {
+  static Future<bool> executeAction(
+    BuildContext context,
+    VoidCallback action,
+  ) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    if (authProvider.isAuthenticated) {
       action();
       return true;
     }
@@ -19,5 +25,3 @@ class AuthInterceptor {
     return false;
   }
 }
-
-

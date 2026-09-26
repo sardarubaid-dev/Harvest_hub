@@ -22,8 +22,15 @@ class MarketModel {
       id: id,
       name: map['name'] ?? map['Market_Name'] ?? map['marketName'] ?? '',
       address: map['address'] ?? map['Address'] ?? '',
-      gpsCoordinates: map['gpsCoordinates'] ?? map['GPS_Coordinates'] ?? map['location'] ?? '',
-      operatingHours: map['operatingHours'] ?? map['Operating_Hours'] ?? '8:00 AM - 6:00 PM',
+      gpsCoordinates:
+          map['gpsCoordinates'] ??
+          map['GPS_Coordinates'] ??
+          map['location'] ??
+          '',
+      operatingHours:
+          map['operatingHours'] ??
+          map['Operating_Hours'] ??
+          '8:00 AM - 6:00 PM',
       activeStatus: map['activeStatus'] ?? map['Active_Status'] ?? true,
       description: map['description'] ?? map['Description'],
     );

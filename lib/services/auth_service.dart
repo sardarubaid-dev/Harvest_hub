@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../models/user_model.dart';
 import '../models/customer_model.dart';
 import '../models/farmer_model.dart';
@@ -134,18 +135,22 @@ class AuthService {
       };
 
       String normalizedEmail = email.trim().toLowerCase();
-      
+
       if (validDummyUsers.containsKey(normalizedEmail)) {
         if (validDummyUsers[normalizedEmail] == password) {
           // Find the user from DummyData that matches this exact email
-          return DummyData.seedUsers.firstWhere((u) => u.email.toLowerCase() == normalizedEmail);
+          return DummyData.seedUsers.firstWhere(
+            (u) => u.email.toLowerCase() == normalizedEmail,
+          );
         } else {
           throw Exception("Invalid password for ${normalizedEmail}.");
         }
       }
-      
+
       if (password == '123456' || password == 'password123') {
-        throw Exception("Please use exact dummy emails (ali@example.com, ahmad@example.com, zain@example.com) and their respective passwords (customer123, farmer123, admin123).");
+        throw Exception(
+          "Please use exact dummy emails (ali@example.com, ahmad@example.com, zain@example.com) and their respective passwords (customer123, farmer123, admin123).",
+        );
       }
       // ----------------------------------------
 
@@ -155,8 +160,10 @@ class AuthService {
       );
 
       String uid = credential.user!.uid;
-      DocumentSnapshot userDoc =
-          await _firestore.collection('users').doc(uid).get();
+      DocumentSnapshot userDoc = await _firestore
+          .collection('users')
+          .doc(uid)
+          .get();
 
       if (!userDoc.exists) {
         UserModel fallbackUser = UserModel(
@@ -231,8 +238,10 @@ class AuthService {
       } catch (_) {}
       // -------------------------
 
-      DocumentSnapshot doc =
-          await _firestore.collection('users').doc(uid).get();
+      DocumentSnapshot doc = await _firestore
+          .collection('users')
+          .doc(uid)
+          .get();
       if (doc.exists) {
         return UserModel.fromMap(uid, doc.data() as Map<String, dynamic>);
       }

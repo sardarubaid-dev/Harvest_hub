@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../providers/auth_provider.dart';
+
 import 'package:go_router/go_router.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -20,7 +22,10 @@ class ProfileScreen extends StatelessWidget {
       return Scaffold(
         backgroundColor: background,
         appBar: AppBar(
-          title: const Text('My Profile', style: TextStyle(color: darkText, fontWeight: FontWeight.bold)),
+          title: const Text(
+            'My Profile',
+            style: TextStyle(color: darkText, fontWeight: FontWeight.bold),
+          ),
           backgroundColor: Colors.white,
           elevation: 0,
         ),
@@ -30,7 +35,10 @@ class ProfileScreen extends StatelessWidget {
             children: [
               const Icon(Icons.person_outline, size: 80, color: Colors.grey),
               const SizedBox(height: 16),
-              const Text('You are not logged in.', style: TextStyle(fontSize: 18, color: darkText)),
+              const Text(
+                'You are not logged in.',
+                style: TextStyle(fontSize: 18, color: darkText),
+              ),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () {
@@ -38,10 +46,18 @@ class ProfileScreen extends StatelessWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryGreen,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                 ),
-                child: const Text('Login to View Profile', style: TextStyle(color: Colors.white, fontSize: 16)),
+                child: const Text(
+                  'Login to View Profile',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
               ),
             ],
           ),
@@ -57,7 +73,12 @@ class ProfileScreen extends StatelessWidget {
             // Profile Header
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.only(top: 40, bottom: 30, left: 20, right: 20),
+              padding: const EdgeInsets.only(
+                top: 40,
+                bottom: 30,
+                left: 20,
+                right: 20,
+              ),
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.only(
@@ -69,7 +90,7 @@ class ProfileScreen extends StatelessWidget {
                     color: Color(0x0A000000),
                     blurRadius: 10,
                     offset: Offset(0, 5),
-                  )
+                  ),
                 ],
               ),
               child: Column(
@@ -85,7 +106,11 @@ class ProfileScreen extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                         child: const Center(
-                          child: Icon(Icons.person, size: 50, color: primaryGreen),
+                          child: Icon(
+                            Icons.person,
+                            size: 50,
+                            color: primaryGreen,
+                          ),
                         ),
                       ),
                     ],
@@ -93,7 +118,11 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   Text(
                     user.name,
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: darkText),
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: darkText,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -104,27 +133,52 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            
+
             // Settings List
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  _buildListTile(Icons.shopping_bag_outlined, 'My Orders', () {}),
-                  _buildListTile(Icons.location_on_outlined, 'Shipping Addresses', () {}),
-                  _buildListTile(Icons.payment_outlined, 'Payment Methods', () {}),
-                  _buildListTile(Icons.notifications_outlined, 'Notifications', () {}),
+                  _buildListTile(
+                    Icons.shopping_bag_outlined,
+                    'My Orders',
+                    () {},
+                  ),
+                  _buildListTile(
+                    Icons.location_on_outlined,
+                    'Shipping Addresses',
+                    () {},
+                  ),
+                  _buildListTile(
+                    Icons.payment_outlined,
+                    'Payment Methods',
+                    () {},
+                  ),
+                  _buildListTile(
+                    Icons.notifications_outlined,
+                    'Notifications',
+                    () {},
+                  ),
                   _buildListTile(Icons.security_outlined, 'Security', () {}),
                   _buildListTile(Icons.help_outline, 'Help & Support', () {}),
                   const SizedBox(height: 20),
                   ListTile(
                     leading: const Icon(Icons.logout, color: Colors.red),
-                    title: const Text('Log Out', style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600)),
+                    title: const Text(
+                      'Log Out',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     onTap: () async {
                       await authProvider.logout();
-                      Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+                      Navigator.of(context)
+                          .pushNamedAndRemoveUntil('/', (route) => false);
                     },
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
                     tileColor: Colors.white,
                   ),
                   const SizedBox(height: 30),
@@ -148,20 +202,28 @@ class ProfileScreen extends StatelessWidget {
             color: Color(0x05000000),
             blurRadius: 5,
             offset: Offset(0, 2),
-          )
+          ),
         ],
       ),
-      child: ListTile(
-        leading: Icon(icon, color: const Color(0xFF2E7D32)),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500, color: Color(0xFF1F2937))),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-        onTap: onTap,
+      child: Material(
+        color: Colors.transparent,
+        child: ListTile(
+          leading: Icon(icon, color: const Color(0xFF2E7D32)),
+          title: Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF1F2937),
+            ),
+          ),
+          trailing: const Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: Colors.grey,
+          ),
+          onTap: onTap,
+        ),
       ),
     );
   }
 }
-
-
-
-
-

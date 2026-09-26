@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+
 import '../../widgets/harvi_avatar.dart';
 
 class ChatMessage {
@@ -30,12 +31,14 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   void initState() {
     super.initState();
     _initGemini();
-    
+
     // Initial greeting
-    _messages.add(ChatMessage(
-      text: "Hello! I am Harvi, your AI Farm Assistant. How can I help you with agriculture, nutrition, or storage tips today?",
-      isUser: false,
-    ));
+    _messages.add(
+      ChatMessage(
+        text: "Hello! I am Harvi, your AI Farm Assistant. How can I help you with agriculture, nutrition, or storage tips today?",
+        isUser: false,
+      ),
+    );
 
     // Reset greeting animation after 2 seconds
     Future.delayed(const Duration(seconds: 2), () {
@@ -52,7 +55,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     _model = GenerativeModel(
       model: 'gemini-3.8-flash',
       apiKey: apiKey,
-      systemInstruction: Content.system("You are Harvi, an expert AI Farm Products Assistant for the HarvestHub app. You help customers with questions about fruits, vegetables, agriculture, nutrition, seasonal produce, and storage tips. Keep your answers concise, friendly, and use emojis like ??, ??, etc. Do not answer questions completely unrelated to food, farming, or the HarvestHub marketplace. When asked about yourself, introduce yourself as Harvi."),
+      systemInstruction: Content.system(
+        "You are Harvi, an expert AI Farm Products Assistant for the HarvestHub app. You help customers with questions about fruits, vegetables, agriculture, nutrition, seasonal produce, and storage tips. Keep your answers concise, friendly, and use emojis like ??, ??, etc. Do not answer questions completely unrelated to food, farming, or the HarvestHub marketplace. When asked about yourself, introduce yourself as Harvi.",
+      ),
     );
     _chatSession = _model.startChat();
   }
@@ -71,7 +76,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
     try {
       final response = await _chatSession.sendMessage(Content.text(text));
-      
+
       setState(() {
         _expression = HarviExpression.talking;
       });
@@ -91,7 +96,12 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     } catch (e) {
       setState(() {
         _expression = HarviExpression.error;
-        _messages.add(ChatMessage(text: "Oops! My internet roots got tangled. Try again!", isUser: false));
+        _messages.add(
+          ChatMessage(
+            text: "Oops! My internet roots got tangled. Try again!",
+            isUser: false,
+          ),
+        );
         _isLoading = false;
       });
       Future.delayed(const Duration(seconds: 2), () {
@@ -139,11 +149,24 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Harvi', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1B5E20))),
+                      const Text(
+                        'Harvi',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1B5E20),
+                        ),
+                      ),
                       Text(
-                        _expression == HarviExpression.thinking ? 'Thinking...' : 
-                        _expression == HarviExpression.talking ? 'Typing...' : 'Online',
-                        style: const TextStyle(fontSize: 12, color: Colors.green),
+                        _expression == HarviExpression.thinking
+                            ? 'Thinking...'
+                            : _expression == HarviExpression.talking
+                            ? 'Typing...'
+                            : 'Online',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.green,
+                        ),
                       ),
                     ],
                   ),
@@ -151,11 +174,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 IconButton(
                   icon: const Icon(Icons.close),
                   onPressed: () => Navigator.pop(context),
-                )
+                ),
               ],
             ),
           ),
-          
+
           // Chat Messages
           Expanded(
             child: ListView.builder(
@@ -165,25 +188,45 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               itemBuilder: (context, index) {
                 final msg = _messages[index];
                 return Align(
-                  alignment: msg.isUser ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment: msg.isUser
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 12),
-                    constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.75,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
-                      color: msg.isUser ? const Color(0xFF1B5E20) : Colors.white,
+                      color: msg.isUser
+                          ? const Color(0xFF1B5E20)
+                          : Colors.white,
                       borderRadius: BorderRadius.circular(20).copyWith(
-                        bottomRight: msg.isUser ? const Radius.circular(0) : const Radius.circular(20),
-                        bottomLeft: msg.isUser ? const Radius.circular(20) : const Radius.circular(0),
+                        bottomRight: msg.isUser
+                            ? const Radius.circular(0)
+                            : const Radius.circular(20),
+                        bottomLeft: msg.isUser
+                            ? const Radius.circular(20)
+                            : const Radius.circular(0),
                       ),
                       boxShadow: [
-                        if (!msg.isUser) BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, 2))
+                        if (!msg.isUser)
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 5,
+                            offset: const Offset(0, 2),
+                          ),
                       ],
                     ),
                     child: Text(
                       msg.text,
                       style: TextStyle(
-                        color: msg.isUser ? Colors.white : const Color(0xFF1F2937),
+                        color: msg.isUser
+                            ? Colors.white
+                            : const Color(0xFF1F2937),
                         fontSize: 15,
                         height: 1.4,
                       ),
@@ -193,7 +236,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               },
             ),
           ),
-          
+
           // Loading Indicator
           if (_isLoading)
             const Padding(
@@ -204,7 +247,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           // Input Area
           Container(
             padding: EdgeInsets.only(
-              left: 16, right: 16, top: 12,
+              left: 16,
+              right: 16,
+              top: 12,
               bottom: MediaQuery.of(context).viewInsets.bottom + 12,
             ),
             decoration: const BoxDecoration(
@@ -223,7 +268,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                       hintStyle: const TextStyle(color: Colors.grey),
                       filled: true,
                       fillColor: const Color(0xFFF3F4F6),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide.none,
@@ -240,7 +288,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                       color: Color(0xFF1B5E20),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.send, color: Colors.white, size: 20),
+                    child: const Icon(
+                      Icons.send,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                 ),
               ],
@@ -251,7 +303,3 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     );
   }
 }
-
-
-
-

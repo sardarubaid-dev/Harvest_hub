@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../screens/common/splash_screen.dart';
 import '../screens/auth/sign_in_screen.dart';
+import '../screens/role_selection_screen.dart';
+import '../screens/auth/create_account_screen.dart';
 import '../screens/admin/admin_dashboard_screen.dart';
 import '../screens/farmer/farmer_dashboard_screen.dart';
 import '../screens/customer/customer_home_screen.dart';
@@ -17,14 +19,16 @@ class AppRouter {
       redirect: (context, state) {
         final bool isAuthenticated = authProvider.isAuthenticated;
         final user = authProvider.currentUser;
-        
+
         final bool isSplash = state.matchedLocation == '/splash';
         final bool isLogin = state.matchedLocation == '/login';
 
         if (isAuthenticated && user != null) {
-          if (user.isAdmin && !state.matchedLocation.startsWith('/admin')) return '/admin/dashboard';
-          if (user.isFarmer && !state.matchedLocation.startsWith('/farmer')) return '/farmer';
-          
+          if (user.isAdmin && !state.matchedLocation.startsWith('/admin'))
+            return '/admin/dashboard';
+          if (user.isFarmer && !state.matchedLocation.startsWith('/farmer'))
+            return '/farmer';
+
           if (user.isCustomer) {
             // If they are a customer and they just logged in on the /login screen (modal pop),
             // return null so the modal can Navigator.pop() back to their previous screen/action.
@@ -46,6 +50,17 @@ class AppRouter {
           builder: (context, state) => const SignInScreen(),
         ),
         GoRoute(
+          path: '/role_selection',
+          builder: (context, state) => const RoleSelectionScreen(),
+        ),
+        GoRoute(
+          path: '/create_account/:role',
+          builder: (context, state) {
+            final role = state.pathParameters['role'] ?? 'Customer';
+            return CreateAccountScreen(role: role);
+          },
+        ),
+        GoRoute(
           path: '/admin/:tab',
           builder: (context, state) {
             final tabStr = state.pathParameters['tab'] ?? 'dashboard';
@@ -64,7 +79,3 @@ class AppRouter {
     );
   }
 }
-
-
-
-

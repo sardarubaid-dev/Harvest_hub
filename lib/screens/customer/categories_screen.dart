@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
+
 import '../../core/dummy_data.dart';
 import 'products_screen.dart';
 
 class CategoriesScreen extends StatelessWidget {
   final Function(String) onCategorySelected;
 
-  const CategoriesScreen({Key? key, required this.onCategorySelected}) : super(key: key);
+  const CategoriesScreen({Key? key, required this.onCategorySelected})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     const Color primaryGreen = Color(0xFF2E7D32);
     const Color darkText = Color(0xFF1F2937);
     const Color background = Color(0xFFF9FBF9);
-    
+
     // Extracted categories from dummy data, excluding the "All" chip which is for the home filter
-    final categories = DummyData.categories.where((c) => c['name'] != 'All').toList();
+    final categories = DummyData.categories
+        .where((c) => c['name'] != 'All')
+        .toList();
     // Adding some more dummy categories to make the grid look full
     final allCategories = [
       ...categories,
@@ -31,7 +35,10 @@ class CategoriesScreen extends StatelessWidget {
           children: [
             // Header
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 16.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -46,16 +53,26 @@ class CategoriesScreen extends StatelessWidget {
                   Container(
                     width: 32,
                     height: 32,
-                    decoration: const BoxDecoration(color: primaryGreen, shape: BoxShape.circle),
-                    child: const Icon(Icons.person, color: Colors.white, size: 18),
+                    decoration: const BoxDecoration(
+                      color: primaryGreen,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.person,
+                      color: Colors.white,
+                      size: 18,
+                    ),
                   ),
                 ],
               ),
             ),
-            
+
             // Search Bar (Optional for Categories)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
               child: Container(
                 height: 50,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -63,7 +80,11 @@ class CategoriesScreen extends StatelessWidget {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
                   ],
                 ),
                 child: Row(
@@ -73,14 +94,17 @@ class CategoriesScreen extends StatelessWidget {
                     Expanded(
                       child: Text(
                         'Search categories...',
-                        style: TextStyle(color: Color(0xFF6B7280), fontSize: 14),
+                        style: TextStyle(
+                          color: Color(0xFF6B7280),
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
 
             // Grid View
@@ -114,7 +138,11 @@ class CategoriesScreen extends StatelessWidget {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.03),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
                         ],
                       ),
                       child: Column(
@@ -154,5 +182,3 @@ class CategoriesScreen extends StatelessWidget {
     );
   }
 }
-
-

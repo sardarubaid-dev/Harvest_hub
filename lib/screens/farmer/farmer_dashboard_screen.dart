@@ -18,14 +18,19 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
   final DatabaseService _dbService = DatabaseService();
   int _currentTabIndex = 0;
 
-  void _showAddProductModal(BuildContext context, String farmerId, String farmerName) {
+  void _showAddProductModal(
+    BuildContext context,
+    String farmerId,
+    String farmerName,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => _AddProductModal(farmerId: farmerId, farmerName: farmerName),
+      builder: (context) =>
+          _AddProductModal(farmerId: farmerId, farmerName: farmerName),
     );
   }
 
@@ -36,7 +41,10 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
 
     if (farmer == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Farmer Dashboard'), backgroundColor: Colors.amber.shade800),
+        appBar: AppBar(
+          title: const Text('Farmer Dashboard'),
+          backgroundColor: Colors.amber.shade800,
+        ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -99,10 +107,17 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
       ),
       floatingActionButton: _currentTabIndex == 0
           ? FloatingActionButton.extended(
-              onPressed: () => _showAddProductModal(context, farmer.id, farmer.farmName),
+              onPressed: () =>
+                  _showAddProductModal(context, farmer.id, farmer.farmName),
               backgroundColor: Colors.amber.shade800,
               icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text('Add Product', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              label: const Text(
+                'Add Product',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             )
           : null,
     );
@@ -113,7 +128,9 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
       stream: _dbService.streamProductsByFarmer(farmer.id),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator(color: Colors.amber));
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.amber),
+          );
         }
 
         List<ProductModel> products = snapshot.data ?? [];
@@ -127,34 +144,60 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
                   children: [
                     Card(
                       color: Colors.amber.shade50,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Row(
                           children: [
                             CircleAvatar(
                               backgroundColor: Colors.amber.shade800,
-                              child: const Icon(Icons.store, color: Colors.white),
+                              child: const Icon(
+                                Icons.store,
+                                color: Colors.white,
+                              ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(farmer.farmName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                  Text('${farmer.location} • ${farmer.contactNumber}', style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                                  Text(
+                                    farmer.farmName,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${farmer.location} • ${farmer.contactNumber}',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
-                                color: farmer.isApproved ? Colors.green : Colors.orange,
+                                color: farmer.isApproved
+                                    ? Colors.green
+                                    : Colors.orange,
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
                                 farmer.isApproved ? 'Approved' : 'Pending',
-                                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ],
@@ -165,7 +208,11 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: _buildStatCard('Active Listings', '${products.length}', Colors.blue),
+                          child: _buildStatCard(
+                            'Active Listings',
+                            '${products.length}',
+                            Colors.blue,
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -188,9 +235,16 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.eco_outlined, size: 64, color: AppColors.outline),
+                      const Icon(
+                        Icons.eco_outlined,
+                        size: 64,
+                        color: AppColors.outline,
+                      ),
                       const SizedBox(height: 16),
-                      const Text('No products added yet. Click Add Product below!', style: TextStyle(color: AppColors.outline)),
+                      const Text(
+                        'No products added yet. Click Add Product below!',
+                        style: TextStyle(color: AppColors.outline),
+                      ),
                     ],
                   ),
                 ),
@@ -199,12 +253,15 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
               SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      ProductModel product = products[index];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    ProductModel product = products[index];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
                         child: ListTile(
                           leading: Container(
                             width: 48,
@@ -213,21 +270,38 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
                               color: Colors.green.shade50,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: product.imageUrl != null && product.imageUrl!.isNotEmpty
-                                ? Image.network(product.imageUrl!, fit: BoxFit.cover)
+                            child:
+                                product.imageUrl != null &&
+                                    product.imageUrl!.isNotEmpty
+                                ? Image.network(
+                                    product.imageUrl!,
+                                    fit: BoxFit.cover,
+                                  )
                                 : const Icon(Icons.eco, color: Colors.green),
                           ),
-                          title: Text(product.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                          subtitle: Text('\$${product.price.toStringAsFixed(2)} / ${product.unit} • Stock: ${product.quantity.toInt()}'),
+                          title: Text(
+                            product.name,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            '\$${product.price.toStringAsFixed(2)} / ${product.unit} • Stock: ${product.quantity.toInt()}',
+                          ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.blue),
-                                onPressed: () => _showEditStockModal(context, product),
+                                icon: const Icon(
+                                  Icons.edit,
+                                  color: Colors.blue,
+                                ),
+                                onPressed: () =>
+                                    _showEditStockModal(context, product),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
                                 onPressed: () async {
                                   await _dbService.deleteProduct(product.id);
                                 },
@@ -235,10 +309,9 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
                             ],
                           ),
                         ),
-                      );
-                    },
-                    childCount: products.length,
-                  ),
+                      ),
+                    );
+                  }, childCount: products.length),
                 ),
               ),
             const SliverToBoxAdapter(child: SizedBox(height: 80)),
@@ -254,8 +327,18 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
         padding: const EdgeInsets.all(12),
         child: Column(
           children: [
-            Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color)),
-            Text(label, style: const TextStyle(fontSize: 12, color: AppColors.outline)),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 12, color: AppColors.outline),
+            ),
           ],
         ),
       ),
@@ -267,7 +350,9 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
       stream: _dbService.streamFarmerOrders(farmer.id),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator(color: Colors.amber));
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.amber),
+          );
         }
 
         List<OrderModel> orders = snapshot.data ?? [];
@@ -279,7 +364,10 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
               children: [
                 Icon(Icons.inbox, size: 64, color: AppColors.outline),
                 SizedBox(height: 16),
-                Text('No customer orders yet.', style: TextStyle(color: AppColors.outline, fontSize: 16)),
+                Text(
+                  'No customer orders yet.',
+                  style: TextStyle(color: AppColors.outline, fontSize: 16),
+                ),
               ],
             ),
           );
@@ -292,7 +380,9 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
             OrderModel order = orders[index];
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -301,16 +391,37 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Order #${order.id.substring(0, 6)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        Text(
+                          'Order #${order.id.substring(0, 6)}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
                         DropdownButton<String>(
                           value: order.status,
                           underline: const SizedBox(),
-                          items: ['Pending', 'Confirmed', 'Ready for Pickup', 'Completed', 'Cancelled']
-                              .map((status) => DropdownMenuItem(
-                                    value: status,
-                                    child: Text(status, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                                  ))
-                              .toList(),
+                          items:
+                              [
+                                    'Pending',
+                                    'Confirmed',
+                                    'Ready for Pickup',
+                                    'Completed',
+                                    'Cancelled',
+                                  ]
+                                  .map(
+                                    (status) => DropdownMenuItem(
+                                      value: status,
+                                      child: Text(
+                                        status,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
                           onChanged: (newStatus) {
                             if (newStatus != null) {
                               _dbService.updateOrderStatus(order.id, newStatus);
@@ -320,15 +431,31 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
                       ],
                     ),
                     const Divider(),
-                    Text('Customer: ${order.customerName ?? 'Customer'} (${order.customerPhone ?? ''})'),
+                    Text(
+                      'Customer: ${order.customerName ?? 'Customer'} (${order.customerPhone ?? ''})',
+                    ),
                     const SizedBox(height: 6),
-                    ...order.items.map((item) => Text('• ${item.quantity} ${item.unit} x ${item.productName} (\$${(item.price * item.quantity).toStringAsFixed(2)})')),
+                    ...order.items.map(
+                      (item) => Text(
+                        '• ${item.quantity} ${item.unit} x ${item.productName} (\$${(item.price * item.quantity).toStringAsFixed(2)})',
+                      ),
+                    ),
                     const Divider(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Total Revenue:', style: TextStyle(fontWeight: FontWeight.bold)),
-                        Text('\$${order.totalAmount.toStringAsFixed(2)}', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.amber.shade800, fontSize: 16)),
+                        const Text(
+                          'Total Revenue:',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          '\$${order.totalAmount.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.amber.shade800,
+                            fontSize: 16,
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -342,7 +469,9 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
   }
 
   void _showEditStockModal(BuildContext context, ProductModel product) {
-    final qtyController = TextEditingController(text: product.quantity.toString());
+    final qtyController = TextEditingController(
+      text: product.quantity.toString(),
+    );
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -353,10 +482,14 @@ class _FarmerDashboardScreenState extends State<FarmerDashboardScreen> {
           decoration: const InputDecoration(labelText: 'Stock Quantity'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () async {
-              double newQty = double.tryParse(qtyController.text) ?? product.quantity;
+              double newQty =
+                  double.tryParse(qtyController.text) ?? product.quantity;
               await _dbService.updateProductStock(product.id, newQty);
               if (context.mounted) Navigator.pop(context);
             },
@@ -416,7 +549,9 @@ class _AddProductModalState extends State<_AddProductModal> {
       price: price,
       unit: _unitController.text.trim(),
       quantity: qty,
-      imageUrl: _imageController.text.trim().isNotEmpty ? _imageController.text.trim() : null,
+      imageUrl: _imageController.text.trim().isNotEmpty
+          ? _imageController.text.trim()
+          : null,
       isAvailable: qty > 0,
       farmerName: widget.farmerName,
     );
@@ -428,7 +563,9 @@ class _AddProductModalState extends State<_AddProductModal> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Container(
         padding: const EdgeInsets.all(20),
         child: Form(
@@ -438,21 +575,40 @@ class _AddProductModalState extends State<_AddProductModal> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Add New Farm Harvest Item', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Add New Farm Harvest Item',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Item Name (e.g. Organic Tomatoes)'),
-                  validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+                  decoration: const InputDecoration(
+                    labelText: 'Item Name (e.g. Organic Tomatoes)',
+                  ),
+                  validator: (val) =>
+                      val == null || val.isEmpty ? 'Required' : null,
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   initialValue: _selectedCategory,
                   decoration: const InputDecoration(labelText: 'Category'),
-                  items: ['Fruits', 'Vegetables', 'Organic Products', 'Dairy', 'Pulses & Grains', 'Herbs & Spices']
-                      .map((cat) => DropdownMenuItem(value: cat, child: Text(cat)))
-                      .toList(),
-                  onChanged: (val) => setState(() => _selectedCategory = val ?? _selectedCategory),
+                  items:
+                      [
+                            'Fruits',
+                            'Vegetables',
+                            'Organic Products',
+                            'Dairy',
+                            'Pulses & Grains',
+                            'Herbs & Spices',
+                          ]
+                          .map(
+                            (cat) =>
+                                DropdownMenuItem(value: cat, child: Text(cat)),
+                          )
+                          .toList(),
+                  onChanged: (val) => setState(
+                    () => _selectedCategory = val ?? _selectedCategory,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -461,16 +617,22 @@ class _AddProductModalState extends State<_AddProductModal> {
                       child: TextFormField(
                         controller: _priceController,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(labelText: 'Price (\$)'),
-                        validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+                        decoration: const InputDecoration(
+                          labelText: 'Price (\$)',
+                        ),
+                        validator: (val) =>
+                            val == null || val.isEmpty ? 'Required' : null,
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: TextFormField(
                         controller: _unitController,
-                        decoration: const InputDecoration(labelText: 'Unit (kg, lb, dozen)'),
-                        validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+                        decoration: const InputDecoration(
+                          labelText: 'Unit (kg, lb, dozen)',
+                        ),
+                        validator: (val) =>
+                            val == null || val.isEmpty ? 'Required' : null,
                       ),
                     ),
                   ],
@@ -479,13 +641,18 @@ class _AddProductModalState extends State<_AddProductModal> {
                 TextFormField(
                   controller: _qtyController,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Initial Stock Quantity'),
-                  validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+                  decoration: const InputDecoration(
+                    labelText: 'Initial Stock Quantity',
+                  ),
+                  validator: (val) =>
+                      val == null || val.isEmpty ? 'Required' : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _imageController,
-                  decoration: const InputDecoration(labelText: 'Image URL (Optional)'),
+                  decoration: const InputDecoration(
+                    labelText: 'Image URL (Optional)',
+                  ),
                 ),
                 const SizedBox(height: 20),
                 SizedBox(
@@ -493,8 +660,14 @@ class _AddProductModalState extends State<_AddProductModal> {
                   height: 48,
                   child: ElevatedButton(
                     onPressed: _submitProduct,
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.amber.shade800, foregroundColor: Colors.white),
-                    child: const Text('Add Product to Marketplace', style: TextStyle(fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber.shade800,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text(
+                      'Add Product to Marketplace',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
               ],

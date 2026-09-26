@@ -89,16 +89,23 @@ class OrderModel {
       customerName: map['customerName'] ?? map['Customer_Name'],
       customerPhone: map['customerPhone'] ?? map['Customer_Phone'],
       farmerId: map['farmerId'] ?? map['Farmer_Id'],
-      items: (map['items'] as List<dynamic>? ?? map['Items_JSON'] as List<dynamic>? ?? [])
-          .map((item) => OrderItem.fromMap(Map<String, dynamic>.from(item)))
-          .toList(),
-      totalAmount: (map['totalAmount'] ?? map['Total_Price'] ?? map['totalPrice'] ?? 0).toDouble(),
+      items:
+          (map['items'] as List<dynamic>? ??
+                  map['Items_JSON'] as List<dynamic>? ??
+                  [])
+              .map((item) => OrderItem.fromMap(Map<String, dynamic>.from(item)))
+              .toList(),
+      totalAmount:
+          (map['totalAmount'] ?? map['Total_Price'] ?? map['totalPrice'] ?? 0)
+              .toDouble(),
       pickupSlotId: map['pickupSlotId'] ?? map['Pickup_Slot_Id'],
       pickupSlotTime: map['pickupSlotTime'] ?? map['Pickup_Slot_Time'],
       marketId: map['marketId'] ?? map['Market_Id'],
       status: map['status'] ?? map['Status'] ?? 'Pending',
-      paymentMethod: map['paymentMethod'] ?? map['Payment_Method'] ?? 'Simulated Checkout',
-      cancellationReason: map['cancellationReason'] ?? map['Cancellation_Reason'],
+      paymentMethod:
+          map['paymentMethod'] ?? map['Payment_Method'] ?? 'Simulated Checkout',
+      cancellationReason:
+          map['cancellationReason'] ?? map['Cancellation_Reason'],
       createdAt: map['createdAt'] != null
           ? DateTime.tryParse(map['createdAt'].toString()) ?? DateTime.now()
           : DateTime.now(),

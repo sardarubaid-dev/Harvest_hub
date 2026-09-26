@@ -4,17 +4,11 @@ class CartItemModel {
   final ProductModel product;
   final double quantity;
 
-  CartItemModel({
-    required this.product,
-    required this.quantity,
-  });
+  CartItemModel({required this.product, required this.quantity});
 
   double get subtotal => product.price * quantity;
 
-  CartItemModel copyWith({
-    ProductModel? product,
-    double? quantity,
-  }) {
+  CartItemModel copyWith({ProductModel? product, double? quantity}) {
     return CartItemModel(
       product: product ?? this.product,
       quantity: quantity ?? this.quantity,

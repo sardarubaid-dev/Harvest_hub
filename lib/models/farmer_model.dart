@@ -27,10 +27,12 @@ class FarmerModel {
     return FarmerModel(
       id: id,
       userId: map['userId'] ?? map['User_Id'] ?? '',
-      farmName: map['farmName'] ?? map['Business_Name'] ?? map['businessName'] ?? '',
+      farmName:
+          map['farmName'] ?? map['Business_Name'] ?? map['businessName'] ?? '',
       description: map['description'] ?? map['Description'] ?? '',
       location: map['location'] ?? map['Location'] ?? '',
-      contactNumber: map['contactNumber'] ?? map['ContactNumber'] ?? map['phone'] ?? '',
+      contactNumber:
+          map['contactNumber'] ?? map['ContactNumber'] ?? map['phone'] ?? '',
       marketId: map['marketId'] ?? map['Market_Id'],
       rating: (map['rating'] ?? map['Rating'] ?? 5.0).toDouble(),
       isApproved: map['isApproved'] ?? map['IsApproved'] ?? true,
@@ -51,7 +53,8 @@ class FarmerModel {
       'marketId': marketId,
       'rating': rating,
       'isApproved': isApproved,
-      'createdAt': createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
+      'createdAt':
+          createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
     };
   }
 

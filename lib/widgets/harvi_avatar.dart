@@ -1,4 +1,5 @@
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 enum HarviExpression { idle, greeting, thinking, talking, error }
@@ -7,17 +8,15 @@ class HarviAvatar extends StatefulWidget {
   final HarviExpression expression;
   final double size;
 
-  const HarviAvatar({
-    Key? key,
-    required this.expression,
-    this.size = 80.0,
-  }) : super(key: key);
+  const HarviAvatar({Key? key, required this.expression, this.size = 80.0})
+    : super(key: key);
 
   @override
   State<HarviAvatar> createState() => _HarviAvatarState();
 }
 
-class _HarviAvatarState extends State<HarviAvatar> with TickerProviderStateMixin {
+class _HarviAvatarState extends State<HarviAvatar>
+    with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late AnimationController _bounceController;
   late AnimationController _wobbleController;
@@ -26,13 +25,25 @@ class _HarviAvatarState extends State<HarviAvatar> with TickerProviderStateMixin
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
     _pulseController.repeat(reverse: true);
 
-    _bounceController = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
-    _wobbleController = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
-    _shakeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
-    
+    _bounceController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _wobbleController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _shakeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+
     _applyExpression(widget.expression);
   }
 
@@ -97,25 +108,31 @@ class _HarviAvatarState extends State<HarviAvatar> with TickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: Listenable.merge([_pulseController, _bounceController, _wobbleController, _shakeController]),
+      animation: Listenable.merge([
+        _pulseController,
+        _bounceController,
+        _wobbleController,
+        _shakeController,
+      ]),
       builder: (context, child) {
         double scale = 1.0;
         double dy = 0.0;
         double dx = 0.0;
         double rotation = 0.0;
 
-        if (widget.expression == HarviExpression.idle || widget.expression == HarviExpression.talking) {
+        if (widget.expression == HarviExpression.idle ||
+            widget.expression == HarviExpression.talking) {
           scale = 1.0 + (_pulseController.value * 0.05);
         }
-        
+
         if (widget.expression == HarviExpression.greeting) {
           dy = -(_bounceController.value * 15.0);
         }
-        
+
         if (widget.expression == HarviExpression.thinking) {
           rotation = sin(_wobbleController.value * pi) * 0.15;
         }
-        
+
         if (widget.expression == HarviExpression.error) {
           dx = sin(_shakeController.value * pi * 4) * 8.0;
         }
@@ -137,24 +154,28 @@ class _HarviAvatarState extends State<HarviAvatar> with TickerProviderStateMixin
                       color: Colors.green.withOpacity(0.3),
                       blurRadius: 15,
                       spreadRadius: _pulseController.value * 2,
-                    )
-                  ]
+                    ),
+                  ],
                 ),
                 child: ClipOval(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 400),
                     // Scale transition hides the misalignment by shrinking the old image and growing the new one!
-                    transitionBuilder: (Widget child, Animation<double> animation) {
-                      return ScaleTransition(scale: animation, child: child);
-                    },
+                    transitionBuilder:
+                        (Widget child, Animation<double> animation) {
+                          return ScaleTransition(
+                            scale: animation,
+                            child: child,
+                          );
+                        },
                     child: Image.asset(
                       _getAssetPath(),
                       key: ValueKey<String>(_getAssetPath()),
                       fit: BoxFit.cover,
                       width: widget.size,
                       height: widget.size,
-                      // MULTIPLY blend mode removes the white background of the JPEG
 
+                      // MULTIPLY blend mode removes the white background of the JPEG
                     ),
                   ),
                 ),
@@ -166,5 +187,3 @@ class _HarviAvatarState extends State<HarviAvatar> with TickerProviderStateMixin
     );
   }
 }
-
-

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../services/auth_service.dart';
 import 'customer_login_screen.dart';
 
@@ -15,7 +16,7 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
   final _passwordController = TextEditingController();
-  
+
   bool _obscurePassword = true;
   bool _agreedToTerms = false;
   bool _isLoading = false;
@@ -95,7 +96,11 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
                           color: primaryGreen,
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Icon(Icons.eco, color: Colors.white, size: 14),
+                        child: const Icon(
+                          Icons.eco,
+                          color: Colors.white,
+                          size: 14,
+                        ),
                       ),
                       const SizedBox(width: 6),
                       Column(
@@ -138,7 +143,11 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
                       color: primaryGreen,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.person, color: Colors.white, size: 18),
+                    child: const Icon(
+                      Icons.person,
+                      color: Colors.white,
+                      size: 18,
+                    ),
                   ),
                 ],
               ),
@@ -147,7 +156,10 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
 
               // Fresh Direct Honest Badge
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFA5D6A7), // Light green
                   borderRadius: BorderRadius.circular(20),
@@ -209,7 +221,11 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
                         height: 60,
                         color: Colors.grey[300],
                         // Use a local icon/color block if image not available
-                        child: const Icon(Icons.shopping_basket, color: Colors.grey, size: 30),
+                        child: const Icon(
+                          Icons.shopping_basket,
+                          color: Colors.grey,
+                          size: 30,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -219,12 +235,20 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
                         children: const [
                           Text(
                             'Rooted in Community',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: darkText),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: darkText,
+                            ),
                           ),
                           SizedBox(height: 4),
                           Text(
                             'Direct farm gates, zero intermediaries,\nguaranteed harvest-day freshness.',
-                            style: TextStyle(fontSize: 12, color: greyText, height: 1.3),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: greyText,
+                              height: 1.3,
+                            ),
                           ),
                         ],
                       ),
@@ -245,7 +269,11 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
 
               const SizedBox(height: 16),
 
-              _buildFieldHeader('Email Address', 'Order receipt & updates', null),
+              _buildFieldHeader(
+                'Email Address',
+                'Order receipt & updates',
+                null,
+              ),
               _buildTextField(
                 controller: _emailController,
                 hint: 'e.g. ubaid@example.com',
@@ -255,21 +283,37 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
 
               const SizedBox(height: 16),
 
-              _buildFieldHeader('Mobile Number', 'Pickup SMS OTPs', Icons.chat_outlined),
+              _buildFieldHeader(
+                'Mobile Number',
+                'Pickup SMS OTPs',
+                Icons.chat_outlined,
+              ),
               Row(
                 children: [
                   Container(
                     height: 50,
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE5E7EB), // Light grey for country code
+                      color: const Color(
+                        0xFFE5E7EB,
+                      ), // Light grey for country code
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
                       children: const [
-                        Text('+92', style: TextStyle(fontWeight: FontWeight.w600, color: darkText)),
+                        Text(
+                          '+92',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: darkText,
+                          ),
+                        ),
                         SizedBox(width: 4),
-                        Icon(Icons.keyboard_arrow_down, size: 16, color: darkText),
+                        Icon(
+                          Icons.keyboard_arrow_down,
+                          size: 16,
+                          color: darkText,
+                        ),
                       ],
                     ),
                   ),
@@ -292,7 +336,11 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
 
               const SizedBox(height: 16),
 
-              _buildFieldHeader('Delivery / Pickup Area', 'Use Current', Icons.my_location),
+              _buildFieldHeader(
+                'Delivery / Pickup Area',
+                'Use Current',
+                Icons.my_location,
+              ),
               _buildTextField(
                 controller: _addressController,
                 hint: 'e.g. DHA Phase 6, Karachi',
@@ -308,21 +356,56 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
                 hint: 'At least 8 characters',
                 icon: Icons.lock_outline,
                 obscureText: _obscurePassword,
-                suffixIcon: _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                onSuffixTap: () => setState(() => _obscurePassword = !_obscurePassword),
+                suffixIcon: _obscurePassword
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
+                onSuffixTap: () =>
+                    setState(() => _obscurePassword = !_obscurePassword),
               ),
               const SizedBox(height: 8),
 
               // Password Strength Indicator
               Row(
                 children: [
-                  Expanded(child: Container(height: 4, decoration: BoxDecoration(color: const Color(0xFFD1D5DB), borderRadius: BorderRadius.circular(2)))),
+                  Expanded(
+                    child: Container(
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD1D5DB),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
                   const SizedBox(width: 4),
-                  Expanded(child: Container(height: 4, decoration: BoxDecoration(color: const Color(0xFFD1D5DB), borderRadius: BorderRadius.circular(2)))),
+                  Expanded(
+                    child: Container(
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD1D5DB),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
                   const SizedBox(width: 4),
-                  Expanded(child: Container(height: 4, decoration: BoxDecoration(color: const Color(0xFFD1D5DB), borderRadius: BorderRadius.circular(2)))),
+                  Expanded(
+                    child: Container(
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD1D5DB),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
                   const SizedBox(width: 4),
-                  Expanded(child: Container(height: 4, decoration: BoxDecoration(color: const Color(0xFFD1D5DB), borderRadius: BorderRadius.circular(2)))),
+                  Expanded(
+                    child: Container(
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD1D5DB),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 8),
@@ -333,10 +416,20 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
                     children: [
                       Icon(Icons.shield_outlined, size: 14, color: greyText),
                       SizedBox(width: 4),
-                      Text('Password strength', style: TextStyle(fontSize: 11, color: darkText, fontWeight: FontWeight.w600)),
+                      Text(
+                        'Password strength',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: darkText,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ],
                   ),
-                  Text('Min. 8 characters', style: TextStyle(fontSize: 11, color: greyText)),
+                  Text(
+                    'Min. 8 characters',
+                    style: TextStyle(fontSize: 11, color: greyText),
+                  ),
                 ],
               ),
 
@@ -351,9 +444,12 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
                     height: 24,
                     child: Checkbox(
                       value: _agreedToTerms,
-                      onChanged: (val) => setState(() => _agreedToTerms = val ?? false),
+                      onChanged: (val) =>
+                          setState(() => _agreedToTerms = val ?? false),
                       activeColor: primaryGreen,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                       side: const BorderSide(color: Color(0xFF9CA3AF)),
                     ),
                   ),
@@ -364,9 +460,23 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
                         text: 'I agree to the ',
                         style: TextStyle(fontSize: 13, color: darkText),
                         children: [
-                          TextSpan(text: 'Terms of Service', style: TextStyle(color: primaryGreen, fontWeight: FontWeight.bold, decoration: TextDecoration.underline)),
+                          TextSpan(
+                            text: 'Terms of Service',
+                            style: TextStyle(
+                              color: primaryGreen,
+                              fontWeight: FontWeight.bold,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
                           TextSpan(text: ' & '),
-                          TextSpan(text: 'Privacy Policy', style: TextStyle(color: primaryGreen, fontWeight: FontWeight.bold, decoration: TextDecoration.underline)),
+                          TextSpan(
+                            text: 'Privacy Policy',
+                            style: TextStyle(
+                              color: primaryGreen,
+                              fontWeight: FontWeight.bold,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -394,14 +504,20 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
                       ? const SizedBox(
                           height: 20,
                           width: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
                         )
                       : const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
                               'Create Account',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             SizedBox(width: 8),
                             Icon(Icons.arrow_forward, size: 20),
@@ -415,7 +531,10 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
               // 100% Free Badge
               Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFE5E7EB),
                     borderRadius: BorderRadius.circular(20),
@@ -423,11 +542,19 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: const [
-                      Icon(Icons.grass, size: 16, color: Colors.orange), // Wheat icon placeholder
+                      Icon(
+                        Icons.grass,
+                        size: 16,
+                        color: Colors.orange,
+                      ), // Wheat icon placeholder
                       SizedBox(width: 8),
                       Text(
                         '100% Free registration • No hidden fees',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: darkText),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: darkText,
+                        ),
                       ),
                     ],
                   ),
@@ -450,16 +577,36 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
                         children: [
                           Container(
                             padding: const EdgeInsets.all(6),
-                            decoration: const BoxDecoration(color: Color(0xFFA5D6A7), shape: BoxShape.circle),
-                            child: const Icon(Icons.verified_user_outlined, size: 16, color: primaryGreen),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFA5D6A7),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.verified_user_outlined,
+                              size: 16,
+                              color: primaryGreen,
+                            ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: const [
-                                Text('Verified Farms', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: darkText)),
-                                Text('100% organic audits', style: TextStyle(fontSize: 9, color: greyText)),
+                                Text(
+                                  'Verified Farms',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: darkText,
+                                  ),
+                                ),
+                                Text(
+                                  '100% organic audits',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    color: greyText,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -479,16 +626,36 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
                         children: [
                           Container(
                             padding: const EdgeInsets.all(6),
-                            decoration: const BoxDecoration(color: Color(0xFFA5D6A7), shape: BoxShape.circle),
-                            child: const Icon(Icons.local_shipping_outlined, size: 16, color: primaryGreen),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFA5D6A7),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.local_shipping_outlined,
+                              size: 16,
+                              color: primaryGreen,
+                            ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: const [
-                                Text('Same-Day Pickup', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: darkText)),
-                                Text('Hub lock-in slots', style: TextStyle(fontSize: 9, color: greyText)),
+                                Text(
+                                  'Same-Day Pickup',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: darkText,
+                                  ),
+                                ),
+                                Text(
+                                  'Hub lock-in slots',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    color: greyText,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -505,9 +672,17 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Already registered? ', style: TextStyle(fontSize: 13, color: greyText)),
+                  const Text(
+                    'Already registered? ',
+                    style: TextStyle(fontSize: 13, color: greyText),
+                  ),
                   GestureDetector(
-                    onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const CustomerLoginScreen())),
+                    onTap: () => Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const CustomerLoginScreen(),
+                      ),
+                    ),
                     child: const Text(
                       'Sign In',
                       style: TextStyle(
@@ -528,7 +703,11 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
     );
   }
 
-  Widget _buildFieldHeader(String title, String? rightText, IconData? rightIcon) {
+  Widget _buildFieldHeader(
+    String title,
+    String? rightText,
+    IconData? rightIcon,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Row(
@@ -536,7 +715,11 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
         children: [
           Text(
             title,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1F2937)),
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1F2937),
+            ),
           ),
           if (rightText != null)
             Row(
@@ -550,7 +733,9 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: rightIcon != null ? const Color(0xFF2E7D32) : const Color(0xFF6B7280),
+                    color: rightIcon != null
+                        ? const Color(0xFF2E7D32)
+                        : const Color(0xFF6B7280),
                   ),
                 ),
               ],
@@ -586,7 +771,11 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
           prefixIcon: Icon(icon, color: const Color(0xFF6B7280), size: 20),
           suffixIcon: suffixIcon != null
               ? IconButton(
-                  icon: Icon(suffixIcon, color: const Color(0xFF6B7280), size: 20),
+                  icon: Icon(
+                    suffixIcon,
+                    color: const Color(0xFF6B7280),
+                    size: 20,
+                  ),
                   onPressed: onSuffixTap,
                 )
               : null,
