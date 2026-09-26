@@ -10,6 +10,7 @@ class ProductModel {
   final double quantity;
   final String? imageUrl;
   final bool isAvailable;
+  final bool isOrganic;
   final String? farmerName;
   final DateTime? createdAt;
 
@@ -25,6 +26,7 @@ class ProductModel {
     required this.quantity,
     this.imageUrl,
     required this.isAvailable,
+    this.isOrganic = false,
     this.farmerName,
     this.createdAt,
   });
@@ -51,6 +53,7 @@ class ProductModel {
       isAvailable:
           map['isAvailable'] ??
           ((map['quantity'] ?? map['Stock_Qty'] ?? 0) > 0),
+      isOrganic: map['isOrganic'] ?? false,
       farmerName: map['farmerName'] ?? map['Farmer_Name'],
       createdAt: map['createdAt'] != null
           ? DateTime.tryParse(map['createdAt'].toString())
@@ -76,6 +79,7 @@ class ProductModel {
       'imageUrl': imageUrl,
       'Image_Url': imageUrl,
       'isAvailable': isAvailable && quantity > 0,
+      'isOrganic': isOrganic,
       'farmerName': farmerName,
       'createdAt':
           createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
@@ -94,6 +98,7 @@ class ProductModel {
     double? quantity,
     String? imageUrl,
     bool? isAvailable,
+    bool? isOrganic,
     String? farmerName,
     DateTime? createdAt,
   }) {
@@ -109,6 +114,7 @@ class ProductModel {
       quantity: quantity ?? this.quantity,
       imageUrl: imageUrl ?? this.imageUrl,
       isAvailable: isAvailable ?? this.isAvailable,
+      isOrganic: isOrganic ?? this.isOrganic,
       farmerName: farmerName ?? this.farmerName,
       createdAt: createdAt ?? this.createdAt,
     );

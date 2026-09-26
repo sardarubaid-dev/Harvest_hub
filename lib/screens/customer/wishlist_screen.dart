@@ -49,7 +49,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                     size: 64,
                     color: Colors.grey[300],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 25),
                   const Text(
                     'Your wishlist is empty',
                     style: TextStyle(fontSize: 16, color: greyText),

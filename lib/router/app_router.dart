@@ -8,7 +8,7 @@ import '../providers/auth_provider.dart';
 import '../screens/common/splash_screen.dart';
 import '../screens/auth/sign_in_screen.dart';
 import '../screens/admin/admin_main_screen.dart';
-import '../screens/farmer/farmer_dashboard_screen.dart';
+import '../screens/farmer/farmer_main_screen.dart';
 import '../screens/customer/customer_home_screen.dart';
 
 class AppRouter {
@@ -25,7 +25,7 @@ class AppRouter {
 
         if (isAuthenticated && user != null) {
           if (user.isAdmin && !state.uri.toString().startsWith('/admin')) return '/admin/dashboard';
-          if (user.isFarmer && !state.uri.toString().startsWith('/farmer')) return '/farmer';
+          if (user.isFarmer && !state.uri.toString().startsWith('/farmer')) return '/farmer/dashboard';
           
           if (user.isCustomer) {
             // If they are a customer and they just logged in on the /login screen (modal pop),
@@ -66,8 +66,11 @@ class AppRouter {
           },
         ),
         GoRoute(
-          path: '/farmer',
-          builder: (context, state) => const FarmerDashboardScreen(),
+          path: '/farmer/:tab',
+          builder: (context, state) {
+            final tabStr = state.pathParameters['tab'] ?? 'dashboard';
+            return FarmerMainScreen(initialTab: tabStr);
+          },
         ),
         GoRoute(
           path: '/customer',
