@@ -62,7 +62,6 @@ class DefaultFirebaseOptions {
     projectId: 'harvest-hub-9ccfb',
     storageBucket: 'harvest-hub-9ccfb.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBgKTdYgAJsDwV8TAmKW3IiCdLCK28os9Y',
     appId: '1:970168239081:ios:4400e737beade097524178',

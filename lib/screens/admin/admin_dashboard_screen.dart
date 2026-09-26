@@ -169,6 +169,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     _currentTabIndex = _getTabIndexFromString(widget.initialTab);
   }
 
+  @override
+  void didUpdateWidget(AdminDashboardScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialTab != oldWidget.initialTab) {
+      setState(() {
+        _currentTabIndex = _getTabIndexFromString(widget.initialTab);
+      });
+    }
+  }
+
   int _getTabIndexFromString(String tab) {
     switch (tab) {
       case 'dashboard': return 0;
@@ -827,3 +837,5 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 }
+
+

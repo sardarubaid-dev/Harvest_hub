@@ -21,14 +21,16 @@ class AppRouter {
         final bool isSplash = state.matchedLocation == '/splash';
         final bool isLogin = state.matchedLocation == '/login';
 
-// Guest mode is allowed, no forced redirect to /login
-
-        // If authenticated and trying to access splash, login or root, redirect to role dashboard
-        if (isSplash || isLogin || state.matchedLocation == '/') {
-          if (user != null) {
-            if (user.isAdmin) return '/admin/dashboard';
-            if (user.isFarmer) return '/farmer';
-            return '/customer';
+        if (isAuthenticated && user != null) {
+          if (user.isAdmin && !state.matchedLocation.startsWith('/admin')) return '/admin/dashboard';
+          if (user.isFarmer && !state.matchedLocation.startsWith('/farmer')) return '/farmer';
+          
+          if (user.isCustomer) {
+            // If they are a customer and they just logged in on the /login screen (modal pop),
+            // return null so the modal can Navigator.pop() back to their previous screen/action.
+            if (isLogin) return null;
+            // Otherwise, keep them off splash/root
+            if (isSplash || state.matchedLocation == '/') return '/customer';
           }
         }
 
@@ -62,6 +64,7 @@ class AppRouter {
     );
   }
 }
+
 
 
 
