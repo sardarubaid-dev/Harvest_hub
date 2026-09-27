@@ -9,7 +9,12 @@ import '../screens/common/splash_screen.dart';
 import '../screens/auth/sign_in_screen.dart';
 import '../screens/admin/admin_main_screen.dart';
 import '../screens/farmer/farmer_main_screen.dart';
+import '../screens/farmer/farmer_categories_screen.dart';
+import '../screens/farmer/add_product_screen.dart';
+import '../screens/farmer/farmer_market_pickup_screen.dart';
+import '../screens/farmer/farmer_notifications_screen.dart';
 import '../screens/customer/customer_home_screen.dart';
+import '../screens/customer/search_filter_screen.dart';
 
 class AppRouter {
   static GoRouter createRouter(AuthProvider authProvider) {
@@ -22,10 +27,11 @@ class AppRouter {
 
         final bool isSplash = state.matchedLocation == '/splash';
         final bool isLogin = state.matchedLocation == '/login';
+        final String uriStr = state.uri.toString();
 
         if (isAuthenticated && user != null) {
-          if (user.isAdmin && !state.uri.toString().startsWith('/admin')) return '/admin/dashboard';
-          if (user.isFarmer && !state.uri.toString().startsWith('/farmer')) return '/farmer/dashboard';
+          if (user.isAdmin && !uriStr.startsWith('/admin')) return '/admin/dashboard';
+          if (user.isFarmer && !uriStr.startsWith('/farmer')) return '/farmer/dashboard';
           
           if (user.isCustomer) {
             // If they are a customer and they just logged in on the /login screen (modal pop),
@@ -33,6 +39,11 @@ class AppRouter {
             if (isLogin) return null;
             // Otherwise, keep them off splash/root
             if (isSplash || state.matchedLocation == '/') return '/customer';
+          }
+        } else {
+          // User is logged out / unauthenticated
+          if (uriStr.startsWith('/farmer') || uriStr.startsWith('/admin')) {
+            return '/login';
           }
         }
 
@@ -66,6 +77,22 @@ class AppRouter {
           },
         ),
         GoRoute(
+          path: '/farmer/categories',
+          builder: (context, state) => const FarmerCategoriesScreen(),
+        ),
+        GoRoute(
+          path: '/farmer/add-product',
+          builder: (context, state) => const AddProductScreen(),
+        ),
+        GoRoute(
+          path: '/farmer/market-pickup',
+          builder: (context, state) => const FarmerMarketPickupScreen(),
+        ),
+        GoRoute(
+          path: '/farmer/notifications',
+          builder: (context, state) => const FarmerNotificationsScreen(),
+        ),
+        GoRoute(
           path: '/farmer/:tab',
           builder: (context, state) {
             final tabStr = state.pathParameters['tab'] ?? 'dashboard';
@@ -75,6 +102,10 @@ class AppRouter {
         GoRoute(
           path: '/customer',
           builder: (context, state) => const CustomerHomeScreen(),
+        ),
+        GoRoute(
+          path: '/search',
+          builder: (context, state) => const SearchFilterScreen(),
         ),
       ],
     );

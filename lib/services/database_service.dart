@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/user_model.dart';
@@ -202,7 +203,7 @@ class DatabaseService {
 
   Stream<List<ProductModel>> streamAllProducts() {
     return _productsRef.snapshots().map((snapshot) {
-      return snapshot.docs
+      final firestoreProducts = snapshot.docs
           .map(
             (doc) => ProductModel.fromMap(
               doc.id,
@@ -210,6 +211,13 @@ class DatabaseService {
             ),
           )
           .toList();
+
+      final existingIds = firestoreProducts.map((p) => p.id).toSet();
+      final seedMatches = DummyData.seedProducts
+          .where((p) => !existingIds.contains(p.id))
+          .toList();
+
+      return [...firestoreProducts, ...seedMatches];
     });
   }
 
@@ -217,7 +225,7 @@ class DatabaseService {
     return _productsRef.where('farmerId', isEqualTo: farmerId).snapshots().map((
       snapshot,
     ) {
-      return snapshot.docs
+      final firestoreProducts = snapshot.docs
           .map(
             (doc) => ProductModel.fromMap(
               doc.id,
@@ -225,6 +233,13 @@ class DatabaseService {
             ),
           )
           .toList();
+
+      final existingIds = firestoreProducts.map((p) => p.id).toSet();
+      final seedMatches = DummyData.seedProducts
+          .where((p) => p.farmerId == farmerId && !existingIds.contains(p.id))
+          .toList();
+
+      return [...firestoreProducts, ...seedMatches];
     });
   }
 
@@ -233,7 +248,7 @@ class DatabaseService {
         .where('categoryId', isEqualTo: categoryId)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs
+          final firestoreProducts = snapshot.docs
               .map(
                 (doc) => ProductModel.fromMap(
                   doc.id,
@@ -241,6 +256,16 @@ class DatabaseService {
                 ),
               )
               .toList();
+
+          final existingIds = firestoreProducts.map((p) => p.id).toSet();
+          final seedMatches = DummyData.seedProducts
+              .where(
+                (p) =>
+                    p.categoryId == categoryId && !existingIds.contains(p.id),
+              )
+              .toList();
+
+          return [...firestoreProducts, ...seedMatches];
         });
   }
 
@@ -248,6 +273,29 @@ class DatabaseService {
     DocumentReference ref = _productsRef.doc();
     ProductModel newProduct = product.copyWith(id: ref.id);
     await ref.set(newProduct.toMap());
+
+    // Sync in-memory seed and fresh product caches for instant reactivity
+    DummyData.seedProducts.removeWhere((p) => p.id == newProduct.id);
+    DummyData.seedProducts.insert(0, newProduct);
+
+    DummyData.freshProducts.removeWhere((p) => p['id'] == newProduct.id);
+    DummyData.freshProducts.insert(0, {
+      'id': newProduct.id,
+      'title': newProduct.name,
+      'category': newProduct.categoryName.isNotEmpty
+          ? newProduct.categoryName.toUpperCase()
+          : 'PRODUCE',
+      'farmerName': newProduct.farmerName ?? 'Local Farmer',
+      'price': newProduct.price.toStringAsFixed(0),
+      'unit': '/ ${newProduct.unit}',
+      'stockBadge':
+          '${newProduct.quantity.toInt()} ${newProduct.unit} available',
+      'isFavorite': false,
+      'imageUrl': newProduct.imageUrl,
+      'imageColor': const Color(0xFFA5D6A7),
+      'isOrganic': newProduct.isOrganic,
+      'description': newProduct.description,
+    });
   }
 
   Future<void> updateProduct(ProductModel product) async {
@@ -259,6 +307,24 @@ class DatabaseService {
 
     await _productsRef.doc(product.id).update(product.toMap());
 
+    // Update in-memory seed and fresh products
+    final idx = DummyData.seedProducts.indexWhere((p) => p.id == product.id);
+    if (idx != -1) {
+      DummyData.seedProducts[idx] = product;
+    } else {
+      DummyData.seedProducts.insert(0, product);
+    }
+
+    final freshIdx = DummyData.freshProducts.indexWhere((p) => p['id'] == product.id);
+    if (freshIdx != -1) {
+      DummyData.freshProducts[freshIdx]['title'] = product.name;
+      DummyData.freshProducts[freshIdx]['price'] = product.price.toStringAsFixed(0);
+      DummyData.freshProducts[freshIdx]['unit'] = '/ ${product.unit}';
+      DummyData.freshProducts[freshIdx]['stockBadge'] = '${product.quantity.toInt()} ${product.unit} available';
+      DummyData.freshProducts[freshIdx]['imageUrl'] = product.imageUrl;
+      DummyData.freshProducts[freshIdx]['description'] = product.description;
+    }
+
     if (oldQty == 0 && product.quantity > 0) {
       await _triggerRestockNotifications(product);
     }
@@ -266,6 +332,8 @@ class DatabaseService {
 
   Future<void> deleteProduct(String productId) async {
     await _productsRef.doc(productId).delete();
+    DummyData.seedProducts.removeWhere((p) => p.id == productId);
+    DummyData.freshProducts.removeWhere((p) => p['id'] == productId);
   }
 
   Future<void> updateProductStock(String productId, double newQuantity) async {
@@ -275,6 +343,14 @@ class DatabaseService {
       'Stock_Qty': newQuantity,
       'isAvailable': isAvail,
     });
+
+    final idx = DummyData.seedProducts.indexWhere((p) => p.id == productId);
+    if (idx != -1) {
+      DummyData.seedProducts[idx] = DummyData.seedProducts[idx].copyWith(
+        quantity: newQuantity,
+        isAvailable: isAvail,
+      );
+    }
   }
 
   Future<void> _triggerRestockNotifications(ProductModel product) async {
@@ -288,7 +364,7 @@ class DatabaseService {
           followed.contains(product.farmerId)) {
         await sendNotification(
           userId: doc.id,
-          title: "Item Restocked! 🌾",
+          title: "Item Restocked!",
           message:
               "${product.name} is now back in stock with ${product.quantity} ${product.unit} available!",
           type: "restock",
@@ -478,6 +554,14 @@ class DatabaseService {
           orders.add(order);
         }
       }
+      if (orders.isEmpty) {
+        final dummyOrders = DummyData.seedOrders
+            .where((o) =>
+                o.farmerId == farmerId ||
+                o.items.any((it) => it.farmerId == farmerId))
+            .toList();
+        if (dummyOrders.isNotEmpty) return dummyOrders;
+      }
       orders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return orders;
     });
@@ -565,6 +649,12 @@ class DatabaseService {
   Stream<List<NotificationModel>> streamUserNotifications(String userId) {
     return _notificationsRef.where('userId', isEqualTo: userId).snapshots().map(
       (snapshot) {
+        if (snapshot.docs.isEmpty) {
+          final dummyNotifs = DummyData.seedNotifications
+              .where((n) => n.userId == userId || userId == 'u2' || userId == 'f1')
+              .toList();
+          if (dummyNotifs.isNotEmpty) return dummyNotifs;
+        }
         List<NotificationModel> list = snapshot.docs
             .map(
               (doc) => NotificationModel.fromMap(
@@ -581,6 +671,14 @@ class DatabaseService {
 
   Future<void> markNotificationAsRead(String notificationId) async {
     await _notificationsRef.doc(notificationId).update({'isRead': true});
+  }
+
+  Future<void> markAllNotificationsAsRead(String userId) async {
+    QuerySnapshot snap =
+        await _notificationsRef.where('userId', isEqualTo: userId).get();
+    for (var doc in snap.docs) {
+      await doc.reference.update({'isRead': true});
+    }
   }
 
   Future<void> seedInitialData() async {

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
-import 'customer_login_screen.dart';
+import 'login_screen.dart';
 import '../customer/customer_home_screen.dart';
-import '../farmer/farmer_dashboard_screen.dart';
+import '../farmer/farmer_dashboard_tab.dart';
 import '../admin/admin_dashboard_screen.dart';
 
 class AuthGate extends StatelessWidget {
@@ -37,18 +37,18 @@ class AuthGate extends StatelessWidget {
     }
 
     if (!authProvider.isAuthenticated) {
-      return const CustomerLoginScreen();
+      return const LoginScreen();
     }
 
     final user = authProvider.currentUser;
     if (user == null) {
-      return const CustomerLoginScreen();
+      return const LoginScreen();
     }
 
     if (user.isAdmin) {
       return const AdminDashboardScreen();
     } else if (user.isFarmer) {
-      return const FarmerDashboardScreen();
+      return const FarmerDashboardTab();
     } else {
       return const CustomerHomeScreen();
     }

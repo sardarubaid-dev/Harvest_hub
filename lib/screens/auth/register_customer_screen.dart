@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../services/auth_service.dart';
-import 'customer_login_screen.dart';
+import 'login_screen.dart';
 
 class RegisterCustomerScreen extends StatefulWidget {
   const RegisterCustomerScreen({Key? key}) : super(key: key);
@@ -680,7 +680,7 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
                     onTap: () => Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const CustomerLoginScreen(),
+                        builder: (_) => const LoginScreen(),
                       ),
                     ),
                     child: const Text(

@@ -14,11 +14,15 @@ import '../models/cart_item_model.dart';
 class DummyData {
   // Simulating JSON data for Categories
   static const List<Map<String, dynamic>> categories = [
-    {'id': '1', 'name': 'All', 'icon': Icons.apps},
-    {'id': '2', 'name': 'Fruits', 'icon': Icons.apple},
-    {'id': '3', 'name': 'Vegetables', 'icon': Icons.eco},
-    {'id': '4', 'name': 'Dairy', 'icon': Icons.water_drop},
-    {'id': '5', 'name': 'Meat', 'icon': Icons.set_meal},
+    {'id': '1', 'name': 'All', 'icon': Icons.apps, 'count': '48 items'},
+    {'id': '2', 'name': 'Vegetables', 'icon': Icons.eco, 'count': '18 items'},
+    {'id': '3', 'name': 'Fruits', 'icon': Icons.apple, 'count': '12 items'},
+    {'id': '4', 'name': 'Dairy & Eggs', 'icon': Icons.water_drop, 'count': '8 items'},
+    {'id': '5', 'name': 'Farm Honey', 'icon': Icons.hive, 'count': '5 items'},
+    {'id': '6', 'name': 'Organic Herbs', 'icon': Icons.local_florist, 'count': '9 items'},
+    {'id': '7', 'name': 'Cold Pressed Oils', 'icon': Icons.opacity, 'count': '4 items'},
+    {'id': '8', 'name': 'Grains & Pulses', 'icon': Icons.grass, 'count': '11 items'},
+    {'id': '9', 'name': 'Meat & Poultry', 'icon': Icons.set_meal, 'count': '6 items'},
   ];
 
   // Simulating JSON data for Fresh Near You (Products)
@@ -302,10 +306,14 @@ class DummyData {
   // 6. Categories
   static List<CategoryModel> seedCategories = [
     CategoryModel(id: '1', name: 'All'),
-    CategoryModel(id: '2', name: 'Fruits'),
-    CategoryModel(id: '3', name: 'Vegetables'),
-    CategoryModel(id: '4', name: 'Dairy'),
-    CategoryModel(id: '5', name: 'Meat'),
+    CategoryModel(id: '2', name: 'Vegetables'),
+    CategoryModel(id: '3', name: 'Fruits'),
+    CategoryModel(id: '4', name: 'Dairy & Eggs'),
+    CategoryModel(id: '5', name: 'Farm Honey'),
+    CategoryModel(id: '6', name: 'Organic Herbs'),
+    CategoryModel(id: '7', name: 'Cold Pressed Oils'),
+    CategoryModel(id: '8', name: 'Grains & Pulses'),
+    CategoryModel(id: '9', name: 'Meat & Poultry'),
   ];
 
   // 7. Pickup Slots

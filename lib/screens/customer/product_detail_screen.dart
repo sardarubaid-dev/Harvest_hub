@@ -142,43 +142,25 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         Container(
                           height: 300,
                           width: double.infinity,
-                          color:
-                              widget.product?['imageColor'] ?? Colors.red[300],
-                          // If we had a real image URL, we'd use Image.network
-                          // For now, we simulate the tomatoes image with a colored block or placeholder
-                          child: widget.product == null
-                              ? Stack(
-                                  fit: StackFit.expand,
-                                  children: [
-                                    // Simulated image background
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: [
-                                            Colors.green[200]!,
-                                            Colors.red[300]!,
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    const Center(
-                                      child: Icon(
-                                        Icons.image,
-                                        size: 100,
-                                        color: Colors.white54,
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              : const Center(
-                                  child: Icon(
-                                    Icons.image,
-                                    size: 100,
-                                    color: Colors.white54,
-                                  ),
-                                ),
+                          color: widget.product?['imageColor'] ?? const Color(0xFFA5D6A7),
+                          child: Builder(
+                            builder: (context) {
+                              final imageUrl = widget.product?['imageUrl'] ??
+                                  widget.product?['Image_Url'];
+                              if (imageUrl != null &&
+                                  imageUrl.toString().trim().isNotEmpty) {
+                                return Image.network(
+                                  imageUrl.toString().trim(),
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: 300,
+                                  errorBuilder: (_, __, ___) =>
+                                      _buildImagePlaceholder(),
+                                );
+                              }
+                              return _buildImagePlaceholder();
+                            },
+                          ),
                         ),
                         Positioned(
                           top: 16,
@@ -311,15 +293,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Row(
-                                  children: const [
-                                    CircleAvatar(
+                                  children: [
+                                    const CircleAvatar(
                                       radius: 3,
                                       backgroundColor: primaryGreen,
                                     ),
                                     SizedBox(width: 6),
                                     Text(
-                                      'In Stock • 12 kg available',
-                                      style: TextStyle(
+                                      widget.product?['stockBadge'] ??
+                                          'In Stock • Available',
+                                      style: const TextStyle(
                                         color: primaryGreen,
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
@@ -543,9 +526,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   ],
                                 ),
                                 const SizedBox(height: 12),
-                                const Text(
-                                  'Locally grown pesticide-free beefsteak tomatoes ripened under natural sunlight. Crisp texture with rich balanced sweetness and acidity, perfect for fresh salads, sauces, and daily cooking.',
-                                  style: TextStyle(
+                                Text(
+                                  widget.product?['description'] ??
+                                      'Locally grown pesticide-free produce ripened under natural sunlight. Crisp texture with rich balanced sweetness and acidity, perfect for fresh cooking.',
+                                  style: const TextStyle(
                                     fontSize: 14,
                                     color: greyText,
                                     height: 1.5,
@@ -1070,6 +1054,61 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildImagePlaceholder() {
+    final title = (widget.product?['title'] ?? widget.product?['name'] ?? '').toString();
+    final cat = (widget.product?['category'] ?? '').toString().toLowerCase();
+
+    String fallbackUrl =
+        'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=600&auto=format&fit=crop';
+    if (cat.contains('dairy') ||
+        title.toLowerCase().contains('milk') ||
+        title.toLowerCase().contains('ghee')) {
+      fallbackUrl =
+          'https://images.unsplash.com/photo-1563636619-e9143da7973b?q=80&w=600&auto=format&fit=crop';
+    } else if (cat.contains('fruit') ||
+        title.toLowerCase().contains('apple')) {
+      fallbackUrl =
+          'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?q=80&w=600&auto=format&fit=crop';
+    } else if (cat.contains('honey') ||
+        title.toLowerCase().contains('honey')) {
+      fallbackUrl =
+          'https://images.unsplash.com/photo-1628151015968-3a4429e9ef04?q=80&w=600&auto=format&fit=crop';
+    } else if (cat.contains('spinach') ||
+        title.toLowerCase().contains('spinach') ||
+        cat.contains('herb')) {
+      fallbackUrl =
+          'https://images.unsplash.com/photo-1576045057995-568f588f82fb?q=80&w=600&auto=format&fit=crop';
+    } else if (title.toLowerCase().contains('carrot')) {
+      fallbackUrl =
+          'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?q=80&w=600&auto=format&fit=crop';
+    } else if (cat.contains('egg') || title.toLowerCase().contains('egg')) {
+      fallbackUrl =
+          'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?q=80&w=600&auto=format&fit=crop';
+    }
+
+    return Image.network(
+      fallbackUrl,
+      fit: BoxFit.cover,
+      width: double.infinity,
+      height: 300,
+      errorBuilder: (_, __, ___) => Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFFA5D6A7),
+              Color(0xFF2E7D32),
+            ],
+          ),
+        ),
+        child: const Center(
+          child: Icon(Icons.eco, size: 80, color: Colors.white70),
+        ),
       ),
     );
   }

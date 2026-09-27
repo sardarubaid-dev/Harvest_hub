@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:harvest_hub/theme/app_theme.dart';
 import 'package:harvest_hub/providers/auth_provider.dart';
@@ -40,6 +41,7 @@ class _FarmerMainScreenState extends State<FarmerMainScreen> {
       case 'dashboard':
         return 0;
       case 'inventory':
+      case 'products':
         return 1;
       case 'orders':
         return 2;
@@ -59,24 +61,44 @@ class _FarmerMainScreenState extends State<FarmerMainScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final user = authProvider.currentUser;
     final farmer = authProvider.currentFarmer;
+
+    if (!authProvider.isAuthenticated || user == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) {
+          context.go('/login');
+        }
+      });
+      return const Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      );
+    }
 
     if (farmer == null) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Farmer Dashboard'),
-          backgroundColor: Colors.amber.shade800,
+          backgroundColor: AppColors.primary,
         ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: Colors.amber),
+              const CircularProgressIndicator(color: AppColors.primary),
               const SizedBox(height: 16),
               const Text('Setting up your Farmer Profile...'),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () => authProvider.logout(),
+                onPressed: () async {
+                  await authProvider.logout();
+                  if (context.mounted) {
+                    context.go('/login');
+                  }
+                },
                 child: const Text('Sign Out'),
               ),
             ],
@@ -88,11 +110,11 @@ class _FarmerMainScreenState extends State<FarmerMainScreen> {
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: const [
-          FarmerDashboardTab(),
-          FarmerInventoryTab(),
-          FarmerOrdersTab(),
-          FarmerProfileTab(),
+        children: [
+          FarmerDashboardTab(onNavigateTab: _onTabTapped),
+          const FarmerInventoryTab(),
+          const FarmerOrdersTab(),
+          const FarmerProfileTab(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(

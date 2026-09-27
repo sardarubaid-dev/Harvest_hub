@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../core/auth_interceptor.dart';
 
 import '../../core/dummy_data.dart';
+import '../../services/database_service.dart';
+import '../../models/product_model.dart';
 import 'product_detail_screen.dart';
 
 class ProductsScreen extends StatefulWidget {
@@ -15,6 +17,7 @@ class ProductsScreen extends StatefulWidget {
 
 class _ProductsScreenState extends State<ProductsScreen> {
   late String _selectedCategory;
+  final DatabaseService _dbService = DatabaseService();
 
   @override
   void initState() {
@@ -47,14 +50,40 @@ class _ProductsScreenState extends State<ProductsScreen> {
           .map((c) => c['name'].toString()),
     ];
 
-    // Filter products based on selected category
-    List<Map<String, dynamic>> products = DummyData.freshProducts;
-    if (_selectedCategory != 'All') {
-      products = products.where((p) {
-        return p['category'].toString().toLowerCase() ==
-            _selectedCategory.toLowerCase();
-      }).toList();
-    }
+    return StreamBuilder<List<ProductModel>>(
+      stream: _dbService.streamAllProducts(),
+      builder: (context, snapshot) {
+        List<Map<String, dynamic>> products;
+
+        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+          products = snapshot.data!.map((p) {
+            return {
+              'id': p.id,
+              'title': p.name,
+              'category': p.categoryName.isNotEmpty
+                  ? p.categoryName.toUpperCase()
+                  : 'PRODUCE',
+              'farmerName': p.farmerName ?? 'Green Valley Farm',
+              'price': p.price.toStringAsFixed(0),
+              'unit': '/ ${p.unit}',
+              'stockBadge': '${p.quantity.toInt()} ${p.unit} available',
+              'isFavorite': false,
+              'imageColor': const Color(0xFFA5D6A7),
+              'imageUrl': p.imageUrl ?? '',
+              'description': p.description,
+            };
+          }).toList();
+        } else {
+          products = DummyData.freshProducts;
+        }
+
+        if (_selectedCategory != 'All') {
+          products = products.where((p) {
+            return p['category'].toString().toLowerCase().contains(
+                  _selectedCategory.toLowerCase(),
+                );
+          }).toList();
+        }
 
     return Scaffold(
       backgroundColor: background,
@@ -366,6 +395,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
           ),
         ],
       ),
+    );
+      },
     );
   }
 }

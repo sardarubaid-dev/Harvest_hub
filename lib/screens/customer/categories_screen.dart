@@ -16,17 +16,9 @@ class CategoriesScreen extends StatelessWidget {
     const Color background = Color(0xFFF9FBF9);
 
     // Extracted categories from dummy data, excluding the "All" chip which is for the home filter
-    final categories = DummyData.categories
+    final allCategories = DummyData.categories
         .where((c) => c['name'] != 'All')
         .toList();
-    // Adding some more dummy categories to make the grid look full
-    final allCategories = [
-      ...categories,
-      {'id': '6', 'name': 'Grains', 'icon': Icons.grass},
-      {'id': '7', 'name': 'Herbs', 'icon': Icons.local_florist},
-      {'id': '8', 'name': 'Organic', 'icon': Icons.compost},
-      {'id': '9', 'name': 'Honey', 'icon': Icons.hive},
-    ];
 
     return Scaffold(
       backgroundColor: background,
@@ -160,13 +152,22 @@ class CategoriesScreen extends StatelessWidget {
                               color: primaryGreen,
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 14),
                           Text(
                             cat['name'] as String,
                             style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
                               color: darkText,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            (cat['count'] ?? 'Explore').toString(),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF6B7280),
                             ),
                           ),
                         ],
