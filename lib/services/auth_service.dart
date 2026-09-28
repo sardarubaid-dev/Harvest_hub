@@ -13,8 +13,7 @@ class AuthService {
 
   String? get currentUserId => _auth.currentUser?.uid;
 
-  static const String adminEmail = "admin@harvesthub.com";
-  static const String adminPassword = "AdminPassword123!";
+
 
   Future<UserModel> signUpCustomer({
     required String email,
@@ -126,10 +125,6 @@ class AuthService {
     required String password,
   }) async {
     try {
-      if (email.trim().toLowerCase() == adminEmail.toLowerCase() &&
-          password == adminPassword) {
-        return await _ensureAdminExists();
-      }
 
       UserCredential credential = await _auth.signInWithEmailAndPassword(
         email: email.trim(),
@@ -168,43 +163,6 @@ class AuthService {
     }
   }
 
-  Future<UserModel> _ensureAdminExists() async {
-    try {
-      UserCredential credential;
-      try {
-        credential = await _auth.signInWithEmailAndPassword(
-          email: adminEmail,
-          password: adminPassword,
-        );
-      } catch (_) {
-        credential = await _auth.createUserWithEmailAndPassword(
-          email: adminEmail,
-          password: adminPassword,
-        );
-      }
-
-      String uid = credential.user!.uid;
-      UserModel adminUser = UserModel(
-        uid: uid,
-        name: "HarvestHub Administrator",
-        email: adminEmail,
-        role: "Admin",
-        isActive: true,
-        createdAt: DateTime.now(),
-      );
-
-      await _firestore.collection('users').doc(uid).set(adminUser.toMap());
-      return adminUser;
-    } catch (e) {
-      return UserModel(
-        uid: "admin_static_id",
-        name: "HarvestHub Administrator",
-        email: adminEmail,
-        role: "Admin",
-        isActive: true,
-      );
-    }
-  }
 
   Future<UserModel?> getUserModel(String uid) async {
     try {

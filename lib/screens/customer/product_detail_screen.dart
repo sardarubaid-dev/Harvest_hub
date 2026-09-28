@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../core/dummy_data.dart';
 import '../../core/auth_interceptor.dart';
 import 'farmer_profile_screen.dart';
+import '../../models/product_model.dart';
+import '../../providers/cart_provider.dart';
+import 'package:provider/provider.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Map<String, dynamic>? product;
@@ -733,19 +735,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     onPressed: () {
                                       final farmerName =
                                           widget.product?['farmerName'] ?? '';
-                                      final farmerData = DummyData
-                                          .popularFarmers
-                                          .firstWhere(
-                                            (f) => f['name'] == farmerName,
-                                            orElse: () => <String, dynamic>{
-                                              'id': 'f0',
-                                              'name': farmerName,
-                                              'rating': '4.5',
-                                              'reviews': '0 reviews',
-                                              'location': 'Local Market',
-                                              'isFollowing': false,
-                                            },
-                                          );
+                                      final farmerData = <String, dynamic>{
+                                        'id': 'f0',
+                                        'name': farmerName,
+                                        'rating': '5.0',
+                                        'reviews': '120 reviews',
+                                        'location': 'Local Farm',
+                                        'isFollowing': false,
+                                      };
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -969,21 +966,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     
-                    if (widget.product != null) {
-                      int index = DummyData.cart.indexWhere(
-                        (p) => p['id'] == widget.product!['id'],
+                    if (widget.product != null && widget.product!['model'] != null) {
+                      Provider.of<CartProvider>(context, listen: false).addItem(
+                        widget.product!['model'] as ProductModel,
+                        quantity: _quantity.toDouble(),
                       );
-                      if (index != -1) {
-                        DummyData.cart[index]['quantity'] =
-                            (DummyData.cart[index]['quantity'] as int) +
-                            _quantity;
-                      } else {
-                        Map<String, dynamic> cartItem = Map.from(
-                          widget.product!,
-                        );
-                        cartItem['quantity'] = _quantity;
-                        DummyData.cart.add(cartItem);
-                      }
                     }
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

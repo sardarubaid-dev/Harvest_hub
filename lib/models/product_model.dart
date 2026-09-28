@@ -53,8 +53,8 @@ class ProductModel {
           .toDouble(),
       imageUrl: map['imageUrl'] ?? map['Image_Url'],
       imageUrls: map['imageUrls'] != null 
-          ? List<String>.from(map['imageUrls']) 
-          : (map['imageUrl'] != null ? [map['imageUrl']] : null),
+          ? (map['imageUrls'] as List).where((e) => e != null).map((e) => e.toString()).toList()
+          : (map['imageUrl'] != null ? [map['imageUrl'].toString()] : null),
       isAvailable:
           map['isAvailable'] ??
           ((map['quantity'] ?? map['Stock_Qty'] ?? 0) > 0),

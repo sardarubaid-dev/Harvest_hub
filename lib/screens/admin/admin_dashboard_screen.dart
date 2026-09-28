@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:harvest_hub/theme/app_theme.dart';
-import 'package:harvest_hub/core/dummy_data.dart';
+
 import 'package:harvest_hub/models/farmer_model.dart';
 import 'package:harvest_hub/models/order_model.dart';
 import 'package:harvest_hub/models/user_model.dart';
@@ -59,10 +59,10 @@ class MockAdminService {
     
     await Future.delayed(const Duration(milliseconds: 600));
 
-    final farmers = DummyData.seedFarmers;
-    final orders = DummyData.seedOrders;
-    final users = DummyData.seedUsers;
-    final products = DummyData.seedProducts;
+    final farmers = [];
+    final orders = [];
+    final users = [];
+    final products = [];
 
     final pendingFarmersCount = farmers.where((f) => !f.isApproved).length;
     final activeFarmersCount = farmers.where((f) => f.isApproved).length;
@@ -125,7 +125,7 @@ class MockAdminService {
           title: 'Order #$shortId Collected',
           description: 'Direct collection completed at Stall 14B',
           subtext:
-              'Buyer: ${orders.first.customerName} • ${orders.first.items.length} items',
+              'Buyer: ${orders.isNotEmpty ? orders.first.customerName : 'Unknown'} • ${orders.isNotEmpty ? orders.first.items.length : 0} items',
           timeAgo: const Duration(minutes: 48),
         ),
       );

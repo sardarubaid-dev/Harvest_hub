@@ -29,8 +29,8 @@ class CustomerModel {
       email: map['email'] ?? map['Email'] ?? '',
       phone: map['phone'] ?? map['Phone'] ?? '',
       address: map['address'] ?? map['Address'] ?? '',
-      wishlist: List<String>.from(map['wishlist'] ?? []),
-      followedFarmers: List<String>.from(map['followedFarmers'] ?? []),
+      wishlist: map['wishlist'] != null ? (map['wishlist'] as List).where((e) => e != null).map((e) => e.toString()).toList() : [],
+      followedFarmers: map['followedFarmers'] != null ? (map['followedFarmers'] as List).where((e) => e != null).map((e) => e.toString()).toList() : [],
       createdAt: map['createdAt'] != null
           ? DateTime.tryParse(map['createdAt'].toString())
           : null,

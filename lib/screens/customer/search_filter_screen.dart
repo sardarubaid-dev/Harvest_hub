@@ -3,8 +3,9 @@ import '../../theme/app_theme.dart';
 import '../../models/product_model.dart';
 import '../../services/database_service.dart';
 import '../../services/location_service.dart';
-import '../../core/dummy_data.dart';
 import '../../core/auth_interceptor.dart';
+import 'package:provider/provider.dart';
+import '../../providers/cart_provider.dart';
 import 'product_detail_screen.dart';
 import 'farmer_profile_screen.dart';
 
@@ -63,12 +64,6 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
     }
     if (widget.initialCategory != null) {
       _selectedCategory = widget.initialCategory!;
-    }
-    
-    for (final p in DummyData.freshProducts) {
-      if (p['isFavorite'] == true) {
-        _wishlistIds.add(p['id'].toString());
-      }
     }
   }
 
@@ -131,23 +126,7 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
 
   void _addToCart(ProductModel product) {
     AuthInterceptor.executeAction(context, () {
-      final existingIndex =
-          DummyData.cart.indexWhere((p) => p['id'] == product.id);
-      if (existingIndex != -1) {
-        DummyData.cart[existingIndex]['quantity'] =
-            (DummyData.cart[existingIndex]['quantity'] as int) + 1;
-      } else {
-        DummyData.cart.add({
-          'id': product.id,
-          'title': product.name,
-          'farmerName': product.farmerName ?? 'Local Farmer',
-          'price': product.price.toStringAsFixed(0),
-          'unit': '/ ${product.unit}',
-          'quantity': 1,
-          'imageUrl': product.imageUrl ?? '',
-          'category': product.categoryName,
-        });
-      }
+      Provider.of<CartProvider>(context, listen: false).addItem(product);
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -226,7 +205,7 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
         child: StreamBuilder<List<ProductModel>>(
           stream: _dbService.streamAllProducts(),
           builder: (context, snapshot) {
-            final allProducts = snapshot.data ?? DummyData.seedProducts;
+            final allProducts = snapshot.data ?? [];
             final filteredProducts = _applyFiltersAndSort(allProducts);
 
             return CustomScrollView(
@@ -1025,7 +1004,17 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
                 ),
                 GestureDetector(
                   onTap: () {
-                    final farmerMap = DummyData.popularFarmers.first;
+                    final farmerMap = {
+                      'id': 'f1',
+                      'name': 'Local Farmer',
+                      'image': 'https://images.unsplash.com/photo-1595841696677-6475653db388?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                      'rating': 4.8,
+                      'reviews': 120,
+                      'location': 'Local Farm',
+                      'distance': '5 km',
+                      'memberSince': '2023',
+                      'description': 'A local farm providing fresh produce.',
+                    };
                     Navigator.push(
                       context,
                       MaterialPageRoute(

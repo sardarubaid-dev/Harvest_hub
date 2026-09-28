@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../core/auth_interceptor.dart';
 
-import '../../core/dummy_data.dart';
+import '../../providers/cart_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../services/database_service.dart';
+import '../../models/order_model.dart';
+import 'package:provider/provider.dart';
 
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../auth/sign_in_screen.dart';
 
@@ -17,10 +20,8 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   int _selectedSlot = 0; 
 
-  void _removeFromCart(int index) {
-    setState(() {
-      DummyData.cart.removeAt(index);
-    });
+  void _removeFromCart(String productId) {
+    Provider.of<CartProvider>(context, listen: false).removeItem(productId);
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -30,23 +31,8 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  void _updateQuantity(int index, int delta) {
-    setState(() {
-      int newQuantity = (DummyData.cart[index]['quantity'] as int) + delta;
-      if (newQuantity > 0) {
-        DummyData.cart[index]['quantity'] = newQuantity;
-      }
-    });
-  }
-
-  int get _itemsTotal {
-    int total = 0;
-    for (var item in DummyData.cart) {
-      int price = int.tryParse(item['price'].toString()) ?? 0;
-      int qty = item['quantity'] as int;
-      total += (price * qty);
-    }
-    return total;
+  void _updateQuantity(String productId, double quantity, double delta) {
+    Provider.of<CartProvider>(context, listen: false).updateQuantity(productId, quantity + delta);
   }
 
   @override
@@ -55,6 +41,10 @@ class _CartScreenState extends State<CartScreen> {
     const Color darkText = Color(0xFF1F2937);
     const Color greyText = Color(0xFF6B7280);
     const Color background = Color(0xFFF9FBF9);
+
+    final cartProvider = Provider.of<CartProvider>(context);
+    final cartItems = cartProvider.items.values.toList();
+    final _itemsTotal = cartProvider.totalAmount.toInt();
 
     int totalPayable = _itemsTotal > 0
         ? _itemsTotal + 20
@@ -219,7 +209,7 @@ class _CartScreenState extends State<CartScreen> {
                             ),
                           ),
                           Text(
-                            '${DummyData.cart.length} local items',
+                            '${cartItems.length} local items',
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
@@ -230,7 +220,7 @@ class _CartScreenState extends State<CartScreen> {
                       ),
                       const SizedBox(height: 12),
 
-                      if (DummyData.cart.isEmpty)
+                      if (cartItems.isEmpty)
                         Center(
                           child: Padding(
                             padding: const EdgeInsets.all(32.0),
@@ -254,12 +244,11 @@ class _CartScreenState extends State<CartScreen> {
                         ListView.builder(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          itemCount: DummyData.cart.length,
+                          itemCount: cartItems.length,
                           itemBuilder: (context, index) {
-                            final item = DummyData.cart[index];
-                            final int qty = item['quantity'] as int;
-                            final int unitPrice =
-                                int.tryParse(item['price'].toString()) ?? 0;
+                            final item = cartItems[index];
+                            final int qty = item.quantity.toInt();
+                            final int unitPrice = item.product.price.toInt();
                             final int rowTotal = unitPrice * qty;
 
                             return Container(
@@ -286,9 +275,7 @@ class _CartScreenState extends State<CartScreen> {
                                         width: 72,
                                         height: 72,
                                         decoration: BoxDecoration(
-                                          color:
-                                              item['imageColor'] ??
-                                              Colors.red[100],
+                                          color: Colors.green[100],
                                           borderRadius: BorderRadius.circular(
                                             12,
                                           ),
@@ -298,12 +285,9 @@ class _CartScreenState extends State<CartScreen> {
                                             12,
                                           ),
                                           child:
-                                              (item['imageUrl'] != null &&
-                                                  item['imageUrl']
-                                                      .toString()
-                                                      .isNotEmpty)
+                                              (item.product.imageUrl?.isNotEmpty ?? false)
                                               ? Image.network(
-                                                  item['imageUrl'],
+                                                  item.product.imageUrl ?? '',
                                                   fit: BoxFit.cover,
                                                   width: double.infinity,
                                                   height: double.infinity,
@@ -367,7 +351,7 @@ class _CartScreenState extends State<CartScreen> {
                                           children: [
                                             Expanded(
                                               child: Text(
-                                                '${item['title']} (${item['unit']?.replaceAll('/', '')?.trim() ?? '1 kg'})',
+                                                '${item.product.name} (${item.product.unit.replaceAll('/', '').trim()})',
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.bold,
                                                   fontSize: 14,
@@ -379,7 +363,7 @@ class _CartScreenState extends State<CartScreen> {
                                             ),
                                             GestureDetector(
                                               onTap: () =>
-                                                  _removeFromCart(index),
+                                                  _removeFromCart(item.product.id),
                                               child: const Icon(
                                                 Icons.delete_outline,
                                                 size: 20,
@@ -399,7 +383,7 @@ class _CartScreenState extends State<CartScreen> {
                                             const SizedBox(width: 4),
                                             Expanded(
                                               child: Text(
-                                                'From ${item['farmerName']}',
+                                                'From ${item.product.farmerId}',
                                                 style: const TextStyle(
                                                   fontSize: 11,
                                                   color: greyText,
@@ -453,8 +437,9 @@ class _CartScreenState extends State<CartScreen> {
                                                   InkWell(
                                                     onTap: () =>
                                                         _updateQuantity(
-                                                          index,
-                                                          -1,
+                                                          item.product.id,
+                                                          qty.toDouble(),
+                                                          -1.0,
                                                         ),
                                                     child: const Padding(
                                                       padding:
@@ -481,8 +466,9 @@ class _CartScreenState extends State<CartScreen> {
                                                   InkWell(
                                                     onTap: () =>
                                                         _updateQuantity(
-                                                          index,
-                                                          1,
+                                                          item.product.id,
+                                                          qty.toDouble(),
+                                                          1.0,
                                                         ),
                                                     child: const Padding(
                                                       padding:
@@ -1167,7 +1153,7 @@ class _CartScreenState extends State<CartScreen> {
       ),
       
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: DummyData.cart.isNotEmpty
+      floatingActionButton: cartItems.isNotEmpty
           ? Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
@@ -1185,40 +1171,34 @@ class _CartScreenState extends State<CartScreen> {
               child: SizedBox(
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: () {
-                    
-                    String itemsString = DummyData.cart
-                        .map(
-                          (item) =>
-                              '${item['title']} (${item['quantity']} ${item['unit']?.replaceAll('/', '')?.trim() ?? ''})',
-                        )
-                        .join(', ');
+                  onPressed: () async {
+                    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                    final user = authProvider.currentUser;
+                    if (user == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please log in to place an order')),
+                      );
+                      return;
+                    }
 
-                    final newOrder = {
-                      'id':
-                          '#ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}',
-                      'date': 'Today',
-                      'status': 'Processing',
-                      'items': itemsString,
-                      'total': totalPayable.toString(),
-                      'statusColor': const Color(0xFFFF9800),
-                      'imageUrl':
-                          DummyData.cart.isNotEmpty &&
-                              DummyData.cart.first['imageUrl'] != null
-                          ? DummyData.cart.first['imageUrl']
-                          : 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=200&auto=format&fit=crop',
-                      'imageColor': DummyData.cart.isNotEmpty
-                          ? DummyData.cart.first['imageColor']
-                          : Colors.green[200],
-                    };
+                    final orderItems = cartProvider.toOrderItems();
+                    final orderTotal = cartProvider.totalAmount + 20.0;
 
-                    DummyData.orders.insert(0, newOrder);
-                    DummyData.cart.clear();
+                    await DatabaseService().placeOrder(
+                      customerId: user.uid,
+                      customerName: user.name,
+                      customerPhone: user.phone ?? '',
+                      items: orderItems,
+                      totalAmount: orderTotal,
+                    );
+                    cartProvider.clearCart();
 
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Order Confirmed!')),
                     );
-                    Navigator.pop(context);
+                    if (mounted) {
+                      Navigator.pop(context);
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryGreen,

@@ -2,7 +2,7 @@ import 'dart:math';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/product_model.dart';
-import '../core/dummy_data.dart';
+
 
 class LocationService {
   
@@ -79,35 +79,14 @@ class LocationService {
   }
 
   static (double, double) resolveCoordinatesForFarmer(String? farmerId, {String? locationHint}) {
-    
-    if (farmerId != null && farmerId.isNotEmpty) {
-      try {
-        final farmer = DummyData.seedFarmers.firstWhere((f) => f.id == farmerId || f.userId == farmerId);
-        if (farmer.marketId != null && farmer.marketId!.isNotEmpty) {
-          final marketCoords = resolveCoordinatesForMarket(farmer.marketId!);
-          if (marketCoords != null) return marketCoords;
-        }
-        if (farmer.location.isNotEmpty) {
-          final locCoords = _lookupLocality(farmer.location);
-          if (locCoords != null) return locCoords;
-        }
-      } catch (_) {}
-    }
-
     if (locationHint != null && locationHint.isNotEmpty) {
       final locCoords = _lookupLocality(locationHint);
       if (locCoords != null) return locCoords;
     }
-
     return (24.8320, 67.0620);
   }
 
   static (double, double)? resolveCoordinatesForMarket(String marketId) {
-    try {
-      final market = DummyData.seedMarkets.firstWhere((m) => m.id == marketId);
-      final coords = parseCoordinates(market.gpsCoordinates);
-      if (coords != null) return coords;
-    } catch (_) {}
     return null;
   }
 
