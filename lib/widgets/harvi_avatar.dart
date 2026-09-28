@@ -148,7 +148,7 @@ class _HarviAvatarState extends State<HarviAvatar>
                 height: widget.size,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  // REMOVED color: Colors.white
+                  
                   boxShadow: [
                     BoxShadow(
                       color: Colors.green.withOpacity(0.3),
@@ -160,7 +160,7 @@ class _HarviAvatarState extends State<HarviAvatar>
                 child: ClipOval(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 400),
-                    // Scale transition hides the misalignment by shrinking the old image and growing the new one!
+                    
                     transitionBuilder:
                         (Widget child, Animation<double> animation) {
                           return ScaleTransition(
@@ -175,7 +175,6 @@ class _HarviAvatarState extends State<HarviAvatar>
                       width: widget.size,
                       height: widget.size,
 
-                      // MULTIPLY blend mode removes the white background of the JPEG
                     ),
                   ),
                 ),

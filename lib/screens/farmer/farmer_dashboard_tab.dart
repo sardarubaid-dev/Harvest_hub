@@ -239,7 +239,6 @@ class _FarmerDashboardTabState extends State<FarmerDashboardTab> {
               final products = productSnapshot.data ?? [];
               final orders = orderSnapshot.data ?? [];
 
-              // Calculate Metrics
               final int totalProducts = products.length;
               final int activeProducts =
                   products.where((p) => p.isAvailable && p.quantity > 0).length;
@@ -267,7 +266,7 @@ class _FarmerDashboardTabState extends State<FarmerDashboardTab> {
               return ListView(
                 padding: const EdgeInsets.all(16.0),
                 children: [
-                  // Farmer Welcome Card
+                  
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -351,7 +350,6 @@ class _FarmerDashboardTabState extends State<FarmerDashboardTab> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Store Status Toggle
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -400,7 +398,6 @@ class _FarmerDashboardTabState extends State<FarmerDashboardTab> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Key Performance Indicators Grid
                   const Text(
                     'Marketplace Activity',
                     style: TextStyle(
@@ -458,7 +455,6 @@ class _FarmerDashboardTabState extends State<FarmerDashboardTab> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Critical Low Stock Banner
                   if (lowStockProducts.isNotEmpty) ...[
                     Container(
                       padding: const EdgeInsets.all(14),
@@ -546,7 +542,6 @@ class _FarmerDashboardTabState extends State<FarmerDashboardTab> {
                     const SizedBox(height: 20),
                   ],
 
-                  // Orders Status Overview
                   const Text(
                     'Order Status Breakdown',
                     style: TextStyle(
@@ -594,7 +589,6 @@ class _FarmerDashboardTabState extends State<FarmerDashboardTab> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Quick Actions Grid (All 6 connected!)
                   const Text(
                     'Quick Actions',
                     style: TextStyle(
@@ -647,7 +641,6 @@ class _FarmerDashboardTabState extends State<FarmerDashboardTab> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Recent Orders Section
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

@@ -21,7 +21,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
 
-  // Farmer specific
   final _farmNameController = TextEditingController();
   final _farmDescController = TextEditingController();
 
@@ -198,7 +197,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 16),
-              // Logo
+              
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -226,7 +225,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Pill
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -247,7 +245,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Titles
               Text(
                 'Create \ Account',
                 style: const TextStyle(
@@ -268,7 +265,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               ),
               const SizedBox(height: 32),
 
-              // Form Card
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,

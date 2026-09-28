@@ -215,7 +215,7 @@ class _FarmerProductDetailScreenState extends State<FarmerProductDetailScreen> {
       ),
       body: ListView(
         children: [
-          // Hero Product Image
+          
           Container(
             height: 260,
             width: double.infinity,
@@ -243,7 +243,7 @@ class _FarmerProductDetailScreenState extends State<FarmerProductDetailScreen> {
                       color: AppColors.outline,
                     ),
                   ),
-                // Gradient overlay at top/bottom for readability
+                
                 Positioned(
                   top: 12,
                   right: 12,
@@ -275,7 +275,7 @@ class _FarmerProductDetailScreenState extends State<FarmerProductDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Category & Organic tags
+                
                 Row(
                   children: [
                     Container(
@@ -338,7 +338,6 @@ class _FarmerProductDetailScreenState extends State<FarmerProductDetailScreen> {
                 ),
                 const SizedBox(height: 12),
 
-                // Product Name
                 Text(
                   _product.name,
                   style: const TextStyle(
@@ -349,7 +348,6 @@ class _FarmerProductDetailScreenState extends State<FarmerProductDetailScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Price and Inventory Metric Cards
                 Row(
                   children: [
                     Expanded(
@@ -449,7 +447,6 @@ class _FarmerProductDetailScreenState extends State<FarmerProductDetailScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Description
                 const Text(
                   'Description',
                   style: TextStyle(
@@ -480,7 +477,6 @@ class _FarmerProductDetailScreenState extends State<FarmerProductDetailScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Detailed Specs
                 const Text(
                   'Product Specifications',
                   style: TextStyle(
@@ -512,7 +508,6 @@ class _FarmerProductDetailScreenState extends State<FarmerProductDetailScreen> {
                 ),
                 const SizedBox(height: 28),
 
-                // Edit Button
                 ElevatedButton.icon(
                   onPressed: _openEditScreen,
                   icon: const Icon(Icons.edit, size: 18),

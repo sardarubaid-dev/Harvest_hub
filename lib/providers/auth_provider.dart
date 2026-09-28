@@ -133,6 +133,9 @@ class AuthProvider with ChangeNotifier {
     required String location,
     required String contactNumber,
     String? marketId,
+    double? latitude,
+    double? longitude,
+    String? profileImageUrl,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -148,6 +151,9 @@ class AuthProvider with ChangeNotifier {
         location: location,
         contactNumber: contactNumber,
         marketId: marketId,
+        latitude: latitude,
+        longitude: longitude,
+        profileImageUrl: profileImageUrl,
       );
       if (_currentUser != null) {
         await fetchUserData(_currentUser!.uid);

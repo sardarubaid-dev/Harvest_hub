@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
 import '../models/customer_model.dart';
 import '../models/farmer_model.dart';
-import '../core/dummy_data.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -73,6 +72,9 @@ class AuthService {
     required String location,
     required String contactNumber,
     String? marketId,
+    double? latitude,
+    double? longitude,
+    String? profileImageUrl,
   }) async {
     try {
       UserCredential credential = await _auth.createUserWithEmailAndPassword(
@@ -104,6 +106,9 @@ class AuthService {
         marketId: marketId,
         rating: 5.0,
         isApproved: true,
+        latitude: latitude,
+        longitude: longitude,
+        profileImageUrl: profileImageUrl,
         createdAt: DateTime.now(),
       );
 
@@ -125,34 +130,6 @@ class AuthService {
           password == adminPassword) {
         return await _ensureAdminExists();
       }
-
-      // --- DUMMY DATA BYPASS FOR UI TESTING ---
-      // Hardcoded passwords for exact dummy data users
-      const Map<String, String> validDummyUsers = {
-        'ali@example.com': 'customer123',
-        'ahmad@example.com': 'farmer123',
-        'zain@example.com': 'admin123',
-      };
-
-      String normalizedEmail = email.trim().toLowerCase();
-
-      if (validDummyUsers.containsKey(normalizedEmail)) {
-        if (validDummyUsers[normalizedEmail] == password) {
-          // Find the user from DummyData that matches this exact email
-          return DummyData.seedUsers.firstWhere(
-            (u) => u.email.toLowerCase() == normalizedEmail,
-          );
-        } else {
-          throw Exception("Invalid password for ${normalizedEmail}.");
-        }
-      }
-
-      if (password == '123456' || password == 'password123') {
-        throw Exception(
-          "Please use exact dummy emails (ali@example.com, ahmad@example.com, zain@example.com) and their respective passwords (customer123, farmer123, admin123).",
-        );
-      }
-      // ----------------------------------------
 
       UserCredential credential = await _auth.signInWithEmailAndPassword(
         email: email.trim(),
@@ -231,13 +208,6 @@ class AuthService {
 
   Future<UserModel?> getUserModel(String uid) async {
     try {
-      // --- DUMMY DATA BYPASS ---
-      try {
-        var dummy = DummyData.seedUsers.firstWhere((u) => u.uid == uid);
-        return dummy;
-      } catch (_) {}
-      // -------------------------
-
       DocumentSnapshot doc = await _firestore
           .collection('users')
           .doc(uid)

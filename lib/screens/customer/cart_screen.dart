@@ -15,7 +15,7 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  int _selectedSlot = 0; // 0 for first slot, 1 for second
+  int _selectedSlot = 0; 
 
   void _removeFromCart(int index) {
     setState(() {
@@ -58,14 +58,14 @@ class _CartScreenState extends State<CartScreen> {
 
     int totalPayable = _itemsTotal > 0
         ? _itemsTotal + 20
-        : 0; // Items + 20 Service Fee
+        : 0; 
 
     return Scaffold(
       backgroundColor: background,
       body: SafeArea(
         child: Column(
           children: [
-            // Top App Bar
+            
             Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: 16.0,
@@ -152,7 +152,7 @@ class _CartScreenState extends State<CartScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Top Banner
+                      
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -207,7 +207,6 @@ class _CartScreenState extends State<CartScreen> {
 
                       const SizedBox(height: 24),
 
-                      // Items in Basket
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -280,7 +279,7 @@ class _CartScreenState extends State<CartScreen> {
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Image
+                                  
                                   Stack(
                                     children: [
                                       Container(
@@ -514,7 +513,6 @@ class _CartScreenState extends State<CartScreen> {
 
                       const SizedBox(height: 24),
 
-                      // Pickup Slot Selection
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -586,7 +584,6 @@ class _CartScreenState extends State<CartScreen> {
                             ),
                             const SizedBox(height: 12),
 
-                            // Slot 1
                             GestureDetector(
                               onTap: () => setState(() => _selectedSlot = 0),
                               child: Container(
@@ -666,7 +663,7 @@ class _CartScreenState extends State<CartScreen> {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            // Slot 2
+                            
                             GestureDetector(
                               onTap: () => setState(() => _selectedSlot = 1),
                               child: Container(
@@ -747,7 +744,7 @@ class _CartScreenState extends State<CartScreen> {
                               ),
                             ),
                             const SizedBox(height: 16),
-                            // Location
+                            
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
@@ -814,7 +811,6 @@ class _CartScreenState extends State<CartScreen> {
 
                       const SizedBox(height: 24),
 
-                      // Pickup Contact Details
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -937,7 +933,6 @@ class _CartScreenState extends State<CartScreen> {
 
                       const SizedBox(height: 24),
 
-                      // Bill Breakdown
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -1111,7 +1106,6 @@ class _CartScreenState extends State<CartScreen> {
 
                       const SizedBox(height: 24),
 
-                      // Guarantee Banner
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -1162,7 +1156,7 @@ class _CartScreenState extends State<CartScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: 100), // Padding for bottom button
+                      const SizedBox(height: 100), 
                     ],
                   ),
                 ),
@@ -1171,7 +1165,7 @@ class _CartScreenState extends State<CartScreen> {
           ],
         ),
       ),
-      // Sticky Bottom Button
+      
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: DummyData.cart.isNotEmpty
           ? Container(
@@ -1192,7 +1186,7 @@ class _CartScreenState extends State<CartScreen> {
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Create an order
+                    
                     String itemsString = DummyData.cart
                         .map(
                           (item) =>
@@ -1218,7 +1212,6 @@ class _CartScreenState extends State<CartScreen> {
                           : Colors.green[200],
                     };
 
-                    // Update data without rebuilding the screen that is about to pop
                     DummyData.orders.insert(0, newOrder);
                     DummyData.cart.clear();
 

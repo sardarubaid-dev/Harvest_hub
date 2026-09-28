@@ -32,7 +32,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     super.initState();
     _initGemini();
 
-    // Initial greeting
     _messages.add(
       ChatMessage(
         text: "Hello! I am Harvi, your AI Farm Assistant. How can I help you with agriculture, nutrition, or storage tips today?",
@@ -40,7 +39,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       ),
     );
 
-    // Reset greeting animation after 2 seconds
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted && _expression == HarviExpression.greeting) {
         setState(() {
@@ -81,7 +79,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         _expression = HarviExpression.talking;
       });
 
-      // Simulate talking duration for 2 seconds
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) setState(() => _expression = HarviExpression.idle);
       });
@@ -133,7 +130,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       ),
       child: Column(
         children: [
-          // Header
+          
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: const BoxDecoration(
@@ -179,7 +176,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             ),
           ),
 
-          // Chat Messages
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
@@ -237,14 +233,12 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             ),
           ),
 
-          // Loading Indicator
           if (_isLoading)
             const Padding(
               padding: EdgeInsets.all(8.0),
               child: CircularProgressIndicator(color: Color(0xFF1B5E20)),
             ),
 
-          // Input Area
           Container(
             padding: EdgeInsets.only(
               left: 16,

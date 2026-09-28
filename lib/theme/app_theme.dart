@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Brand Colors
+  
   static const Color primary = Color(0xFF0D631B);
   static const Color primaryContainer = Color(0xFF2E7D32);
   static const Color onPrimary = Color(0xFFFFFFFF);
@@ -9,7 +9,6 @@ class AppColors {
   static const Color secondaryContainer = Color(0xFF9CF49C);
   static const Color onSecondaryContainer = Color(0xFF19722B);
 
-  // Surface & Background
   static const Color background = Color(0xFFF7FAF3);
   static const Color surface = Color(0xFFFFFFFF);
   static const Color surfaceVariant = Color(0xFFE0E3DD);
@@ -19,15 +18,12 @@ class AppColors {
   static const Color surfaceDim = Color(0xFFD8DBD4);
   static const Color inverseSurface = Color(0xFF2D312D);
 
-  // Tertiary
   static const Color onTertiaryContainer = Color(0xFFE8F5E9);
 
-  // Text Colors
-  static const Color onSurface = Color(0xFF191D19); // Primary text
-  static const Color onSurfaceVariant = Color(0xFF40493D); // Secondary text
-  static const Color outline = Color(0xFF707A6C); // Borders
+  static const Color onSurface = Color(0xFF191D19); 
+  static const Color onSurfaceVariant = Color(0xFF40493D); 
+  static const Color outline = Color(0xFF707A6C); 
 
-  // Feedback Colors
   static const Color error = Color(0xFFBA1A1A);
   static const Color errorContainer = Color(0xFFFFDAD6);
   static const Color warning = Color(0xFFF59E0B);
@@ -102,7 +98,7 @@ class AppTheme {
           backgroundColor: AppColors.primaryContainer,
           foregroundColor: AppColors.onPrimary,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8), // rounded-md
+            borderRadius: BorderRadius.circular(8), 
           ),
           minimumSize: const Size.fromHeight(48),
           elevation: 0,
@@ -145,7 +141,7 @@ class AppTheme {
       ),
       cardTheme: const CardThemeData(
         color: AppColors.surface,
-        elevation: 1, // Level 1 elevation
+        elevation: 1, 
         shadowColor: Color(0x0F1B1F1B),
       ),
     );

@@ -120,7 +120,7 @@ class _SignInScreenState extends State<SignInScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 16),
-              // Logo
+              
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -148,7 +148,6 @@ class _SignInScreenState extends State<SignInScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Pill
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -169,7 +168,6 @@ class _SignInScreenState extends State<SignInScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Titles
               const Text(
                 'Welcome Back',
                 style: TextStyle(
@@ -190,7 +188,6 @@ class _SignInScreenState extends State<SignInScreen> {
               ),
               const SizedBox(height: 32),
 
-              // Form Card
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -503,7 +500,6 @@ class _SignInScreenState extends State<SignInScreen> {
               ),
               const SizedBox(height: 32),
 
-              // Banner
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(

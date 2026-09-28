@@ -1,16 +1,28 @@
 import 'dart:math';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import '../models/product_model.dart';
 import '../core/dummy_data.dart';
 
-/// Pure mathematical location service using the Haversine distance formula.
-/// Requires NO external or paid APIs (zero billing, offline capable).
 class LocationService {
-  // Default customer reference location: DHA / Clifton, Karachi
+  
+  static Future<List<Map<String, dynamic>>> searchPlaces(String query) async {
+    if (query.trim().isEmpty) return [];
+    final url = Uri.parse('https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(query)}&format=json&addressdetails=1&limit=5');
+    try {
+      final response = await http.get(url, headers: {'User-Agent': 'HarvestHub/1.0'});
+      if (response.statusCode == 200) {
+        final List data = json.decode(response.body);
+        return data.cast<Map<String, dynamic>>();
+      }
+    } catch (_) {}
+    return [];
+  }
+  
   static const double defaultCustomerLat = 24.8200;
   static const double defaultCustomerLng = 67.0450;
   static const String defaultCustomerAddress = 'DHA Phase 5, Karachi';
 
-  // Known agricultural coordinates database for local Pakistani regions & markets
   static const Map<String, (double, double)> knownLocalities = {
     'karachi farmers market': (24.8103, 67.0543),
     'dha phase 5': (24.8200, 67.0450),
@@ -28,7 +40,6 @@ class LocationService {
     'hyderabad': (25.3960, 68.3578),
   };
 
-  /// Computes distance in kilometers between two GPS coordinate points using the Haversine formula.
   static double calculateDistanceKm({
     required double lat1,
     required double lon1,
@@ -54,7 +65,6 @@ class LocationService {
     return degree * pi / 180.0;
   }
 
-  /// Parses latitude and longitude from a coordinate string (e.g. "24.8103, 67.0543").
   static (double, double)? parseCoordinates(String? coordStr) {
     if (coordStr == null || coordStr.trim().isEmpty) return null;
     final parts = coordStr.split(',');
@@ -68,9 +78,8 @@ class LocationService {
     return null;
   }
 
-  /// Resolves coordinates for a farmer or their associated market.
   static (double, double) resolveCoordinatesForFarmer(String? farmerId, {String? locationHint}) {
-    // 1. Check if farmer is in seedFarmers
+    
     if (farmerId != null && farmerId.isNotEmpty) {
       try {
         final farmer = DummyData.seedFarmers.firstWhere((f) => f.id == farmerId || f.userId == farmerId);
@@ -85,17 +94,14 @@ class LocationService {
       } catch (_) {}
     }
 
-    // 2. Check location hint
     if (locationHint != null && locationHint.isNotEmpty) {
       final locCoords = _lookupLocality(locationHint);
       if (locCoords != null) return locCoords;
     }
 
-    // Default nearby farm distance (approx 2.4 km from DHA reference)
     return (24.8320, 67.0620);
   }
 
-  /// Resolves coordinates for a market ID.
   static (double, double)? resolveCoordinatesForMarket(String marketId) {
     try {
       final market = DummyData.seedMarkets.firstWhere((m) => m.id == marketId);
@@ -115,13 +121,12 @@ class LocationService {
     return null;
   }
 
-  /// Calculates distance in km for a product from the user's location.
   static double getDistanceForProduct(
     ProductModel product, {
     double userLat = defaultCustomerLat,
     double userLng = defaultCustomerLng,
   }) {
-    // Check if farmer has location coordinates
+    
     final (farmLat, farmLng) = resolveCoordinatesForFarmer(
       product.farmerId,
       locationHint: product.farmerName,
@@ -134,11 +139,9 @@ class LocationService {
       lon2: farmLng,
     );
 
-    // If calculation gives 0, provide default realistic proximity
     return distance < 0.1 ? 2.4 : distance;
   }
 
-  /// Formats distance into a clean string (e.g., "2.4 km" or "800 m").
   static String formatDistance(double km) {
     if (km < 1.0) {
       final meters = (km * 1000).round();
@@ -147,7 +150,6 @@ class LocationService {
     return '${km.toStringAsFixed(1)} km';
   }
 
-  /// Sorts products by nearest to the customer first.
   static List<ProductModel> sortByNearest(
     List<ProductModel> products, {
     double userLat = defaultCustomerLat,
@@ -162,7 +164,6 @@ class LocationService {
     return list;
   }
 
-  /// Filters products within a given radius in kilometers.
   static List<ProductModel> filterByRadius(
     List<ProductModel> products, {
     required double maxRadiusKm,

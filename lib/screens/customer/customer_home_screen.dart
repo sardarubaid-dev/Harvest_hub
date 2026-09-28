@@ -37,7 +37,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   final DatabaseService _dbService = DatabaseService();
   StreamSubscription<List<ProductModel>>? _productsSub;
 
-  // Local state to simulate database interactions
   late List<Map<String, dynamic>> _freshProducts;
   late List<Map<String, dynamic>> _popularFarmers;
   late List<Map<String, dynamic>> _recentlyRestocked;
@@ -163,7 +162,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Load from "JSON"
+    
     _freshProducts = List<Map<String, dynamic>>.from(
       DummyData.freshProducts.map((e) => Map<String, dynamic>.from(e)),
     );
@@ -334,7 +333,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                     onCategorySelected: (category) {
                       setState(() {
                         _selectedGlobalCategory = category;
-                        _currentIndex = 1; // Switch to Products tab
+                        _currentIndex = 1; 
                       });
                     },
                   ),
@@ -343,7 +342,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                     onShopNow: () {
                       setState(() {
                         _selectedGlobalCategory = 'All';
-                        _currentIndex = 1; // Switch to Products tab
+                        _currentIndex = 1; 
                       });
                     },
                   ),
@@ -546,7 +545,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
               ),
               const SizedBox(width: 16),
               GestureDetector(
-                onTap: () => setState(() => _currentIndex = 5), // Profile
+                onTap: () => setState(() => _currentIndex = 5), 
                 child: Container(
                   width: 32,
                   height: 32,
@@ -616,7 +615,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
           const SizedBox(height: 24),
 
-          // Filter produce by category section title
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Row(
@@ -636,7 +634,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
           ),
           const SizedBox(height: 8),
 
-          // Categories from JSON
           SizedBox(
             height: 40,
             child: ListView.builder(
@@ -693,7 +690,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
           const SizedBox(height: 24),
 
-          // Fresh Near You
           _buildSectionHeader('Fresh Near You', 'Today'),
           const SizedBox(height: 16),
           SizedBox(
@@ -826,7 +822,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
           const SizedBox(height: 24),
 
-          // Recently Restocked
           _buildSectionHeader('Recently Restocked', 'New Batch'),
           const SizedBox(height: 16),
           SizedBox(
@@ -851,22 +846,18 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
           const SizedBox(height: 28),
 
-          // Community & App Reviews Section
           _buildCustomerReviewsSection(primaryGreen, darkText, greyText),
 
           const SizedBox(height: 28),
 
-          // HarvestHub Guarantee / Farm-to-Table Promise
           _buildHarvestHubGuaranteeSection(primaryGreen, darkText, greyText),
 
           const SizedBox(height: 28),
 
-          // Community Impact Counter Bar
           _buildCommunityStatsSection(primaryGreen, darkText, greyText),
 
           const SizedBox(height: 24),
 
-          // Bottom Banner
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Container(

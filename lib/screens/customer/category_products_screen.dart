@@ -16,7 +16,6 @@ class CategoryProductsScreen extends StatelessWidget {
     const Color greyText = Color(0xFF6B7280);
     const Color background = Color(0xFFF9FBF9);
 
-    // Filter products from dummy data based on category name
     final products = DummyData.freshProducts.where((p) {
       return p['category'].toString().toLowerCase() ==
           categoryName.toLowerCase();

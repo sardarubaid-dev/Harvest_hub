@@ -9,6 +9,7 @@ class ProductModel {
   final String unit;
   final double quantity;
   final String? imageUrl;
+  final List<String>? imageUrls;
   final bool isAvailable;
   final bool isOrganic;
   final String? farmerName;
@@ -25,6 +26,7 @@ class ProductModel {
     required this.unit,
     required this.quantity,
     this.imageUrl,
+    this.imageUrls,
     required this.isAvailable,
     this.isOrganic = false,
     this.farmerName,
@@ -50,6 +52,9 @@ class ProductModel {
       quantity: (map['quantity'] ?? map['Stock_Qty'] ?? map['stockQty'] ?? 0)
           .toDouble(),
       imageUrl: map['imageUrl'] ?? map['Image_Url'],
+      imageUrls: map['imageUrls'] != null 
+          ? List<String>.from(map['imageUrls']) 
+          : (map['imageUrl'] != null ? [map['imageUrl']] : null),
       isAvailable:
           map['isAvailable'] ??
           ((map['quantity'] ?? map['Stock_Qty'] ?? 0) > 0),
@@ -78,6 +83,7 @@ class ProductModel {
       'Stock_Qty': quantity,
       'imageUrl': imageUrl,
       'Image_Url': imageUrl,
+      'imageUrls': imageUrls,
       'isAvailable': isAvailable && quantity > 0,
       'isOrganic': isOrganic,
       'farmerName': farmerName,
@@ -97,6 +103,7 @@ class ProductModel {
     String? unit,
     double? quantity,
     String? imageUrl,
+    List<String>? imageUrls,
     bool? isAvailable,
     bool? isOrganic,
     String? farmerName,
@@ -113,6 +120,7 @@ class ProductModel {
       unit: unit ?? this.unit,
       quantity: quantity ?? this.quantity,
       imageUrl: imageUrl ?? this.imageUrl,
+      imageUrls: imageUrls ?? this.imageUrls,
       isAvailable: isAvailable ?? this.isAvailable,
       isOrganic: isOrganic ?? this.isOrganic,
       farmerName: farmerName ?? this.farmerName,

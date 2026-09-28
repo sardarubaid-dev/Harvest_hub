@@ -8,6 +8,9 @@ class FarmerModel {
   final String? marketId;
   final double rating;
   final bool isApproved;
+  final String? profileImageUrl;
+  final double? latitude;
+  final double? longitude;
   final DateTime? createdAt;
 
   FarmerModel({
@@ -20,6 +23,9 @@ class FarmerModel {
     this.marketId,
     this.rating = 5.0,
     this.isApproved = true,
+    this.profileImageUrl,
+    this.latitude,
+    this.longitude,
     this.createdAt,
   });
 
@@ -36,6 +42,9 @@ class FarmerModel {
       marketId: map['marketId'] ?? map['Market_Id'],
       rating: (map['rating'] ?? map['Rating'] ?? 5.0).toDouble(),
       isApproved: map['isApproved'] ?? map['IsApproved'] ?? true,
+      profileImageUrl: map['profileImageUrl'] ?? map['ProfileImageUrl'],
+      latitude: map['latitude'] != null ? (map['latitude'] as num).toDouble() : null,
+      longitude: map['longitude'] != null ? (map['longitude'] as num).toDouble() : null,
       createdAt: map['createdAt'] != null
           ? DateTime.tryParse(map['createdAt'].toString())
           : null,
@@ -53,6 +62,9 @@ class FarmerModel {
       'marketId': marketId,
       'rating': rating,
       'isApproved': isApproved,
+      'profileImageUrl': profileImageUrl,
+      'latitude': latitude,
+      'longitude': longitude,
       'createdAt':
           createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
     };
@@ -68,6 +80,9 @@ class FarmerModel {
     String? marketId,
     double? rating,
     bool? isApproved,
+    String? profileImageUrl,
+    double? latitude,
+    double? longitude,
     DateTime? createdAt,
   }) {
     return FarmerModel(
@@ -80,6 +95,9 @@ class FarmerModel {
       marketId: marketId ?? this.marketId,
       rating: rating ?? this.rating,
       isApproved: isApproved ?? this.isApproved,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
       createdAt: createdAt ?? this.createdAt,
     );
   }

@@ -54,7 +54,7 @@ class RoleSelectionScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 16),
-              // Logo
+              
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -82,7 +82,6 @@ class RoleSelectionScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // Pill
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -103,7 +102,6 @@ class RoleSelectionScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // Titles
               const Text(
                 'Join the Network',
                 style: TextStyle(
@@ -124,7 +122,6 @@ class RoleSelectionScreen extends StatelessWidget {
               ),
               const SizedBox(height: 32),
 
-              // Main Card matching Login style
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -150,7 +147,6 @@ class RoleSelectionScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
 
-                    // Customer Button
                     SizedBox(
                       width: double.infinity,
                       height: 60,
@@ -201,7 +197,6 @@ class RoleSelectionScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
 
-                    // Farmer Button
                     SizedBox(
                       width: double.infinity,
                       height: 60,

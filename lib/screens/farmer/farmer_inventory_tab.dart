@@ -22,7 +22,7 @@ class _FarmerInventoryTabState extends State<FarmerInventoryTab> {
 
   String _searchQuery = '';
   String _selectedCategory = 'All';
-  String _selectedStockStatus = 'All'; // 'All', 'In Stock', 'Low Stock', 'Out of Stock'
+  String _selectedStockStatus = 'All'; 
 
   @override
   void dispose() {
@@ -213,9 +213,8 @@ class _FarmerInventoryTabState extends State<FarmerInventoryTab> {
                     );
                   }
 
-                  // Filter products based on search query, category, and stock status
                   final filtered = allProducts.where((p) {
-                    // Search
+                    
                     if (_searchQuery.isNotEmpty) {
                       final matchName =
                           p.name.toLowerCase().contains(_searchQuery);
@@ -226,7 +225,6 @@ class _FarmerInventoryTabState extends State<FarmerInventoryTab> {
                       if (!matchName && !matchCat && !matchDesc) return false;
                     }
 
-                    // Category
                     if (_selectedCategory != 'All') {
                       if (p.categoryName.toLowerCase() !=
                               _selectedCategory.toLowerCase() &&
@@ -235,7 +233,6 @@ class _FarmerInventoryTabState extends State<FarmerInventoryTab> {
                       }
                     }
 
-                    // Stock Status
                     final isAvail = p.isAvailable && p.quantity > 0;
                     if (_selectedStockStatus == 'In Stock' && !isAvail) {
                       return false;
@@ -380,7 +377,7 @@ class _FarmerInventoryTabState extends State<FarmerInventoryTab> {
   Widget _buildSearchAndFilters() {
     return Column(
       children: [
-        // Search bar
+        
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Container(
@@ -418,7 +415,6 @@ class _FarmerInventoryTabState extends State<FarmerInventoryTab> {
           ),
         ),
 
-        // Categories & Stock status filter chips
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -497,7 +493,7 @@ class _FarmerInventoryTabState extends State<FarmerInventoryTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image & Badges
+            
             Expanded(
               flex: 4,
               child: Stack(
@@ -523,7 +519,7 @@ class _FarmerInventoryTabState extends State<FarmerInventoryTab> {
                         color: AppColors.outline,
                       ),
                     ),
-                  // Availability Badge
+                  
                   Positioned(
                     top: 6,
                     right: 6,
@@ -546,7 +542,7 @@ class _FarmerInventoryTabState extends State<FarmerInventoryTab> {
                       ),
                     ),
                   ),
-                  // Organic Tag
+                  
                   if (product.isOrganic)
                     Positioned(
                       top: 6,
@@ -574,7 +570,6 @@ class _FarmerInventoryTabState extends State<FarmerInventoryTab> {
               ),
             ),
 
-            // Information section
             Expanded(
               flex: 5,
               child: Padding(

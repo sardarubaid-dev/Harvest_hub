@@ -167,7 +167,7 @@ class _FarmerOrdersTabState extends State<FarmerOrdersTab>
       ),
       body: Column(
         children: [
-          // Search box
+          
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             color: AppColors.surface,
@@ -206,7 +206,6 @@ class _FarmerOrdersTabState extends State<FarmerOrdersTab>
           ),
           const Divider(height: 1, thickness: 1, color: AppColors.surfaceVariant),
 
-          // Orders Stream
           Expanded(
             child: StreamBuilder<List<OrderModel>>(
               stream: _dbService.streamFarmerOrders(farmer.id),
@@ -239,13 +238,12 @@ class _FarmerOrdersTabState extends State<FarmerOrdersTab>
                   controller: _tabController,
                   children: _tabs.map((tab) {
                     final filtered = allOrders.where((order) {
-                      // Filter by status tab
+                      
                       if (tab != 'All' &&
                           order.status.toLowerCase() != tab.toLowerCase()) {
                         return false;
                       }
 
-                      // Filter by search query
                       if (_searchQuery.isNotEmpty) {
                         final idMatch = order.id.toLowerCase().contains(_searchQuery);
                         final nameMatch = (order.customerName ?? '')
@@ -349,7 +347,7 @@ class _FarmerOrdersTabState extends State<FarmerOrdersTab>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top Bar: Order ID, Status, Total
+              
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -396,7 +394,6 @@ class _FarmerOrdersTabState extends State<FarmerOrdersTab>
               ),
               const SizedBox(height: 10),
 
-              // Customer & Date
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -431,7 +428,6 @@ class _FarmerOrdersTabState extends State<FarmerOrdersTab>
               ),
               const SizedBox(height: 8),
 
-              // Pickup info
               if (order.pickupSlotTime != null && order.pickupSlotTime!.isNotEmpty)
                 Row(
                   children: [
@@ -453,7 +449,6 @@ class _FarmerOrdersTabState extends State<FarmerOrdersTab>
 
               const Divider(height: 18, color: AppColors.surfaceVariant),
 
-              // Items summary
               Text(
                 '${order.items.length} ${order.items.length == 1 ? 'item' : 'items'}: ${order.items.map((it) => '${it.quantity.toInt()}x ${it.productName}').join(', ')}',
                 style: TextStyle(
@@ -465,7 +460,6 @@ class _FarmerOrdersTabState extends State<FarmerOrdersTab>
               ),
               const SizedBox(height: 12),
 
-              // Action buttons
               Row(
                 children: [
                   Expanded(

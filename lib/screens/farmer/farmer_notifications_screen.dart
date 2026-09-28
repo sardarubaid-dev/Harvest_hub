@@ -16,7 +16,7 @@ class FarmerNotificationsScreen extends StatefulWidget {
 
 class _FarmerNotificationsScreenState extends State<FarmerNotificationsScreen> {
   final DatabaseService _dbService = DatabaseService();
-  String _filter = 'all'; // 'all' or 'unread'
+  String _filter = 'all'; 
 
   IconData _getNotificationIcon(String type) {
     switch (type.toLowerCase()) {
@@ -106,7 +106,7 @@ class _FarmerNotificationsScreenState extends State<FarmerNotificationsScreen> {
       ),
       body: Column(
         children: [
-          // Filter Chips
+          
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             color: AppColors.surface,

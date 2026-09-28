@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:harvest_hub/theme/app_theme.dart';
 import 'package:harvest_hub/core/dummy_data.dart';
 
-// --- Mock Data Service for Dashboard ---
 class AdminDashboardData {
   final int pendingApplications;
   final double hubCapacity;
@@ -30,7 +29,7 @@ class AdminDashboardData {
 }
 
 class MarketplaceActivity {
-  final String type; // 'restock', 'application', 'order', 'flag'
+  final String type; 
   final String title;
   final String description;
   final String? badgeText;
@@ -389,7 +388,7 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFFE8EFE8), // Light greenish gray
+            color: const Color(0xFFE8EFE8), 
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -732,10 +731,10 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
             image: const DecorationImage(
-              image: AssetImage('assets/images/harvest_ai_assistant_bg.jpg'), // using placeholder
+              image: AssetImage('assets/images/harvest_ai_assistant_bg.jpg'), 
               fit: BoxFit.cover,
             ),
-            color: AppColors.primaryContainer, // Fallback color
+            color: AppColors.primaryContainer, 
           ),
           child: Stack(
             children: [

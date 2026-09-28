@@ -39,14 +39,13 @@ class AppRouter {
           if (user.isFarmer && !uriStr.startsWith('/farmer')) return '/farmer/dashboard';
           
           if (user.isCustomer) {
-            // If they are a customer and they just logged in on the /login screen (modal pop),
-            // return null so the modal can Navigator.pop() back to their previous screen/action.
+            
             if (isLogin) return null;
             // Otherwise, keep them off onboarding/root
             if (isOnboarding || state.matchedLocation == '/') return '/customer';
           }
         } else {
-          // User is logged out / unauthenticated
+          
           if (uriStr.startsWith('/farmer') || uriStr.startsWith('/admin')) {
             return '/login';
           }

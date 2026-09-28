@@ -19,10 +19,7 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  try {
-    final dbService = DatabaseService();
-    await dbService.seedInitialData();
-  } catch (_) {}
+
 
   runApp(const HarvestHubApp());
 }
