@@ -240,7 +240,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
           ..addAll(
             reviews.map((r) {
               return {
-                'name': r.customerName.isNotEmpty ? r.customerName : 'Verified Buyer',
+                'name': r.userName.isNotEmpty ? r.userName : 'Verified Buyer',
                 'location': 'Verified Order',
                 'rating': r.rating.round().clamp(1, 5),
                 'date': 'Recent',

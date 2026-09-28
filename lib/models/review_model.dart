@@ -1,79 +1,121 @@
 class ReviewModel {
   final String id;
-  final String customerId;
-  final String customerName;
-  final String? customerAvatar;
-  final String targetType;
-  final String targetId;
-  final double rating;
+  final String productId;
+  final String farmerId;
+  final String userId;
+  final String userName;
+  final String? userAvatar;
+  final int rating;
   final String comment;
+  final List<String> mediaUrls;
+  final bool isVerifiedPurchase;
+  final int helpfulCount;
+  final List<String> helpfulUserIds;
+  final Map<String, dynamic>? farmerReply;
+  final String status;
   final DateTime createdAt;
+  final DateTime updatedAt;
 
   ReviewModel({
     required this.id,
-    required this.customerId,
-    required this.customerName,
-    this.customerAvatar,
-    this.targetType = 'farmer',
-    required this.targetId,
-    this.rating = 5.0,
+    required this.productId,
+    required this.farmerId,
+    required this.userId,
+    required this.userName,
+    this.userAvatar,
+    this.rating = 5,
     required this.comment,
+    this.mediaUrls = const [],
+    this.isVerifiedPurchase = false,
+    this.helpfulCount = 0,
+    this.helpfulUserIds = const [],
+    this.farmerReply,
+    this.status = 'published',
     required this.createdAt,
+    required this.updatedAt,
   });
 
   factory ReviewModel.fromMap(String id, Map<String, dynamic> map) {
     return ReviewModel(
       id: id,
-      customerId: map['customerId'] ?? map['Customer_Id'] ?? '',
-      customerName: map['customerName'] ?? map['Customer_Name'] ?? '',
-      customerAvatar: map['customerAvatar'] ?? map['Customer_Avatar'],
-      targetType: map['targetType'] ?? map['Target_Type'] ?? 'farmer',
-      targetId: map['targetId'] ?? map['Target_Id'] ?? '',
-      rating: (map['rating'] ?? map['Rating'] ?? 5.0).toDouble(),
-      comment: map['comment'] ?? map['Comment'] ?? '',
+      productId: map['productId'] ?? '',
+      farmerId: map['farmerId'] ?? '',
+      userId: map['userId'] ?? map['customerId'] ?? '',
+      userName: map['userName'] ?? map['customerName'] ?? '',
+      userAvatar: map['userAvatar'] ?? map['customerAvatar'],
+      rating: (map['rating'] ?? 5).toInt(),
+      comment: map['comment'] ?? '',
+      mediaUrls: List<String>.from(map['mediaUrls'] ?? []),
+      isVerifiedPurchase: map['isVerifiedPurchase'] ?? false,
+      helpfulCount: (map['helpfulCount'] ?? 0).toInt(),
+      helpfulUserIds: List<String>.from(map['helpfulUserIds'] ?? []),
+      farmerReply: map['farmerReply'],
+      status: map['status'] ?? 'published',
       createdAt: map['createdAt'] != null
           ? DateTime.parse(map['createdAt'].toString())
-          : (map['Created_At'] != null
-              ? DateTime.parse(map['Created_At'].toString())
-              : DateTime.now()),
+          : DateTime.now(),
+      updatedAt: map['updatedAt'] != null
+          ? DateTime.parse(map['updatedAt'].toString())
+          : DateTime.now(),
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'customerId': customerId,
-      'customerName': customerName,
-      'customerAvatar': customerAvatar,
-      'targetType': targetType,
-      'targetId': targetId,
+      'productId': productId,
+      'farmerId': farmerId,
+      'userId': userId,
+      'userName': userName,
+      'userAvatar': userAvatar,
       'rating': rating,
       'comment': comment,
+      'mediaUrls': mediaUrls,
+      'isVerifiedPurchase': isVerifiedPurchase,
+      'helpfulCount': helpfulCount,
+      'helpfulUserIds': helpfulUserIds,
+      'farmerReply': farmerReply,
+      'status': status,
       'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
     };
   }
 
   ReviewModel copyWith({
     String? id,
-    String? customerId,
-    String? customerName,
-    String? customerAvatar,
-    String? targetType,
-    String? targetId,
-    double? rating,
+    String? productId,
+    String? farmerId,
+    String? userId,
+    String? userName,
+    String? userAvatar,
+    int? rating,
     String? comment,
+    List<String>? mediaUrls,
+    bool? isVerifiedPurchase,
+    int? helpfulCount,
+    List<String>? helpfulUserIds,
+    Map<String, dynamic>? farmerReply,
+    String? status,
     DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return ReviewModel(
       id: id ?? this.id,
-      customerId: customerId ?? this.customerId,
-      customerName: customerName ?? this.customerName,
-      customerAvatar: customerAvatar ?? this.customerAvatar,
-      targetType: targetType ?? this.targetType,
-      targetId: targetId ?? this.targetId,
+      productId: productId ?? this.productId,
+      farmerId: farmerId ?? this.farmerId,
+      userId: userId ?? this.userId,
+      userName: userName ?? this.userName,
+      userAvatar: userAvatar ?? this.userAvatar,
       rating: rating ?? this.rating,
       comment: comment ?? this.comment,
+      mediaUrls: mediaUrls ?? this.mediaUrls,
+      isVerifiedPurchase: isVerifiedPurchase ?? this.isVerifiedPurchase,
+      helpfulCount: helpfulCount ?? this.helpfulCount,
+      helpfulUserIds: helpfulUserIds ?? this.helpfulUserIds,
+      farmerReply: farmerReply ?? this.farmerReply,
+      status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }

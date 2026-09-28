@@ -15,6 +15,9 @@ class ProductModel {
   final String? farmerName;
   final String? marketName;
   final DateTime? createdAt;
+  final double averageRating;
+  final int totalReviews;
+  final Map<String, int> ratingBreakdown;
 
   ProductModel({
     required this.id,
@@ -33,6 +36,9 @@ class ProductModel {
     this.farmerName,
     this.marketName,
     this.createdAt,
+    this.averageRating = 0.0,
+    this.totalReviews = 0,
+    this.ratingBreakdown = const {'5': 0, '4': 0, '3': 0, '2': 0, '1': 0},
   });
 
   factory ProductModel.fromMap(String id, Map<String, dynamic> map) {
@@ -66,6 +72,11 @@ class ProductModel {
       createdAt: map['createdAt'] != null
           ? DateTime.tryParse(map['createdAt'].toString())
           : null,
+      averageRating: (map['averageRating'] ?? 0.0).toDouble(),
+      totalReviews: (map['totalReviews'] ?? 0).toInt(),
+      ratingBreakdown: map['ratingBreakdown'] != null 
+          ? Map<String, int>.from(map['ratingBreakdown'])
+          : {'5': 0, '4': 0, '3': 0, '2': 0, '1': 0},
     );
   }
 
@@ -95,6 +106,9 @@ class ProductModel {
       'marketName': marketName,
       'createdAt':
           createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
+      'averageRating': averageRating,
+      'totalReviews': totalReviews,
+      'ratingBreakdown': ratingBreakdown,
     };
   }
 
@@ -115,6 +129,9 @@ class ProductModel {
     String? farmerName,
     String? marketName,
     DateTime? createdAt,
+    double? averageRating,
+    int? totalReviews,
+    Map<String, int>? ratingBreakdown,
   }) {
     return ProductModel(
       id: id ?? this.id,
@@ -132,8 +149,10 @@ class ProductModel {
       isOrganic: isOrganic ?? this.isOrganic,
       farmerName: farmerName ?? this.farmerName,
       marketName: marketName ?? this.marketName,
-
       createdAt: createdAt ?? this.createdAt,
+      averageRating: averageRating ?? this.averageRating,
+      totalReviews: totalReviews ?? this.totalReviews,
+      ratingBreakdown: ratingBreakdown ?? this.ratingBreakdown,
     );
   }
 }
