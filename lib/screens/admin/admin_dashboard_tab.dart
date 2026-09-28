@@ -2,6 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:harvest_hub/theme/app_theme.dart';
 
 
+import 'package:harvest_hub/services/database_service.dart';
+import 'package:harvest_hub/models/farmer_model.dart';
+import 'package:harvest_hub/models/order_model.dart';
+import 'admin_categories_screen.dart';
+import 'admin_broadcast_screen.dart';
+import 'admin_audit_logs_screen.dart';
+import 'package:harvest_hub/models/user_model.dart';
+import 'package:harvest_hub/models/product_model.dart';
+
+
 class AdminDashboardData {
   final int pendingApplications;
   final double hubCapacity;
@@ -46,89 +56,135 @@ class MarketplaceActivity {
   });
 }
 
-class MockAdminService {
-  Future<AdminDashboardData> fetchDashboardData() async {
-    await Future.delayed(const Duration(milliseconds: 600));
-
-    return AdminDashboardData(
-      pendingApplications: 6,
-      hubCapacity: 84.0,
-      totalGmv: 1420000,
-      totalOrders: 1842,
-      orderCompletionRate: 94.2,
-      activeFarmers: 48,
-      pendingFarmers: 6,
-      activeBuyers: 3210,
-      hubEfficiency: 98.2,
-      activities: [
-        MarketplaceActivity(
-          type: 'restock',
-          title: 'Green Valley Farm',
-          description: 'Restocked 50kg Organic Tomatoes',
-          badgeText: 'Batch #GV-902',
-          subtext: 'Stall 4A',
-          timeAgo: '12m ago',
-        ),
-        MarketplaceActivity(
-          type: 'application',
-          title: 'New Application Received',
-          description: 'Indus Organic Orchard (Hyderabad District)',
-          badgeText: 'Tier-1 Pending Review',
-          timeAgo: '35m ago',
-        ),
-        MarketplaceActivity(
-          type: 'order',
-          title: 'Order #HH10248 Collected',
-          description: 'Direct collection completed at Stall 14B',
-          subtext: 'Buyer: S. Tariq • 4 items',
-          timeAgo: '48m ago',
-        ),
-        MarketplaceActivity(
-          type: 'flag',
-          title: 'Price Flag Resolved',
-          description: 'Pure Cow Milk fair ceiling approved across...',
-          badgeText: 'Auto-reconciled',
-          timeAgo: '1h ago',
-        ),
-      ],
-    );
-  }
-}
-
 class AdminDashboardTab extends StatefulWidget {
-  const AdminDashboardTab({super.key});
+  final Function(int)? onNavigateToTab;
+
+  const AdminDashboardTab({super.key, this.onNavigateToTab});
 
   @override
   State<AdminDashboardTab> createState() => _AdminDashboardTabState();
 }
 
 class _AdminDashboardTabState extends State<AdminDashboardTab> {
-  final MockAdminService _adminService = MockAdminService();
-  AdminDashboardData? _data;
+  final _dbService = DatabaseService();
+
+  List<FarmerModel> _farmers = [];
+  List<OrderModel> _orders = [];
+  List<UserModel> _users = [];
+  List<ProductModel> _products = [];
+
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _initDataStreams();
   }
 
-  Future<void> _loadData() async {
-    final data = await _adminService.fetchDashboardData();
-    if (mounted) {
-      setState(() {
-        _data = data;
-        _isLoading = false;
-      });
-    }
+  void _initDataStreams() {
+    _dbService.streamAllFarmers().listen((farmers) {
+      if (mounted) setState(() => _farmers = farmers);
+    });
+    _dbService.streamAllOrders().listen((orders) {
+      if (mounted) setState(() => _orders = orders);
+    });
+    _dbService.streamAllUsers().listen((users) {
+      if (mounted) {
+        setState(() {
+          _users = users;
+          _isLoading = false; 
+        });
+      }
+    });
+    _dbService.streamAllProducts().listen((products) {
+      if (mounted) setState(() => _products = products);
+    });
   }
+
+  AdminDashboardData _buildDashboardData() {
+    final pendingFarmersCount = _farmers.where((f) => !f.isApproved).length;
+    final activeFarmersCount = _farmers.where((f) => f.isApproved).length;
+    final activeBuyersCount = _users.where((u) => u.role == 'customer').length;
+
+    final totalGmv = _orders.fold(0.0, (sum, order) => sum + order.totalAmount);
+    final completedOrders = _orders.where((o) => o.status == 'Completed').length;
+    final completionRate = _orders.isEmpty
+        ? 0.0
+        : (completedOrders / _orders.length) * 100;
+
+    List<MarketplaceActivity> activities = [];
+
+    if (_products.isNotEmpty) {
+      final sortedProducts = List<ProductModel>.from(_products)
+        ..sort((a, b) => (b.createdAt ?? DateTime.now()).compareTo(a.createdAt ?? DateTime.now()));
+      final p = sortedProducts.first;
+      activities.add(
+        MarketplaceActivity(
+          type: 'restock',
+          title: p.farmerName ?? 'Farm',
+          description: 'Restocked ${p.quantity.toInt()}${p.unit} ${p.name}',
+          badgeText: 'New Batch',
+          timeAgo: 'Just now',
+        ),
+      );
+    }
+
+    if (pendingFarmersCount > 0) {
+      final pendingF = _farmers.firstWhere((f) => !f.isApproved);
+      activities.add(
+        MarketplaceActivity(
+          type: 'application',
+          title: 'New Application Received',
+          description: '${pendingF.farmName} (${pendingF.location})',
+          badgeText: 'Pending Review',
+          timeAgo: 'Just now',
+        ),
+      );
+    }
+
+    if (_orders.isNotEmpty) {
+      final sortedOrders = List<OrderModel>.from(_orders)
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      final o = sortedOrders.first;
+      String shortId = o.id.length > 4 ? o.id.substring(0, 4) : o.id;
+
+      activities.add(
+        MarketplaceActivity(
+          type: 'order',
+          title: 'Order #$shortId ${o.status}',
+          description: 'Amount: Rs. ${o.totalAmount}',
+          subtext: 'Buyer: ${o.customerName} • ${o.items.length} items',
+          timeAgo: 'Just now',
+        ),
+      );
+    }
+
+    return AdminDashboardData(
+      pendingApplications: pendingFarmersCount,
+      hubCapacity: 84.0, 
+      totalGmv: totalGmv,
+      totalOrders: _orders.length,
+      orderCompletionRate: completionRate,
+      activeFarmers: activeFarmersCount,
+      pendingFarmers: pendingFarmersCount,
+      activeBuyers: activeBuyersCount,
+      hubEfficiency: 98.2, 
+      activities: activities,
+    );
+  }
+
+  AdminDashboardData? _data;
 
   @override
   Widget build(BuildContext context) {
+    if (!_isLoading) {
+      _data = _buildDashboardData();
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: _isLoading
+        child: _isLoading || _data == null
             ? const Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
                 padding: const EdgeInsets.all(16.0),
@@ -300,11 +356,14 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  '• Latency 42ms',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.onSurfaceVariant,
+                Expanded(
+                  child: Text(
+                    '• Latency 42ms',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -319,12 +378,29 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
-            children: const [
-              Icon(Icons.calendar_today, size: 16),
-              SizedBox(width: 8),
-              Text('Oct 2024', style: TextStyle(fontWeight: FontWeight.w600)),
-              SizedBox(width: 4),
-              Icon(Icons.keyboard_arrow_down, size: 16),
+            children: [
+          GestureDetector(
+            onTap: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: DateTime.now(),
+                firstDate: DateTime(2020),
+                lastDate: DateTime(2030),
+              );
+              if (picked != null) {
+                // date updated
+              }
+            },
+            child: Row(
+              children: [
+                Icon(Icons.calendar_today, size: 16),
+                SizedBox(width: 8),
+                Text('Filter Date', style: TextStyle(fontWeight: FontWeight.w600)),
+                SizedBox(width: 4),
+                Icon(Icons.keyboard_arrow_down, size: 16),
+              ],
+            ),
+          ),
             ],
           ),
         ),
@@ -372,7 +448,11 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
                 ),
               ),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  if (widget.onNavigateToTab != null) {
+                    widget.onNavigateToTab!(1);
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.error,
                   foregroundColor: Colors.white,
@@ -440,6 +520,14 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
   }
 
   Widget _buildMetricsGrid() {
+    if (_data == null) return const SizedBox();
+    
+    String formatCurrency(double amount) {
+      if (amount >= 1000000) return '${(amount / 1000000).toStringAsFixed(2)}M';
+      if (amount >= 1000) return '${(amount / 1000).toStringAsFixed(1)}K';
+      return amount.toStringAsFixed(0);
+    }
+    
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -450,31 +538,51 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
       children: [
         _buildMetricCard(
           title: 'Total GMV',
-          value: 'Rs. 1.42M',
-          subtitle: '+18.4% vs mo',
+          value: 'Rs. ${formatCurrency(_data!.totalGmv)}',
+          subtitle: '+0% vs mo',
           icon: Icons.payments_outlined,
           isPositive: true,
+          onTap: () {
+            if (widget.onNavigateToTab != null) {
+              widget.onNavigateToTab!(3); 
+            }
+          },
         ),
         _buildMetricCard(
           title: 'Total Orders',
-          value: '1,842',
-          subtitle: '94.2% completed',
+          value: '${_data!.totalOrders}',
+          subtitle: '${_data!.orderCompletionRate.toStringAsFixed(1)}% completed',
           icon: Icons.receipt_outlined,
           isPositive: true,
+          onTap: () {
+            if (widget.onNavigateToTab != null) {
+              widget.onNavigateToTab!(2);
+            }
+          },
         ),
         _buildMetricCard(
           title: 'Verified Farmers',
-          value: '48 Active',
-          subtitleBadge: '6 Pending',
+          value: '${_data!.activeFarmers} Active',
+          subtitleBadge: '${_data!.pendingFarmers} Pending',
           icon: Icons.agriculture_outlined,
           isPositive: true,
+          onTap: () {
+            if (widget.onNavigateToTab != null) {
+              widget.onNavigateToTab!(1);
+            }
+          },
         ),
         _buildMetricCard(
           title: 'Active Buyers',
-          value: '3,210',
-          subtitle: '+142 new',
+          value: '${_data!.activeBuyers}',
+          subtitle: 'customers',
           icon: Icons.people_outline,
           isPositive: true,
+          onTap: () {
+            if (widget.onNavigateToTab != null) {
+              widget.onNavigateToTab!(3);
+            }
+          },
         ),
       ],
     );
@@ -487,44 +595,47 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
     String? subtitleBadge,
     required IconData icon,
     required bool isPositive,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: AppColors.onSurfaceVariant,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0A000000),
+              blurRadius: 10,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.onSurfaceVariant,
+                  ),
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(6),
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Icon(icon, size: 16, color: AppColors.primaryContainer),
                 ),
-                child: Icon(icon, size: 16, color: AppColors.primaryContainer),
-              ),
-            ],
-          ),
+              ],
+            ),
           Text(
             value,
             style: const TextStyle(
@@ -568,6 +679,7 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
             ),
         ],
       ),
+    ),
     );
   }
 
@@ -672,21 +784,33 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
           runSpacing: 12,
           alignment: WrapAlignment.spaceBetween,
           children: [
-            _buildActionButton(Icons.verified_user_outlined, 'Verify\nFarmers', AppColors.secondaryContainer),
-            _buildActionButton(Icons.campaign_outlined, 'Broadcast\nNotice', AppColors.surfaceVariant),
-            _buildActionButton(Icons.category_outlined, 'Categories', AppColors.surfaceVariant),
-            _buildActionButton(Icons.security_outlined, 'Audit Logs', AppColors.surfaceVariant),
+            _buildActionButton(Icons.verified_user_outlined, 'Verify\nFarmers', AppColors.secondaryContainer, onTap: () {
+              if (widget.onNavigateToTab != null) {
+                widget.onNavigateToTab!(1);
+              }
+            }),
+            _buildActionButton(Icons.campaign_outlined, 'Broadcast\nNotice', AppColors.surfaceVariant, onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminBroadcastScreen()));
+            }),
+            _buildActionButton(Icons.category_outlined, 'Categories', AppColors.surfaceVariant, onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminCategoriesScreen()));
+            }),
+            _buildActionButton(Icons.security_outlined, 'Audit Logs', AppColors.surfaceVariant, onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminAuditLogsScreen()));
+            }),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildActionButton(IconData icon, String label, Color bgColor) {
-    return Container(
-      width: 75,
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(
+  Widget _buildActionButton(IconData icon, String label, Color bgColor, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 75,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         boxShadow: const [
@@ -719,6 +843,7 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
           ),
         ],
       ),
+    ),
     );
   }
 
@@ -730,10 +855,6 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
           width: double.infinity,
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            image: const DecorationImage(
-              image: AssetImage('assets/images/harvest_ai_assistant_bg.jpg'), 
-              fit: BoxFit.cover,
-            ),
             color: AppColors.primaryContainer, 
           ),
           child: Stack(
@@ -846,8 +967,8 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            Row(
+          children: [
+            const Row(
               children: [
                 Text(
                   'Recent Marketplace Activity',
@@ -861,12 +982,19 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
                 Icon(Icons.circle, size: 10, color: AppColors.primaryContainer),
               ],
             ),
-            Text(
-              'View All',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primaryContainer,
+            GestureDetector(
+              onTap: () {
+                if (widget.onNavigateToTab != null) {
+                  widget.onNavigateToTab!(2);
+                }
+              },
+              child: const Text(
+                'View All',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryContainer,
+                ),
               ),
             ),
           ],

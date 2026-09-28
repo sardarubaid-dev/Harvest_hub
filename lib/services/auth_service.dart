@@ -105,7 +105,7 @@ class AuthService {
         contactNumber: contactNumber.trim(),
         marketId: marketId,
         rating: 5.0,
-        isApproved: true,
+        isApproved: false,
         latitude: latitude,
         longitude: longitude,
         profileImageUrl: profileImageUrl,

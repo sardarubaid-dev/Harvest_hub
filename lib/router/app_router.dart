@@ -26,11 +26,8 @@ class AppRouter {
         final user = authProvider.currentUser;
 
         final bool isSplash = state.matchedLocation == '/splash';
-        final bool isAuthScreen = state.matchedLocation == '/login' ||
-            state.matchedLocation == '/onboarding' ||
-            state.matchedLocation == '/role_selection' ||
-            state.matchedLocation.startsWith('/create_account') ||
-            state.matchedLocation == '/';
+        final bool isOnboarding = state.matchedLocation == '/onboarding';
+        final bool isLogin = state.matchedLocation == '/login';
         final String uriStr = state.uri.toString();
 
         // Never hijack /splash; let SplashScreen finish playing Splash.mp4 and navigate when done
@@ -39,16 +36,17 @@ class AppRouter {
         }
 
         if (isAuthenticated && user != null) {
-          if (user.isAdmin && !uriStr.startsWith('/admin')) {
-            return '/admin/dashboard';
-          }
-          if (user.isFarmer && !uriStr.startsWith('/farmer')) {
-            return '/farmer/dashboard';
-          }
-          if (user.isCustomer && isAuthScreen) {
-            return '/customer';
+          if (user.isAdmin && !uriStr.startsWith('/admin')) return '/admin/dashboard';
+          if (user.isFarmer && !uriStr.startsWith('/farmer')) return '/farmer/dashboard';
+          
+          if (user.isCustomer) {
+            
+            if (isLogin) return null;
+            // Otherwise, keep them off onboarding/root
+            if (isOnboarding || state.matchedLocation == '/') return '/customer';
           }
         } else {
+          
           if (uriStr.startsWith('/farmer') || uriStr.startsWith('/admin')) {
             return '/login';
           }
@@ -63,21 +61,7 @@ class AppRouter {
         ),
         GoRoute(
           path: '/onboarding',
-          pageBuilder: (context, state) => CustomTransitionPage(
-            key: state.pageKey,
-            child: const OnboardingScreen(),
-            transitionDuration: const Duration(milliseconds: 500),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              return FadeTransition(
-                opacity: CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOutCubic,
-                ),
-                child: child,
-              );
-            },
-          ),
+          builder: (context, state) => const OnboardingScreen(),
         ),
         GoRoute(
           path: '/login',
@@ -126,21 +110,7 @@ class AppRouter {
         ),
         GoRoute(
           path: '/customer',
-          pageBuilder: (context, state) => CustomTransitionPage(
-            key: state.pageKey,
-            child: const CustomerHomeScreen(),
-            transitionDuration: const Duration(milliseconds: 500),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              return FadeTransition(
-                opacity: CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOutCubic,
-                ),
-                child: child,
-              );
-            },
-          ),
+          builder: (context, state) => const CustomerHomeScreen(),
         ),
         GoRoute(
           path: '/search',
