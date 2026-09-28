@@ -39,7 +39,7 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
               _buildActionRequiredSection(),
               const SizedBox(height: 32),
               _buildRegisteredDirectorySection(),
-              const SizedBox(height: 64), // For FAB spacing
+              const SizedBox(height: 64), 
             ],
           ),
         ),

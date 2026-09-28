@@ -205,7 +205,7 @@ class _FarmerMarketPickupScreenState extends State<FarmerMarketPickupScreen> {
 
           if (_selectedMarketId == null ||
               !markets.any((m) => m.id == _selectedMarketId)) {
-            // Default to farmer's market or first market
+            
             if (farmer?.marketId != null &&
                 markets.any((m) => m.id == farmer!.marketId)) {
               _selectedMarketId = farmer!.marketId;
@@ -220,7 +220,7 @@ class _FarmerMarketPickupScreenState extends State<FarmerMarketPickupScreen> {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              // Market Selector Carousel / Chips
+              
               const Text(
                 'Select Operating Market',
                 style: TextStyle(
@@ -271,7 +271,6 @@ class _FarmerMarketPickupScreenState extends State<FarmerMarketPickupScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Current Market Details Card
               Container(
                 decoration: BoxDecoration(
                   color: AppColors.surface,
@@ -384,7 +383,6 @@ class _FarmerMarketPickupScreenState extends State<FarmerMarketPickupScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Pickup Slots Section
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

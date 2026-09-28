@@ -10,7 +10,8 @@ import '../models/category_model.dart';
 import '../models/market_model.dart';
 import '../models/pickup_slot_model.dart';
 import '../models/notification_model.dart';
-import '../core/dummy_data.dart';
+import '../models/review_model.dart';
+
 
 class DatabaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -27,6 +28,7 @@ class DatabaseService {
       _firestore.collection('pickup_slots');
   CollectionReference get _notificationsRef =>
       _firestore.collection('notifications');
+  CollectionReference get _reviewsRef => _firestore.collection('reviews');
 
   Stream<UserModel?> streamUser(String uid) {
     return _usersRef.doc(uid).snapshots().map((doc) {
@@ -77,11 +79,6 @@ class DatabaseService {
   }
 
   Future<FarmerModel?> getFarmerByUserId(String userId) async {
-    // --- DUMMY DATA BYPASS ---
-    try {
-      return DummyData.seedFarmers.firstWhere((f) => f.userId == userId);
-    } catch (_) {}
-    // -------------------------
 
     QuerySnapshot snap = await _farmersRef
         .where('userId', isEqualTo: userId)
@@ -111,6 +108,9 @@ class DatabaseService {
     required String location,
     required String contactNumber,
     String? marketId,
+    double? latitude,
+    double? longitude,
+    String? profileImageUrl,
   }) async {
     Map<String, dynamic> data = {
       'farmName': farmName,
@@ -119,9 +119,11 @@ class DatabaseService {
       'location': location,
       'contactNumber': contactNumber,
     };
-    if (marketId != null) {
-      data['marketId'] = marketId;
-    }
+    if (marketId != null) data['marketId'] = marketId;
+    if (latitude != null) data['latitude'] = latitude;
+    if (longitude != null) data['longitude'] = longitude;
+    if (profileImageUrl != null) data['profileImageUrl'] = profileImageUrl;
+
     await _farmersRef.doc(farmerId).update(data);
   }
 
@@ -203,7 +205,7 @@ class DatabaseService {
 
   Stream<List<ProductModel>> streamAllProducts() {
     return _productsRef.snapshots().map((snapshot) {
-      final firestoreProducts = snapshot.docs
+      return snapshot.docs
           .map(
             (doc) => ProductModel.fromMap(
               doc.id,
@@ -211,13 +213,6 @@ class DatabaseService {
             ),
           )
           .toList();
-
-      final existingIds = firestoreProducts.map((p) => p.id).toSet();
-      final seedMatches = DummyData.seedProducts
-          .where((p) => !existingIds.contains(p.id))
-          .toList();
-
-      return [...firestoreProducts, ...seedMatches];
     });
   }
 
@@ -225,7 +220,7 @@ class DatabaseService {
     return _productsRef.where('farmerId', isEqualTo: farmerId).snapshots().map((
       snapshot,
     ) {
-      final firestoreProducts = snapshot.docs
+      return snapshot.docs
           .map(
             (doc) => ProductModel.fromMap(
               doc.id,
@@ -233,13 +228,6 @@ class DatabaseService {
             ),
           )
           .toList();
-
-      final existingIds = firestoreProducts.map((p) => p.id).toSet();
-      final seedMatches = DummyData.seedProducts
-          .where((p) => p.farmerId == farmerId && !existingIds.contains(p.id))
-          .toList();
-
-      return [...firestoreProducts, ...seedMatches];
     });
   }
 
@@ -248,7 +236,7 @@ class DatabaseService {
         .where('categoryId', isEqualTo: categoryId)
         .snapshots()
         .map((snapshot) {
-          final firestoreProducts = snapshot.docs
+          return snapshot.docs
               .map(
                 (doc) => ProductModel.fromMap(
                   doc.id,
@@ -256,16 +244,6 @@ class DatabaseService {
                 ),
               )
               .toList();
-
-          final existingIds = firestoreProducts.map((p) => p.id).toSet();
-          final seedMatches = DummyData.seedProducts
-              .where(
-                (p) =>
-                    p.categoryId == categoryId && !existingIds.contains(p.id),
-              )
-              .toList();
-
-          return [...firestoreProducts, ...seedMatches];
         });
   }
 
@@ -273,29 +251,6 @@ class DatabaseService {
     DocumentReference ref = _productsRef.doc();
     ProductModel newProduct = product.copyWith(id: ref.id);
     await ref.set(newProduct.toMap());
-
-    // Sync in-memory seed and fresh product caches for instant reactivity
-    DummyData.seedProducts.removeWhere((p) => p.id == newProduct.id);
-    DummyData.seedProducts.insert(0, newProduct);
-
-    DummyData.freshProducts.removeWhere((p) => p['id'] == newProduct.id);
-    DummyData.freshProducts.insert(0, {
-      'id': newProduct.id,
-      'title': newProduct.name,
-      'category': newProduct.categoryName.isNotEmpty
-          ? newProduct.categoryName.toUpperCase()
-          : 'PRODUCE',
-      'farmerName': newProduct.farmerName ?? 'Local Farmer',
-      'price': newProduct.price.toStringAsFixed(0),
-      'unit': '/ ${newProduct.unit}',
-      'stockBadge':
-          '${newProduct.quantity.toInt()} ${newProduct.unit} available',
-      'isFavorite': false,
-      'imageUrl': newProduct.imageUrl,
-      'imageColor': const Color(0xFFA5D6A7),
-      'isOrganic': newProduct.isOrganic,
-      'description': newProduct.description,
-    });
   }
 
   Future<void> updateProduct(ProductModel product) async {
@@ -307,24 +262,6 @@ class DatabaseService {
 
     await _productsRef.doc(product.id).update(product.toMap());
 
-    // Update in-memory seed and fresh products
-    final idx = DummyData.seedProducts.indexWhere((p) => p.id == product.id);
-    if (idx != -1) {
-      DummyData.seedProducts[idx] = product;
-    } else {
-      DummyData.seedProducts.insert(0, product);
-    }
-
-    final freshIdx = DummyData.freshProducts.indexWhere((p) => p['id'] == product.id);
-    if (freshIdx != -1) {
-      DummyData.freshProducts[freshIdx]['title'] = product.name;
-      DummyData.freshProducts[freshIdx]['price'] = product.price.toStringAsFixed(0);
-      DummyData.freshProducts[freshIdx]['unit'] = '/ ${product.unit}';
-      DummyData.freshProducts[freshIdx]['stockBadge'] = '${product.quantity.toInt()} ${product.unit} available';
-      DummyData.freshProducts[freshIdx]['imageUrl'] = product.imageUrl;
-      DummyData.freshProducts[freshIdx]['description'] = product.description;
-    }
-
     if (oldQty == 0 && product.quantity > 0) {
       await _triggerRestockNotifications(product);
     }
@@ -332,8 +269,6 @@ class DatabaseService {
 
   Future<void> deleteProduct(String productId) async {
     await _productsRef.doc(productId).delete();
-    DummyData.seedProducts.removeWhere((p) => p.id == productId);
-    DummyData.freshProducts.removeWhere((p) => p['id'] == productId);
   }
 
   Future<void> updateProductStock(String productId, double newQuantity) async {
@@ -343,14 +278,6 @@ class DatabaseService {
       'Stock_Qty': newQuantity,
       'isAvailable': isAvail,
     });
-
-    final idx = DummyData.seedProducts.indexWhere((p) => p.id == productId);
-    if (idx != -1) {
-      DummyData.seedProducts[idx] = DummyData.seedProducts[idx].copyWith(
-        quantity: newQuantity,
-        isAvailable: isAvail,
-      );
-    }
   }
 
   Future<void> _triggerRestockNotifications(ProductModel product) async {
@@ -407,12 +334,6 @@ class DatabaseService {
   }
 
   Stream<CustomerModel?> streamCustomer(String userId) {
-    // --- DUMMY DATA BYPASS ---
-    try {
-      var dummy = DummyData.seedCustomers.firstWhere((c) => c.userId == userId);
-      return Stream.value(dummy);
-    } catch (_) {}
-    // -------------------------
 
     return _customersRef.doc(userId).snapshots().map((doc) {
       if (doc.exists) {
@@ -499,7 +420,7 @@ class DatabaseService {
 
     await sendNotification(
       userId: customerId,
-      title: "Order Placed Successfully! 🛒",
+      title: "Order Placed Successfully! ",
       message:
           "Your order #${newOrder.id.substring(0, 6)} totaling \$${totalAmount.toStringAsFixed(2)} has been placed.",
       type: "order_status",
@@ -510,7 +431,7 @@ class DatabaseService {
       if (farmer != null) {
         await sendNotification(
           userId: farmer.userId,
-          title: "New Order Received! 📦",
+          title: "New Order Received! ",
           message:
               "You have a new order #${newOrder.id.substring(0, 6)} for \$${totalAmount.toStringAsFixed(2)}.",
           type: "order_status",
@@ -554,14 +475,7 @@ class DatabaseService {
           orders.add(order);
         }
       }
-      if (orders.isEmpty) {
-        final dummyOrders = DummyData.seedOrders
-            .where((o) =>
-                o.farmerId == farmerId ||
-                o.items.any((it) => it.farmerId == farmerId))
-            .toList();
-        if (dummyOrders.isNotEmpty) return dummyOrders;
-      }
+
       orders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return orders;
     });
@@ -597,7 +511,7 @@ class DatabaseService {
       if (customerId.isNotEmpty) {
         await sendNotification(
           userId: customerId,
-          title: "Order Status Updated 🚚",
+          title: "Order Status Updated ",
           message:
               "Order #${orderId.substring(0, 6)} status changed to: $status.",
           type: "order_status",
@@ -649,12 +563,7 @@ class DatabaseService {
   Stream<List<NotificationModel>> streamUserNotifications(String userId) {
     return _notificationsRef.where('userId', isEqualTo: userId).snapshots().map(
       (snapshot) {
-        if (snapshot.docs.isEmpty) {
-          final dummyNotifs = DummyData.seedNotifications
-              .where((n) => n.userId == userId || userId == 'u2' || userId == 'f1')
-              .toList();
-          if (dummyNotifs.isNotEmpty) return dummyNotifs;
-        }
+
         List<NotificationModel> list = snapshot.docs
             .map(
               (doc) => NotificationModel.fromMap(
@@ -681,67 +590,69 @@ class DatabaseService {
     }
   }
 
-  Future<void> seedInitialData() async {
-    QuerySnapshot catSnap = await _categoriesRef.limit(1).get();
-    if (catSnap.docs.isEmpty) {
-      List<Map<String, String>> sampleCats = [
-        {
-          'name': 'Fruits',
-          'imageUrl': 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=500',
-        },
-        {
-          'name': 'Vegetables',
-          'imageUrl': 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500',
-        },
-        {
-          'name': 'Organic Products',
-          'imageUrl': 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=500',
-        },
-        {
-          'name': 'Dairy',
-          'imageUrl': 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=500',
-        },
-        {
-          'name': 'Pulses & Grains',
-          'imageUrl': 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500',
-        },
-        {
-          'name': 'Herbs & Spices',
-          'imageUrl': 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=500',
-        },
-      ];
-      for (var cat in sampleCats) {
-        DocumentReference ref = _categoriesRef.doc();
-        await ref.set({'name': cat['name'], 'imageUrl': cat['imageUrl']});
-      }
-    }
-
-    QuerySnapshot mktSnap = await _marketsRef.limit(1).get();
-    if (mktSnap.docs.isEmpty) {
-      List<Map<String, dynamic>> sampleMarkets = [
-        {
-          'name': 'Green Leaf Community Farmers Market',
-          'address': '124 Agriculture Way, Sector 4, Green Valley',
-          'gpsCoordinates': '33.6844, 73.0479',
-          'operatingHours': '7:00 AM - 4:00 PM (Sat-Sun)',
-          'activeStatus': true,
-          'description':
-              'Fresh local produce straight from regional organic farms.',
-        },
-        {
-          'name': 'Sunny Acres Farm Stand',
-          'address': '88 Valley Road, West County',
-          'gpsCoordinates': '33.7294, 73.0931',
-          'operatingHours': '8:00 AM - 6:00 PM (Daily)',
-          'activeStatus': true,
-          'description':
-              'Specializing in fresh dairy, honey, and fresh fruit harvest.',
-        },
-      ];
-      for (var mkt in sampleMarkets) {
-        DocumentReference ref = _marketsRef.doc();
-        await ref.set(mkt);
-      }
-    }
+  Stream<List<ReviewModel>> streamReviewsByTarget(String targetId) {
+    return _reviewsRef.where('targetId', isEqualTo: targetId).snapshots().map((
+      snapshot,
+    ) {
+      List<ReviewModel> reviews = snapshot.docs
+          .map(
+            (doc) => ReviewModel.fromMap(
+              doc.id,
+              doc.data() as Map<String, dynamic>,
+            ),
+          )
+          .toList();
+      reviews.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return reviews;
+    });
   }
+
+  Stream<List<ReviewModel>> streamFarmerReviews(String farmerId) {
+    return _reviewsRef
+        .where('targetType', isEqualTo: 'farmer')
+        .where('targetId', isEqualTo: farmerId)
+        .snapshots()
+        .map((snapshot) {
+          List<ReviewModel> reviews = snapshot.docs
+              .map(
+                (doc) => ReviewModel.fromMap(
+                  doc.id,
+                  doc.data() as Map<String, dynamic>,
+                ),
+              )
+              .toList();
+          reviews.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return reviews;
+        });
+  }
+
+  Stream<List<ReviewModel>> streamProductReviews(String productId) {
+    return _reviewsRef
+        .where('targetType', isEqualTo: 'product')
+        .where('targetId', isEqualTo: productId)
+        .snapshots()
+        .map((snapshot) {
+          List<ReviewModel> reviews = snapshot.docs
+              .map(
+                (doc) => ReviewModel.fromMap(
+                  doc.id,
+                  doc.data() as Map<String, dynamic>,
+                ),
+              )
+              .toList();
+          reviews.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return reviews;
+        });
+  }
+
+  Future<void> addReview(ReviewModel review) async {
+    DocumentReference ref = _reviewsRef.doc();
+    ReviewModel newReview = review.copyWith(id: ref.id);
+    await ref.set(newReview.toMap());
+  }
+
+  Future<void> deleteReview(String reviewId) async {
+    await _reviewsRef.doc(reviewId).delete();
+  }
+
 }

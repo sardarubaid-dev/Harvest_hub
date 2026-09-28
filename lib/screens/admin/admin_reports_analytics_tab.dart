@@ -213,7 +213,7 @@ class _AdminReportsAnalyticsTabState extends State<AdminReportsAnalyticsTab> {
                   Text('vs September (Rs. 1,164,340)', style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
                 ],
               ),
-              // Simulated sparkline graph using icon/container
+              
               SizedBox(
                 width: 100,
                 height: 40,
@@ -359,7 +359,7 @@ class _AdminReportsAnalyticsTabState extends State<AdminReportsAnalyticsTab> {
             ],
           ),
           const SizedBox(height: 16),
-          // Progress bar
+          
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Row(
@@ -372,7 +372,7 @@ class _AdminReportsAnalyticsTabState extends State<AdminReportsAnalyticsTab> {
             ),
           ),
           const SizedBox(height: 16),
-          // Legend
+          
           Row(
             children: [
               Expanded(
@@ -723,7 +723,6 @@ class _SparklinePainter extends CustomPainter {
 
     canvas.drawPath(path, paint);
 
-    // Optional gradient fill under line
     final fillPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topCenter,

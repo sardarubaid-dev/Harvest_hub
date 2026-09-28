@@ -15,7 +15,6 @@ class CategoriesScreen extends StatelessWidget {
     const Color darkText = Color(0xFF1F2937);
     const Color background = Color(0xFFF9FBF9);
 
-    // Extracted categories from dummy data, excluding the "All" chip which is for the home filter
     final allCategories = DummyData.categories
         .where((c) => c['name'] != 'All')
         .toList();
@@ -25,7 +24,7 @@ class CategoriesScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // Header
+            
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 16.0,
@@ -59,7 +58,6 @@ class CategoriesScreen extends StatelessWidget {
               ),
             ),
 
-            // Search Bar (Optional for Categories)
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 16.0,
@@ -99,25 +97,24 @@ class CategoriesScreen extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // Grid View
             Expanded(
               child: GridView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2, // 2 columns
+                  crossAxisCount: 2, 
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
-                  childAspectRatio: 0.9, // Adjust height-width ratio of cards
+                  childAspectRatio: 0.9, 
                 ),
                 itemCount: allCategories.length,
                 itemBuilder: (context, index) {
                   final cat = allCategories[index];
-                  // Alternating background colors for some visual flair similar to theme
+                  
                   final colors = [
-                    const Color(0xFFE8F5E9), // Light Green
-                    const Color(0xFFFFF3E0), // Light Orange
-                    const Color(0xFFFFEBEE), // Light Red
-                    const Color(0xFFE3F2FD), // Light Blue
+                    const Color(0xFFE8F5E9), 
+                    const Color(0xFFFFF3E0), 
+                    const Color(0xFFFFEBEE), 
+                    const Color(0xFFE3F2FD), 
                   ];
                   final bgColor = colors[index % colors.length];
 

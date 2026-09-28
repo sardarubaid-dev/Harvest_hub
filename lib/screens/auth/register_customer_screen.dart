@@ -47,12 +47,12 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
         address: _addressController.text,
         password: _passwordController.text,
       );
-      // Registration success, navigate to home or show success message
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Account Created Successfully!')),
         );
-        Navigator.pop(context); // Go back to login or replace with home
+        Navigator.pop(context); 
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -71,7 +71,7 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
     const Color fieldBg = Colors.white;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FBF9), // Very light greenish-white
+      backgroundColor: const Color(0xFFF9FBF9), 
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -79,7 +79,7 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 10),
-              // Custom App Bar
+              
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -87,7 +87,7 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
                     icon: const Icon(Icons.arrow_back, color: darkText),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  // Small Header Logo
+                  
                   Row(
                     children: [
                       Container(
@@ -154,14 +154,13 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
 
               const SizedBox(height: 24),
 
-              // Fresh Direct Honest Badge
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFA5D6A7), // Light green
+                  color: const Color(0xFFA5D6A7), 
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -205,7 +204,6 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
 
               const SizedBox(height: 24),
 
-              // Rooted in Community Card
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -220,7 +218,7 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
                         width: 60,
                         height: 60,
                         color: Colors.grey[300],
-                        // Use a local icon/color block if image not available
+                        
                         child: const Icon(
                           Icons.shopping_basket,
                           color: Colors.grey,
@@ -259,7 +257,6 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
 
               const SizedBox(height: 24),
 
-              // Form Fields
               _buildFieldHeader('Full Name', 'Required', null),
               _buildTextField(
                 controller: _nameController,
@@ -296,7 +293,7 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
                     decoration: BoxDecoration(
                       color: const Color(
                         0xFFE5E7EB,
-                      ), // Light grey for country code
+                      ), 
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -364,7 +361,6 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
               ),
               const SizedBox(height: 8),
 
-              // Password Strength Indicator
               Row(
                 children: [
                   Expanded(
@@ -435,7 +431,6 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
 
               const SizedBox(height: 24),
 
-              // Terms
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -486,7 +481,6 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
 
               const SizedBox(height: 24),
 
-              // Button
               SizedBox(
                 width: double.infinity,
                 height: 52,
@@ -528,7 +522,6 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
 
               const SizedBox(height: 16),
 
-              // 100% Free Badge
               Center(
                 child: Container(
                   padding: const EdgeInsets.symmetric(
@@ -546,7 +539,7 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
                         Icons.grass,
                         size: 16,
                         color: Colors.orange,
-                      ), // Wheat icon placeholder
+                      ), 
                       SizedBox(width: 8),
                       Text(
                         '100% Free registration • No hidden fees',
@@ -563,7 +556,6 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
 
               const SizedBox(height: 24),
 
-              // Info Cards
               Row(
                 children: [
                   Expanded(
@@ -668,7 +660,6 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
 
               const SizedBox(height: 32),
 
-              // Sign in Link
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

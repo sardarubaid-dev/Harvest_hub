@@ -45,6 +45,13 @@ dependencies:
   flutter_dotenv: ^6.0.1
   dotenv: ^4.2.0
   responsive_framework: ^1.5.1
+  image_picker: ^1.2.3
+  http: ^1.6.0
+  geolocator: ^14.1.1
+  geocoding: ^5.0.0
+  flutter_map: ^8.3.2
+  latlong2: ^0.10.1
+  flutter_typeahead: ^6.0.0
 
 dev_dependencies:
   flutter_test:

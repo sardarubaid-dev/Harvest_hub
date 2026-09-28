@@ -10,7 +10,6 @@ import 'package:intl/intl.dart';
 
 import 'admin_farmer_management_tab.dart';
 
-// --- Simulated Service to mimic Backend Fetching ---
 class AdminDashboardData {
   final int pendingApplications;
   final double hubCapacity;
@@ -38,7 +37,7 @@ class AdminDashboardData {
 }
 
 class MarketplaceActivity {
-  final String type; // 'restock', 'application', 'order', 'flag'
+  final String type; 
   final String title;
   final String description;
   final String? badgeText;
@@ -57,10 +56,9 @@ class MarketplaceActivity {
 
 class MockAdminService {
   Future<AdminDashboardData> fetchDashboardData() async {
-    // Simulating network delay
+    
     await Future.delayed(const Duration(milliseconds: 600));
 
-    // Calculate metrics from our "Database" (DummyData)
     final farmers = DummyData.seedFarmers;
     final orders = DummyData.seedOrders;
     final users = DummyData.seedUsers;
@@ -76,10 +74,8 @@ class MockAdminService {
         ? 0.0
         : (completedOrders / orders.length) * 100;
 
-    // Synthesize Activities from DB records
     List<MarketplaceActivity> activities = [];
 
-    // Add restock from products
     if (products.isNotEmpty) {
       activities.add(
         MarketplaceActivity(
@@ -94,7 +90,6 @@ class MockAdminService {
       );
     }
 
-    // Add pending apps
     if (pendingFarmersCount > 0) {
       final pendingF = farmers.firstWhere((f) => !f.isApproved);
       activities.add(
@@ -118,7 +113,6 @@ class MockAdminService {
       );
     }
 
-    // Add order collection
     if (orders.isNotEmpty) {
       String shortId = orders.first.id;
       if (shortId.length > 4) {
@@ -147,9 +141,6 @@ class MockAdminService {
       ),
     );
 
-    // If counts are very low (because dummy data only has 1 or 2 items),
-    // we use a mix of computed and design-specific fallback logic to make the UI look good as requested.
-    // The user requested using DummyData as the DB.
     return AdminDashboardData(
       pendingApplications: pendingFarmersCount > 0 ? pendingFarmersCount : 6,
       hubCapacity: 84.0,
@@ -229,7 +220,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Scaffold(
       backgroundColor: const Color(
         0xFFF7FAF3,
-      ), // Very light green/off-white background
+      ), 
       appBar: _buildAppBar(),
       body: _buildBody(),
       bottomNavigationBar: _buildBottomNav(),
@@ -243,7 +234,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       titleSpacing: 16,
       title: Row(
         children: [
-          // Logo placeholder
+          
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
@@ -527,7 +518,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xFFFFEBEE), // Light red
+            color: const Color(0xFFFFEBEE), 
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -586,7 +577,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xFFE8ECE5), // Light olive/grey
+            color: const Color(0xFFE8ECE5), 
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(

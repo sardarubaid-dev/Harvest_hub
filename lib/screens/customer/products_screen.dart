@@ -42,7 +42,6 @@ class _ProductsScreenState extends State<ProductsScreen> {
     const Color greyText = Color(0xFF6B7280);
     const Color background = Color(0xFFF9FBF9);
 
-    // List of categories for the filter row
     final categories = [
       'All',
       ...DummyData.categories
@@ -89,7 +88,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
       backgroundColor: background,
       body: Column(
         children: [
-          // Filter Row
+          
           Container(
             height: 60,
             color: Colors.white,
@@ -135,7 +134,6 @@ class _ProductsScreenState extends State<ProductsScreen> {
             ),
           ),
 
-          // Products Grid
           Expanded(
             child: products.isEmpty
                 ? Center(
@@ -231,7 +229,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                     child: GestureDetector(
                                       onTap: () {
                                         AuthInterceptor.executeAction(context, () {
-                                          // Handle favorite tap
+                                          
                                         });
                                       },
                                       child: Container(
@@ -365,7 +363,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                         GestureDetector(
                                           onTap: () {
                                             AuthInterceptor.executeAction(context, () {
-                                              // Implement add to cart
+                                              
                                             });
                                           },
                                           child: Container(

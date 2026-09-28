@@ -5,6 +5,9 @@ import '../../models/product_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/database_service.dart';
 import '../../theme/app_theme.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import '../../services/image_service.dart';
 import 'farmer_categories_screen.dart';
 
 class AddProductScreen extends StatefulWidget {
@@ -24,7 +27,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final TextEditingController _descCtrl = TextEditingController();
   final TextEditingController _priceCtrl = TextEditingController();
   final TextEditingController _quantityCtrl = TextEditingController();
-  final TextEditingController _imageCtrl = TextEditingController();
+  
+  List<File> _selectedImages = [];
+  final ImagePicker _picker = ImagePicker();
 
   String _selectedUnit = 'kg';
   String? _selectedCategoryId;
@@ -43,58 +48,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
     'box',
   ];
 
-  // Curated agricultural produce presets for quick preview & image selection
-  final List<Map<String, String>> _sampleImages = [
-    {
-      'title': 'Tomatoes',
-      'url':
-          'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=600&auto=format&fit=crop',
-    },
-    {
-      'title': 'Spinach',
-      'url':
-          'https://images.unsplash.com/photo-1576045057995-568f588f82fb?q=80&w=600&auto=format&fit=crop',
-    },
-    {
-      'title': 'Apples',
-      'url':
-          'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?q=80&w=600&auto=format&fit=crop',
-    },
-    {
-      'title': 'Carrots',
-      'url':
-          'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?q=80&w=600&auto=format&fit=crop',
-    },
-    {
-      'title': 'Milk',
-      'url':
-          'https://images.unsplash.com/photo-1563636619-e9143da7973b?q=80&w=600&auto=format&fit=crop',
-    },
-    {
-      'title': 'Honey',
-      'url':
-          'https://images.unsplash.com/photo-1628151015968-3a4429e9ef04?q=80&w=600&auto=format&fit=crop',
-    },
-    {
-      'title': 'Grains',
-      'url':
-          'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=600&auto=format&fit=crop',
-    },
-    {
-      'title': 'Herbs',
-      'url':
-          'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=600&auto=format&fit=crop',
-    },
-  ];
-
   @override
   void initState() {
     super.initState();
-    // Default image to first preset
-    _imageCtrl.text = _sampleImages[0]['url']!;
-    _imageCtrl.addListener(() {
-      setState(() {});
-    });
+    
 
     if (widget.initialCategoryId != null) {
       _selectedCategoryId = widget.initialCategoryId;
@@ -107,7 +64,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
     _descCtrl.dispose();
     _priceCtrl.dispose();
     _quantityCtrl.dispose();
-    _imageCtrl.dispose();
     super.dispose();
   }
 
@@ -162,9 +118,34 @@ class _AddProductScreenState extends State<AddProductScreen> {
     try {
       final double price = double.parse(_priceCtrl.text.trim());
       final double quantity = double.parse(_quantityCtrl.text.trim());
-      final String imageUrl = _imageCtrl.text.trim().isNotEmpty
-          ? _imageCtrl.text.trim()
-          : _sampleImages[0]['url']!;
+      
+      if (_selectedImages.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Please select at least one product image'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+          setState(() => _isLoading = false);
+        }
+        return;
+      }
+      
+      List<String> uploadedUrls = [];
+      for (int i = 0; i < _selectedImages.length; i++) {
+        String? url = await ImageService.uploadImage(
+          _selectedImages[i],
+          'product_${DateTime.now().millisecondsSinceEpoch}_$i.jpg',
+        );
+        if (url != null && url.isNotEmpty) {
+          uploadedUrls.add(url);
+        }
+      }
+      
+      if (uploadedUrls.isEmpty) {
+        throw Exception("Failed to upload images");
+      }
 
       final newProduct = ProductModel(
         id: '',
@@ -177,7 +158,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
         price: price,
         unit: _selectedUnit,
         quantity: quantity,
-        imageUrl: imageUrl,
+        imageUrl: uploadedUrls.first,
+        imageUrls: uploadedUrls,
         isAvailable: quantity > 0,
         isOrganic: _isOrganic,
         createdAt: DateTime.now(),
@@ -236,123 +218,80 @@ class _AddProductScreenState extends State<AddProductScreen> {
           child: ListView(
             padding: const EdgeInsets.all(16.0),
             children: [
-              // Image Preview Card
-              Container(
-                height: 180,
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.surfaceVariant),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: Stack(
-                  fit: StackFit.expand,
+              SizedBox(
+                height: 120,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
                   children: [
-                    Image.network(
-                      _imageCtrl.text.trim(),
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Center(
-                        child: Column(
+                    InkWell(
+                      onTap: () async {
+                        final List<XFile> images = await _picker.pickMultiImage(imageQuality: 80);
+                        if (images.isNotEmpty) {
+                          setState(() {
+                            _selectedImages.addAll(images.map((x) => File(x.path)));
+                          });
+                        }
+                      },
+                      child: Container(
+                        width: 120,
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceContainerLow,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.surfaceVariant),
+                        ),
+                        child: const Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              Icons.image_outlined,
-                              size: 48,
-                              color: AppColors.outline,
-                            ),
+                            Icon(Icons.add_photo_alternate_outlined, size: 32, color: AppColors.outline),
                             SizedBox(height: 8),
-                            Text(
-                              'Image preview will appear here',
-                              style: TextStyle(
-                                color: AppColors.onSurfaceVariant,
-                                fontSize: 13,
-                              ),
-                            ),
+                            Text('Add Images', style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
                           ],
                         ),
                       ),
                     ),
-                    Positioned(
-                      bottom: 8,
-                      right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
+                    const SizedBox(width: 12),
+                    ...List.generate(_selectedImages.length, (index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: Stack(
+                          children: [
+                            Container(
+                              width: 120,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: AppColors.surfaceVariant),
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: Image.file(_selectedImages[index], fit: BoxFit.cover),
+                            ),
+                            Positioned(
+                              top: 4,
+                              right: 4,
+                              child: InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    _selectedImages.removeAt(index);
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.black54,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.close, size: 16, color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.6),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Text(
-                          'Preview',
-                          style: TextStyle(color: Colors.white, fontSize: 11),
-                        ),
-                      ),
-                    ),
+                      );
+                    }),
                   ],
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Image URL input
-              TextFormField(
-                controller: _imageCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Product Image URL *',
-                  hintText: 'https://...',
-                  prefixIcon: Icon(Icons.link, color: AppColors.outline),
-                ),
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) {
-                    return 'Product image URL is required';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 8),
-
-              // Quick Image Presets selector
-              const Text(
-                'Or choose a produce photo:',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 6),
-              SizedBox(
-                height: 38,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _sampleImages.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (context, index) {
-                    final item = _sampleImages[index];
-                    final isSelected = _imageCtrl.text == item['url'];
-                    return ChoiceChip(
-                      label: Text(item['title']!),
-                      selected: isSelected,
-                      selectedColor: AppColors.primaryContainer,
-                      labelStyle: TextStyle(
-                        fontSize: 12,
-                        color: isSelected ? Colors.white : AppColors.onSurface,
-                        fontWeight:
-                            isSelected ? FontWeight.bold : FontWeight.normal,
-                      ),
-                      onSelected: (_) {
-                        setState(() {
-                          _imageCtrl.text = item['url']!;
-                        });
-                      },
-                    );
-                  },
                 ),
               ),
               const SizedBox(height: 20),
 
-              // Product Name
               TextFormField(
                 controller: _nameCtrl,
                 decoration: const InputDecoration(
@@ -372,7 +311,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Category Selector
               StreamBuilder<List<CategoryModel>>(
                 stream: _dbService.streamCategories(),
                 builder: (context, snapshot) {
@@ -466,7 +404,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Price and Unit
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -513,7 +450,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Quantity / Inventory
               TextFormField(
                 controller: _quantityCtrl,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -536,7 +472,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Description
               TextFormField(
                 controller: _descCtrl,
                 maxLines: 3,
@@ -554,7 +489,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Organic Checkbox
               Container(
                 decoration: BoxDecoration(
                   color: AppColors.surface,
@@ -584,7 +518,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
               ),
               const SizedBox(height: 28),
 
-              // Save Button
               ElevatedButton(
                 onPressed: _isLoading ? null : _saveProduct,
                 style: ElevatedButton.styleFrom(

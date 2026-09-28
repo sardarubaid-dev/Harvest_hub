@@ -26,7 +26,6 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
   final DatabaseService _dbService = DatabaseService();
   final TextEditingController _searchController = TextEditingController();
 
-  // Search & Filter State
   String _searchQuery = '';
   String _selectedCategory = 'All';
   double _maxDistanceKm = 10.0;
@@ -35,7 +34,6 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
   bool _inStockOnly = true;
   String _selectedSort = 'Distance (Nearest First)';
 
-  // Recent Searches
   final List<String> _recentSearches = [
     'Fresh Cow Milk',
     'Raw Honey',
@@ -44,7 +42,6 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
     'Desi Eggs',
   ];
 
-  // Quick categories
   final List<String> _categories = [
     'All',
     'Vegetables',
@@ -55,7 +52,6 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
     'Cold Pressed Oils',
   ];
 
-  // Wishlist set
   final Set<String> _wishlistIds = {};
 
   @override
@@ -68,7 +64,7 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
     if (widget.initialCategory != null) {
       _selectedCategory = widget.initialCategory!;
     }
-    // Populate initial wishlist from dummy/customer
+    
     for (final p in DummyData.freshProducts) {
       if (p['isFavorite'] == true) {
         _wishlistIds.add(p['id'].toString());
@@ -165,7 +161,6 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
   List<ProductModel> _applyFiltersAndSort(List<ProductModel> allProducts) {
     List<ProductModel> list = List.from(allProducts);
 
-    // 1. Text Search Query
     if (_searchQuery.isNotEmpty) {
       final q = _searchQuery.toLowerCase();
       list = list.where((p) {
@@ -177,7 +172,6 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
       }).toList();
     }
 
-    // 2. Category Filter
     if (_selectedCategory != 'All') {
       final cat = _selectedCategory.toLowerCase();
       list = list.where((p) {
@@ -194,23 +188,19 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
       }).toList();
     }
 
-    // 3. In Stock Only Filter
     if (_inStockOnly) {
       list = list.where((p) => p.isAvailable && p.quantity > 0).toList();
     }
 
-    // 4. Distance Radius Filter (Pure Haversine distance)
     list = list.where((p) {
       final dist = LocationService.getDistanceForProduct(p);
       return dist <= _maxDistanceKm;
     }).toList();
 
-    // 5. Farming Practices Filter
     if (_selectedPractices.contains('Certified Organic')) {
       list = list.where((p) => p.isOrganic).toList();
     }
 
-    // 6. Sorting
     if (_selectedSort == 'Distance (Nearest First)') {
       list = LocationService.sortByNearest(list);
     } else if (_selectedSort == 'Price (Low to High)') {
@@ -241,12 +231,11 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
 
             return CustomScrollView(
               slivers: [
-                // Top Custom Header
+                
                 SliverToBoxAdapter(
                   child: _buildHeader(),
                 ),
 
-                // Sticky Search & Filter Controls
                 SliverPersistentHeader(
                   pinned: true,
                   delegate: _StickySearchControlsDelegate(
@@ -254,18 +243,15 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
                   ),
                 ),
 
-                // Sort & Match Count Bar
                 SliverToBoxAdapter(
                   child: _buildMatchAndSortBar(filteredProducts.length),
                 ),
 
-                // Farmer Match Spotlight Banner
                 if (_shouldShowFarmerMatch(filteredProducts))
                   SliverToBoxAdapter(
                     child: _buildFarmerSpotlightBanner(),
                   ),
 
-                // Product Results List
                 if (filteredProducts.isEmpty)
                   SliverToBoxAdapter(
                     child: _buildEmptyState(),
@@ -290,7 +276,6 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
                     ),
                   ),
 
-                // Discovery Tip / End of Results Note
                 if (filteredProducts.isNotEmpty)
                   SliverToBoxAdapter(
                     child: _buildDiscoveryFooter(),
@@ -306,8 +291,6 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
       ),
     );
   }
-
-  // --- UI Components ---
 
   Widget _buildHeader() {
     return Container(
@@ -417,7 +400,7 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Search Input Bar with Filter Button
+          
           Row(
             children: [
               Expanded(
@@ -481,7 +464,7 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              // Filter Sheet Trigger Button with Badge
+              
               Stack(
                 clipBehavior: Clip.none,
                 children: [
@@ -528,7 +511,6 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
 
           const SizedBox(height: 6),
 
-          // Recent Searches Pill Trail
           SizedBox(
             height: 28,
             child: ListView(
@@ -584,7 +566,6 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
 
           const SizedBox(height: 6),
 
-          // Active Filter Pills Strip
           SizedBox(
             height: 30,
             child: ListView(
@@ -645,7 +626,6 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
 
           const SizedBox(height: 6),
 
-          // Quick Category Horizontal Filter Bar
           SizedBox(
             height: 34,
             child: ListView.builder(
@@ -839,7 +819,7 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
   }
 
   bool _shouldShowFarmerMatch(List<ProductModel> products) {
-    // Show spotlight if searching or if top results belong to a verified farm
+    
     return products.isNotEmpty;
   }
 
@@ -1085,7 +1065,6 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
     final distanceKm = LocationService.getDistanceForProduct(product);
     final distanceLabel = LocationService.formatDistance(distanceKm);
 
-    // Origin Badge label
     String originBadge = 'Harvested Yesterday';
     if (product.isOrganic) {
       originBadge = 'Pesticide-Free';
@@ -1116,7 +1095,7 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image Area with Badges
+          
           GestureDetector(
             onTap: () => _openProductDetail(product),
             child: Stack(
@@ -1152,7 +1131,7 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
                           ),
                   ),
                 ),
-                // Origin Badge Top-Left
+                
                 Positioned(
                   top: 10,
                   left: 10,
@@ -1191,7 +1170,7 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
                     ),
                   ),
                 ),
-                // Distance Badge Top-Right
+                
                 Positioned(
                   top: 10,
                   right: 10,
@@ -1229,7 +1208,6 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
             ),
           ),
 
-          // Details Area
           Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
@@ -1544,8 +1522,6 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
     );
   }
 
-  // --- Filter Modal Drawer ---
-
   void _openFilterModal(int currentMatches) {
     double tempRadius = _maxDistanceKm;
     String tempHarvestTime = _selectedHarvestTime;
@@ -1576,7 +1552,7 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Modal Header
+                  
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -1619,7 +1595,6 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
                   ),
                   const Divider(),
 
-                  // Distance Radius Slider
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -1672,7 +1647,6 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
 
                   const SizedBox(height: 16),
 
-                  // Harvest Time
                   const Text(
                     'Harvest Time',
                     style: TextStyle(
@@ -1714,7 +1688,6 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
 
                   const SizedBox(height: 16),
 
-                  // Farming Practices
                   const Text(
                     'Farming Practices',
                     style: TextStyle(
@@ -1763,7 +1736,6 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
 
                   const SizedBox(height: 16),
 
-                  // In Stock Only Toggle
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -1799,7 +1771,6 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
 
                   const SizedBox(height: 20),
 
-                  // Footer Actions
                   Row(
                     children: [
                       Expanded(

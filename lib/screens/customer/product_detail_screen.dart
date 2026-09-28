@@ -21,7 +21,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   void initState() {
     super.initState();
-    // Default to the exact data from the design if not provided
+    
     final p = widget.product;
     _pricePerUnit = p != null
         ? int.tryParse(p['price'].toString()) ?? 280
@@ -49,7 +49,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Top App Bar
+            
             Container(
               color: background,
               padding: const EdgeInsets.symmetric(
@@ -130,13 +130,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
             ),
 
-            // Scrollable Content
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Hero Image Area
+                    
                     Stack(
                       children: [
                         Container(
@@ -279,7 +278,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Top Badges
+                          
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -333,7 +332,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ),
                           const SizedBox(height: 12),
 
-                          // Title & Price
                           Text(
                             widget.product?['title'] ?? 'Fresh Tomatoes',
                             style: const TextStyle(
@@ -367,7 +365,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                           const SizedBox(height: 12),
 
-                          // Ratings
                           Row(
                             children: [
                               const Icon(
@@ -442,7 +439,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                           const SizedBox(height: 16),
 
-                          // Harvest Timeline
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
@@ -490,7 +486,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                           const SizedBox(height: 24),
 
-                          // About This Product
                           Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
@@ -564,7 +559,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                           const SizedBox(height: 24),
 
-                          // Farmer Profile
                           Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
@@ -792,7 +786,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                           const SizedBox(height: 24),
 
-                          // Pickup Information
                           Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
@@ -879,7 +872,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ),
       ),
 
-      // Bottom Floating Bar
       bottomNavigationBar: Container(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
         decoration: BoxDecoration(
@@ -899,7 +891,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Quantity Selector
+                  
                   Container(
                     height: 44,
                     decoration: BoxDecoration(
@@ -947,7 +939,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                   ),
 
-                  // Total Price
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
@@ -977,7 +968,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Find product and add to cart
+                    
                     if (widget.product != null) {
                       int index = DummyData.cart.indexWhere(
                         (p) => p['id'] == widget.product!['id'],

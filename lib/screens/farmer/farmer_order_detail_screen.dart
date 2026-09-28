@@ -30,13 +30,13 @@ class _FarmerOrderDetailScreenState extends State<FarmerOrderDetailScreen> {
       case 'pending':
         return AppColors.warning;
       case 'confirmed':
-        return const Color(0xFF1976D2); // Blue
+        return const Color(0xFF1976D2); 
       case 'ready for pickup':
-        return const Color(0xFF673AB7); // Deep Purple
+        return const Color(0xFF673AB7); 
       case 'completed':
-        return AppColors.primary; // Green
+        return AppColors.primary; 
       case 'cancelled':
-        return AppColors.error; // Red
+        return AppColors.error; 
       default:
         return AppColors.outline;
     }
@@ -220,7 +220,7 @@ class _FarmerOrderDetailScreenState extends State<FarmerOrderDetailScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          // Order Header Summary Card
+          
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -278,7 +278,6 @@ class _FarmerOrderDetailScreenState extends State<FarmerOrderDetailScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Status Stepper (SRS Workflow: Pending -> Confirmed -> Ready for Pickup -> Completed)
           if (!isCancelled) ...[
             _buildStatusTimeline(status),
             const SizedBox(height: 16),
@@ -324,7 +323,6 @@ class _FarmerOrderDetailScreenState extends State<FarmerOrderDetailScreen> {
             const SizedBox(height: 16),
           ],
 
-          // Customer Information Card
           const Text(
             'Customer Details',
             style: TextStyle(
@@ -365,7 +363,6 @@ class _FarmerOrderDetailScreenState extends State<FarmerOrderDetailScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Pickup & Market Information
           const Text(
             'Pickup Details',
             style: TextStyle(
@@ -400,7 +397,6 @@ class _FarmerOrderDetailScreenState extends State<FarmerOrderDetailScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Ordered Items
           const Text(
             'Ordered Products',
             style: TextStyle(
@@ -483,7 +479,6 @@ class _FarmerOrderDetailScreenState extends State<FarmerOrderDetailScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Total Price Card
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -515,7 +510,6 @@ class _FarmerOrderDetailScreenState extends State<FarmerOrderDetailScreen> {
           ),
           const SizedBox(height: 24),
 
-          // Status Action Workflow Section
           _buildWorkflowActions(status, isCancelled, isCompleted),
           const SizedBox(height: 24),
         ],

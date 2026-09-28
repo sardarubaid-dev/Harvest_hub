@@ -32,7 +32,6 @@ class _WishlistScreenState extends State<WishlistScreen> {
     const Color greyText = Color(0xFF6B7280);
     const Color background = Color(0xFFF9FBF9);
 
-    // Get only favorite products directly from DummyData
     final favoriteProducts = DummyData.freshProducts
         .where((p) => p['isFavorite'] == true)
         .toList();
@@ -277,7 +276,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                                   GestureDetector(
                                     onTap: () {
                                       AuthInterceptor.executeAction(context, () {
-                                        // Implement add to cart
+                                        
                                       });
                                     },
                                     child: Container(
