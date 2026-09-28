@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import '../../core/dummy_data.dart';
 import '../../core/auth_interceptor.dart';
 import '../../services/database_service.dart';
 import 'farmer_profile_screen.dart';
+import '../../models/product_model.dart';
+import '../../providers/cart_provider.dart';
+import 'package:provider/provider.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Map<String, dynamic>? product;
@@ -735,19 +737,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     onPressed: () {
                                       final farmerName =
                                           widget.product?['farmerName'] ?? '';
-                                      final farmerData = DummyData
-                                          .popularFarmers
-                                          .firstWhere(
-                                            (f) => f['name'] == farmerName,
-                                            orElse: () => <String, dynamic>{
-                                              'id': 'f0',
-                                              'name': farmerName,
-                                              'rating': '4.5',
-                                              'reviews': '0 reviews',
-                                              'location': 'Local Market',
-                                              'isFollowing': false,
-                                            },
-                                          );
+                                      final farmerData = <String, dynamic>{
+                                        'id': 'f0',
+                                        'name': farmerName,
+                                        'rating': '5.0',
+                                        'reviews': '120 reviews',
+                                        'location': 'Local Farm',
+                                        'isFollowing': false,
+                                      };
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(

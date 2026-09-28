@@ -5,13 +5,6 @@ import 'chatbot_screen.dart';
 
 import 'package:provider/provider.dart';
 
-import '../../core/dummy_data.dart';
-import '../../core/auth_interceptor.dart';
-import '../../providers/auth_provider.dart';
-import 'product_detail_screen.dart';
-import 'categories_screen.dart';
-import 'products_screen.dart';
-import 'wishlist_screen.dart';
 import 'dart:async';
 import 'orders_screen.dart';
 import 'cart_screen.dart';
@@ -19,8 +12,17 @@ import 'profile_screen.dart';
 import 'farmer_profile_screen.dart';
 import 'search_filter_screen.dart';
 import '../../models/product_model.dart';
+import '../../models/category_model.dart';
+import '../../models/farmer_model.dart';
+import '../../providers/cart_provider.dart';
 import '../../services/database_service.dart';
 import '../../services/location_service.dart';
+import '../../core/auth_interceptor.dart';
+import '../../providers/auth_provider.dart';
+import 'product_detail_screen.dart';
+import 'categories_screen.dart';
+import 'products_screen.dart';
+import 'wishlist_screen.dart';
 
 class CustomerHomeScreen extends StatefulWidget {
   const CustomerHomeScreen({Key? key}) : super(key: key);
@@ -37,9 +39,12 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   final DatabaseService _dbService = DatabaseService();
   StreamSubscription<List<ProductModel>>? _productsSub;
 
-  late List<Map<String, dynamic>> _freshProducts;
-  late List<Map<String, dynamic>> _popularFarmers;
-  late List<Map<String, dynamic>> _recentlyRestocked;
+  late List<Map<String, dynamic>> _freshProducts = [];
+  late List<Map<String, dynamic>> _popularFarmers = [];
+  late List<Map<String, dynamic>> _recentlyRestocked = [];
+  List<CategoryModel> _categories = [];
+  StreamSubscription<List<CategoryModel>>? _categoriesSub;
+  StreamSubscription<List<FarmerModel>>? _farmersSub;
 
   final List<Map<String, dynamic>> _customerReviews = [
     {
@@ -176,18 +181,29 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   @override
   void initState() {
     super.initState();
-
-    _freshProducts = List<Map<String, dynamic>>.from(
-      DummyData.freshProducts.map((e) => Map<String, dynamic>.from(e)),
-    );
-    _popularFarmers = List<Map<String, dynamic>>.from(
-      DummyData.popularFarmers.map((e) => Map<String, dynamic>.from(e)),
-    );
-    _recentlyRestocked = List<Map<String, dynamic>>.from(
-      DummyData.recentlyRestocked.map((e) => Map<String, dynamic>.from(e)),
-    );
-
+    
     // Start live deals countdown timer
+    _startCountdownTimer();
+    
+    _categoriesSub = _dbService.streamCategories().listen((categories) {
+      if (!mounted) return;
+      setState(() => _categories = categories);
+    });
+
+    _farmersSub = _dbService.streamAllFarmers().listen((farmers) {
+      if (!mounted) return;
+      setState(() {
+        _popularFarmers = farmers.map((f) => {
+          'id': f.id,
+          'name': f.farmName,
+          'location': f.location,
+          'rating': 5.0,
+          'image': f.profileImageUrl ?? '',
+          'isFollowing': false,
+          'model': f,
+        }).toList();
+      });
+    });
     _startCountdownTimer();
 
     // 1. Stream live Cart from Firestore ('carts' collection)
@@ -273,9 +289,8 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   @override
   void dispose() {
     _productsSub?.cancel();
-    _cartSub?.cancel();
+    _categoriesSub?.cancel();
     _farmersSub?.cancel();
-    _reviewsSub?.cancel();
     _countdownTimer?.cancel();
     super.dispose();
   }
@@ -318,29 +333,26 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
       // Dynamically derive Recently Restocked from live in-stock Firestore products
       _recentlyRestocked = mappedProducts.reversed.take(6).map((item) {
         return {
-          ...item,
-          'restockTime': 'Freshly restocked',
+          'id': p.id,
+          'title': p.name,
+          'category': p.categoryName.isNotEmpty
+              ? p.categoryName.toUpperCase()
+              : 'PRODUCE',
+          'farmerName': p.farmerName ?? 'Green Valley Farm',
+          'price': p.price.toStringAsFixed(0),
+          'unit': '/ ${p.unit}',
+          'stockBadge': '${p.quantity.toInt()} ${p.unit} available',
+          'isFavorite': false,
+          'imageColor': _getColorForCategory(p.categoryName),
+          'imageUrl': p.imageUrl ?? '',
+          'distance': LocationService.formatDistance(dist),
+          'isOrganic': p.isOrganic,
+          'description': p.description,
+          'model': p,
         };
       }).toList();
-
-      // Dynamically derive Deals Of The Day from live Firestore products
-      if (mappedProducts.isNotEmpty) {
-        _dealsOfTheDay
-          ..clear()
-          ..addAll(
-            mappedProducts.take(4).map((item) {
-              final int basePrice = int.tryParse(item['price'].toString()) ?? 200;
-              final int originalPrice = (basePrice * 1.25).round();
-              return {
-                ...item,
-                'originalPrice': originalPrice.toString(),
-                'discountBadge': '20% OFF',
-                'unit': item['unit'].toString().replaceAll('/', '').trim(),
-                'stockBadge': 'Deal of the Day',
-              };
-            }),
-          );
-      }
+      
+      _recentlyRestocked = List.from(_freshProducts);
     });
   }
 
@@ -359,6 +371,19 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
       return const Color(0xFFFFE082);
     }
     return const Color(0xFF81C784);
+  }
+
+  IconData _getIconForCategoryName(String name) {
+    final lowerName = name.toLowerCase();
+    if (lowerName.contains('veg')) return Icons.eco;
+    if (lowerName.contains('fruit')) return Icons.apple;
+    if (lowerName.contains('dairy') || lowerName.contains('egg')) return Icons.water_drop;
+    if (lowerName.contains('honey')) return Icons.hive;
+    if (lowerName.contains('herb')) return Icons.local_florist;
+    if (lowerName.contains('oil')) return Icons.opacity;
+    if (lowerName.contains('grain') || lowerName.contains('pulse')) return Icons.grass;
+    if (lowerName.contains('meat') || lowerName.contains('poultry')) return Icons.set_meal;
+    return Icons.apps;
   }
 
   void _toggleFavorite(List<Map<String, dynamic>> list, int index) {
@@ -386,35 +411,13 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   }
 
   void _addToCart(Map<String, dynamic> product) {
-    AuthInterceptor.executeAction(context, () async {
-      setState(() {
-        int index = DummyData.cart.indexWhere(
-          (p) => p['id'] == product['id'] || p['title'] == product['title'],
-        );
-        if (index != -1) {
-          DummyData.cart[index]['quantity'] =
-              ((DummyData.cart[index]['quantity'] as num?)?.toInt() ?? 1) + 1;
-        } else {
-          Map<String, dynamic> cartItem = Map<String, dynamic>.from(product);
-          cartItem['quantity'] = 1;
-          DummyData.cart.add(cartItem);
-        }
-      });
-
-      await _dbService.addToCart(
-        uid: _currentUid,
-        product: product,
-        quantityDelta: 1,
-      );
-
-      if (!mounted) return;
+    AuthInterceptor.executeAction(context, () {
+      if (product['model'] != null) {
+        Provider.of<CartProvider>(context, listen: false).addItem(product['model'] as ProductModel);
+      }
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Added ${product['title'] ?? 'item'} to Cart!'),
-          duration: const Duration(seconds: 1),
-        ),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Added to Cart!')));
     });
   }
 
@@ -604,26 +607,30 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
               ),
             ],
           ),
-          Column(
-            children: [
-              Text(
-                'WELCOME',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: primaryGreen,
-                  letterSpacing: 1.0,
+          Expanded(
+            child: Column(
+              children: [
+                Text(
+                  'WELCOME',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: primaryGreen,
+                    letterSpacing: 1.0,
+                  ),
                 ),
-              ),
-              Text(
-                userName,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: darkText,
+                Text(
+                  userName,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: darkText,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           Row(
             children: [
@@ -656,26 +663,30 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                       color: darkText,
                       size: 24,
                     ),
-                    if (DummyData.cart.isNotEmpty)
-                      Positioned(
-                        top: -4,
-                        right: -4,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: primaryGreen,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Text(
-                            '${DummyData.cart.length}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
+                    Consumer<CartProvider>(
+                      builder: (context, cart, child) {
+                        if (cart.itemCount == 0) return const SizedBox.shrink();
+                        return Positioned(
+                          top: -4,
+                          right: -4,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: primaryGreen,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              '${cart.itemCount}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -775,15 +786,60 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: DummyData.categories.length,
+              itemCount: _categories.length + 1,
               itemBuilder: (context, index) {
-                final cat = DummyData.categories[index];
-                final isSelected = _selectedCategoryId == cat['id'];
+                if (index == 0) {
+                  final isSelected = _selectedCategoryId == '1';
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() => _selectedCategoryId = '1');
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSelected ? primaryGreen : Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isSelected
+                                ? Colors.transparent
+                                : const Color(0xFFE5E7EB),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.apps,
+                              size: 16,
+                              color: isSelected ? Colors.white : primaryGreen,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'All',
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : darkText,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                
+                final cat = _categories[index - 1];
+                final isSelected = _selectedCategoryId == cat.id;
                 return Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: GestureDetector(
                     onTap: () {
-                      setState(() => _selectedCategoryId = cat['id']);
+                      setState(() => _selectedCategoryId = cat.id);
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -802,13 +858,13 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                       child: Row(
                         children: [
                           Icon(
-                            cat['icon'],
+                            _getIconForCategoryName(cat.name),
                             size: 16,
                             color: isSelected ? Colors.white : primaryGreen,
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            cat['name'],
+                            cat.name,
                             style: TextStyle(
                               color: isSelected ? Colors.white : darkText,
                               fontWeight: FontWeight.bold,
@@ -829,7 +885,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
           _buildSectionHeader('Fresh Near You', 'Today'),
           const SizedBox(height: 16),
           SizedBox(
-            height: 260,
+            height: 300,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -838,11 +894,11 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                     (p) =>
                         _selectedCategoryId == '1' ||
                         p['category'].toString().toLowerCase() ==
-                            DummyData.categories
+                            _categories
                                 .firstWhere(
-                                  (c) => c['id'] == _selectedCategoryId,
-                                )['name']
-                                .toString()
+                                  (c) => c.id == _selectedCategoryId,
+                                  orElse: () => CategoryModel(id: '', name: ''),
+                                ).name
                                 .toLowerCase(),
                   )
                   .toList()
@@ -853,11 +909,11 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                       (p) =>
                           _selectedCategoryId == '1' ||
                           p['category'].toString().toLowerCase() ==
-                              DummyData.categories
+                              _categories
                                   .firstWhere(
-                                    (c) => c['id'] == _selectedCategoryId,
-                                  )['name']
-                                  .toString()
+                                    (c) => c.id == _selectedCategoryId,
+                                    orElse: () => CategoryModel(id: '', name: ''),
+                                  ).name
                                   .toLowerCase(),
                     )
                     .toList();
@@ -1719,7 +1775,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 100,
+          height: 120,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -2352,37 +2408,43 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Price',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: Color(0xFF6B7280),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Price',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Color(0xFF6B7280),
+                              ),
                             ),
-                          ),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                'Rs. ${data['price']}',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1F2937),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Rs. ${data['price']}',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1F2937),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                data['unit'],
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  color: Color(0xFF6B7280),
+                                Text(
+                                  data['unit'],
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: Color(0xFF6B7280),
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                       GestureDetector(
                         onTap: onAddTap,
@@ -2483,7 +2545,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '${data['rating']} (${data['reviews']})',
+                            '${data['rating']} (${data['reviews'] ?? 0})',
                             style: const TextStyle(
                               fontSize: 11,
                               color: Color(0xFF6B7280),
@@ -2530,7 +2592,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                     ),
                     child: Center(
                       child: Text(
-                        data['tags'],
+                        data['tags'] ?? 'Verified Farm',
                         style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
@@ -2970,31 +3032,35 @@ class _CustomerHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                                   size: 21,
                                   color: Color(0xFF38A745),
                                 ),
-                                if (DummyData.cart.isNotEmpty)
-                                  Positioned(
-                                    top: 1,
-                                    right: 1,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(4),
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFFEF4444),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      constraints: const BoxConstraints(
-                                        minWidth: 16,
-                                        minHeight: 16,
-                                      ),
-                                      child: Text(
-                                        '${DummyData.cart.length}',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 9,
-                                          fontWeight: FontWeight.bold,
+                                Consumer<CartProvider>(
+                                  builder: (context, cart, child) {
+                                    if (cart.itemCount == 0) return const SizedBox.shrink();
+                                    return Positioned(
+                                      top: 1,
+                                      right: 1,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFFEF4444),
+                                          shape: BoxShape.circle,
                                         ),
-                                        textAlign: TextAlign.center,
+                                        constraints: const BoxConstraints(
+                                          minWidth: 16,
+                                          minHeight: 16,
+                                        ),
+                                        child: Text(
+                                          '${cart.itemCount}',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
                                       ),
-                                    ),
-                                  ),
+                                    );
+                                  },
+                                ),
                               ],
                             ),
                           ),

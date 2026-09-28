@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/auth_interceptor.dart';
 
-import '../../core/dummy_data.dart';
+
 import 'product_detail_screen.dart';
 
 class WishlistScreen extends StatefulWidget {
@@ -14,7 +14,7 @@ class WishlistScreen extends StatefulWidget {
 class _WishlistScreenState extends State<WishlistScreen> {
   void _toggleFavorite(int dummyDataIndex) {
     setState(() {
-      DummyData.freshProducts[dummyDataIndex]['isFavorite'] = false;
+      [][dummyDataIndex]['isFavorite'] = false;
     });
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -32,7 +32,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
     const Color greyText = Color(0xFF6B7280);
     const Color background = Color(0xFFF9FBF9);
 
-    final favoriteProducts = DummyData.freshProducts
+    final favoriteProducts = []
         .where((p) => p['isFavorite'] == true)
         .toList();
 
@@ -139,7 +139,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                               child: GestureDetector(
                                 onTap: () {
                                   AuthInterceptor.executeAction(context, () {
-                                    int realIndex = DummyData.freshProducts.indexWhere((p) => p['id'] == data['id']);
+                                    int realIndex = [].indexWhere((p) => p['id'] == data['id']);
                                     if (realIndex != -1) {
                                       _toggleFavorite(realIndex);
                                     }

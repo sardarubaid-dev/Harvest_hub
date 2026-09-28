@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../core/auth_interceptor.dart';
 
-import '../../core/dummy_data.dart';
-import '../../services/database_service.dart';
+import '../../models/category_model.dart';
 import '../../models/product_model.dart';
+import '../../services/database_service.dart';
+import '../../providers/cart_provider.dart';
+import 'package:provider/provider.dart';
 import 'product_detail_screen.dart';
 
 class ProductsScreen extends StatefulWidget {
@@ -42,47 +44,50 @@ class _ProductsScreenState extends State<ProductsScreen> {
     const Color greyText = Color(0xFF6B7280);
     const Color background = Color(0xFFF9FBF9);
 
-    final categories = [
-      'All',
-      ...DummyData.categories
-          .where((c) => c['name'] != 'All')
-          .map((c) => c['name'].toString()),
-    ];
+    return StreamBuilder<List<CategoryModel>>(
+      stream: _dbService.streamCategories(),
+      builder: (context, catSnapshot) {
+        final categories = [
+          'All',
+          if (catSnapshot.hasData)
+            ...catSnapshot.data!
+                .where((c) => c.name != 'All')
+                .map((c) => c.name),
+        ];
 
-    return StreamBuilder<List<ProductModel>>(
-      stream: _dbService.streamAllProducts(),
-      builder: (context, snapshot) {
-        List<Map<String, dynamic>> products;
+        return StreamBuilder<List<ProductModel>>(
+          stream: _dbService.streamAllProducts(),
+          builder: (context, snapshot) {
+            List<Map<String, dynamic>> products = [];
 
-        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-          products = snapshot.data!.map((p) {
-            return {
-              'id': p.id,
-              'title': p.name,
-              'category': p.categoryName.isNotEmpty
-                  ? p.categoryName.toUpperCase()
-                  : 'PRODUCE',
-              'farmerName': p.farmerName ?? 'Green Valley Farm',
-              'price': p.price.toStringAsFixed(0),
-              'unit': '/ ${p.unit}',
-              'stockBadge': '${p.quantity.toInt()} ${p.unit} available',
-              'isFavorite': false,
-              'imageColor': const Color(0xFFA5D6A7),
-              'imageUrl': p.imageUrl ?? '',
-              'description': p.description,
-            };
-          }).toList();
-        } else {
-          products = DummyData.freshProducts;
-        }
+            if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+              products = snapshot.data!.map((p) {
+                return {
+                  'productModel': p,
+                  'id': p.id,
+                  'title': p.name,
+                  'category': p.categoryName.isNotEmpty
+                      ? p.categoryName.toUpperCase()
+                      : 'PRODUCE',
+                  'farmerName': p.farmerName ?? 'Green Valley Farm',
+                  'price': p.price.toStringAsFixed(0),
+                  'unit': '/ ${p.unit}',
+                  'stockBadge': '${p.quantity.toInt()} ${p.unit} available',
+                  'isFavorite': false,
+                  'imageColor': const Color(0xFFA5D6A7),
+                  'imageUrl': p.imageUrl ?? '',
+                  'description': p.description,
+                };
+              }).toList();
+            }
 
-        if (_selectedCategory != 'All') {
-          products = products.where((p) {
-            return p['category'].toString().toLowerCase().contains(
-                  _selectedCategory.toLowerCase(),
-                );
-          }).toList();
-        }
+            if (_selectedCategory != 'All') {
+              products = products.where((p) {
+                return p['category'].toString().toLowerCase().contains(
+                      _selectedCategory.toLowerCase(),
+                    );
+              }).toList();
+            }
 
     return Scaffold(
       backgroundColor: background,
@@ -328,14 +333,16 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            const Text(
-                                              'Price',
-                                              style: TextStyle(
-                                                fontSize: 10,
-                                                color: Color(0xFF6B7280),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              const Text(
+                                                'Price',
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  color: Color(0xFF6B7280),
+                                                ),
                                               ),
                                             ),
                                             Row(
@@ -348,17 +355,17 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                                     fontWeight: FontWeight.bold,
                                                     color: Color(0xFF1F2937),
                                                   ),
-                                                ),
-                                                Text(
-                                                  data['unit'],
-                                                  style: const TextStyle(
-                                                    fontSize: 10,
-                                                    color: Color(0xFF6B7280),
+                                                  Text(
+                                                    data['unit'],
+                                                    style: const TextStyle(
+                                                      fontSize: 10,
+                                                      color: Color(0xFF6B7280),
+                                                    ),
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
+                                                ],
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                         GestureDetector(
                                           onTap: () {
@@ -419,6 +426,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
         ],
       ),
     );
+          },
+        );
       },
     );
   }

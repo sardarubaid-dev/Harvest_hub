@@ -253,6 +253,10 @@ class _CartScreenState extends State<CartScreen> {
     const Color greyText = Color(0xFF6B7280);
     const Color background = Color(0xFFF9FBF9);
 
+    final cartProvider = Provider.of<CartProvider>(context);
+    final cartItems = cartProvider.items.values.toList();
+    final _itemsTotal = cartProvider.totalAmount.toInt();
+
     int totalPayable = _itemsTotal > 0
         ? _itemsTotal + 20
         : 0; 
@@ -485,9 +489,7 @@ class _CartScreenState extends State<CartScreen> {
                                         width: 72,
                                         height: 72,
                                         decoration: BoxDecoration(
-                                          color:
-                                              item['imageColor'] ??
-                                              Colors.red[100],
+                                          color: Colors.green[100],
                                           borderRadius: BorderRadius.circular(
                                             12,
                                           ),
@@ -497,12 +499,9 @@ class _CartScreenState extends State<CartScreen> {
                                             12,
                                           ),
                                           child:
-                                              (item['imageUrl'] != null &&
-                                                  item['imageUrl']
-                                                      .toString()
-                                                      .isNotEmpty)
+                                              (item.product.imageUrl?.isNotEmpty ?? false)
                                               ? Image.network(
-                                                  item['imageUrl'],
+                                                  item.product.imageUrl ?? '',
                                                   fit: BoxFit.cover,
                                                   width: double.infinity,
                                                   height: double.infinity,
@@ -566,7 +565,7 @@ class _CartScreenState extends State<CartScreen> {
                                           children: [
                                             Expanded(
                                               child: Text(
-                                                '${item['title']} (${item['unit']?.replaceAll('/', '')?.trim() ?? '1 kg'})',
+                                                '${item.product.name} (${item.product.unit.replaceAll('/', '').trim()})',
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.bold,
                                                   fontSize: 14,
@@ -578,7 +577,7 @@ class _CartScreenState extends State<CartScreen> {
                                             ),
                                             GestureDetector(
                                               onTap: () =>
-                                                  _removeFromCart(index),
+                                                  _removeFromCart(item.product.id),
                                               child: const Icon(
                                                 Icons.delete_outline,
                                                 size: 20,
@@ -598,7 +597,7 @@ class _CartScreenState extends State<CartScreen> {
                                             const SizedBox(width: 4),
                                             Expanded(
                                               child: Text(
-                                                'From ${item['farmerName']}',
+                                                'From ${item.product.farmerId}',
                                                 style: const TextStyle(
                                                   fontSize: 11,
                                                   color: greyText,
@@ -652,8 +651,9 @@ class _CartScreenState extends State<CartScreen> {
                                                   InkWell(
                                                     onTap: () =>
                                                         _updateQuantity(
-                                                          index,
-                                                          -1,
+                                                          item.product.id,
+                                                          qty.toDouble(),
+                                                          -1.0,
                                                         ),
                                                     child: const Padding(
                                                       padding:
@@ -680,8 +680,9 @@ class _CartScreenState extends State<CartScreen> {
                                                   InkWell(
                                                     onTap: () =>
                                                         _updateQuantity(
-                                                          index,
-                                                          1,
+                                                          item.product.id,
+                                                          qty.toDouble(),
+                                                          1.0,
                                                         ),
                                                     child: const Padding(
                                                       padding:

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../../core/dummy_data.dart';
+import '../../models/product_model.dart';
+import '../../providers/cart_provider.dart';
+import '../../services/database_service.dart';
 import 'product_detail_screen.dart';
 
 class FarmerProfileScreen extends StatefulWidget {
@@ -15,6 +18,7 @@ class FarmerProfileScreen extends StatefulWidget {
 class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
   late bool isFollowing;
   String _selectedCategory = 'All Harvest (14)';
+  final DatabaseService _dbService = DatabaseService();
 
   @override
   void initState() {
@@ -43,16 +47,6 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
     const Color background = Color(0xFFF9FBF9);
 
     final farmerName = widget.farmer['name'] ?? 'Green Valley Farm';
-
-    List<Map<String, dynamic>> farmerProducts = DummyData.freshProducts.where((
-      p,
-    ) {
-      return p['farmerName'] == farmerName;
-    }).toList();
-
-    if (farmerProducts.isEmpty) {
-      farmerProducts = List.from(DummyData.freshProducts);
-    }
 
     final categories = ['All Harvest (14)', 'Vegetables (8)', 'Fruits (4)'];
 
@@ -83,26 +77,30 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
               clipBehavior: Clip.none,
               children: [
                 const Icon(Icons.shopping_bag_outlined, color: darkText),
-                if (DummyData.cart.isNotEmpty)
-                  Positioned(
-                    top: -2,
-                    right: -2,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: buttonGreen,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(
-                        '${DummyData.cart.length}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 8,
-                          fontWeight: FontWeight.bold,
+                Consumer<CartProvider>(
+                  builder: (context, cart, child) {
+                    if (cart.itemCount == 0) return const SizedBox.shrink();
+                    return Positioned(
+                      top: -2,
+                      right: -2,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: buttonGreen,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          '${cart.itemCount}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
+                ),
               ],
             ),
             onPressed: () {},
@@ -661,28 +659,63 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: GridView.builder(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                padding: EdgeInsets.zero,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.75,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                ),
-                itemCount: farmerProducts.length,
-                itemBuilder: (context, index) {
-                  return _buildProductCard(
-                    data: farmerProducts[index],
-                    onFavoriteTap: () => _toggleFavorite(farmerProducts, index),
-                    onAddTap: () {},
-                    context: context,
+            StreamBuilder<List<ProductModel>>(
+              stream: _dbService.streamProductsByFarmer(widget.farmer['id'] ?? ''),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator(color: primaryGreen));
+                }
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: Center(
+                      child: Text(
+                        "No products available.",
+                        style: TextStyle(color: greyText, fontSize: 16),
+                      ),
+                    ),
                   );
-                },
-              ),
+                }
+
+                final products = snapshot.data!.map((p) => {
+                  'productModel': p,
+                  'id': p.id,
+                  'title': p.name,
+                  'category': p.categoryName.isNotEmpty ? p.categoryName.toUpperCase() : 'PRODUCE',
+                  'farmerName': p.farmerName ?? 'Green Valley Farm',
+                  'price': p.price.toStringAsFixed(0),
+                  'unit': '/ ${p.unit}',
+                  'stockBadge': '${p.quantity.toInt()} ${p.unit} available',
+                  'isFavorite': false,
+                  'imageColor': const Color(0xFFA5D6A7),
+                  'imageUrl': p.imageUrl ?? '',
+                  'description': p.description,
+                }).toList();
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: GridView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    padding: EdgeInsets.zero,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.75,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                    ),
+                    itemCount: products.length,
+                    itemBuilder: (context, index) {
+                      return _buildProductCard(
+                        data: products[index],
+                        onFavoriteTap: () => _toggleFavorite(products, index),
+                        onAddTap: () {},
+                        context: context,
+                      );
+                    },
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 40),
           ],
