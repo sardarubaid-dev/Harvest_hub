@@ -6,15 +6,16 @@ import 'chatbot_screen.dart';
 import 'package:provider/provider.dart';
 
 import 'dart:async';
+import 'dart:convert';
 import 'orders_screen.dart';
 import 'cart_screen.dart';
 import 'profile_screen.dart';
 import 'farmer_profile_screen.dart';
 import 'search_filter_screen.dart';
 import '../../models/product_model.dart';
-import '../../models/category_model.dart';
 import '../../models/farmer_model.dart';
-import '../../providers/cart_provider.dart';
+import '../../models/banner_model.dart';
+import '../../models/category_model.dart';import '../../providers/cart_provider.dart';
 import '../../services/database_service.dart';
 import '../../services/location_service.dart';
 import '../../core/auth_interceptor.dart';
@@ -998,6 +999,96 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   }
 
   Widget _buildOffersCarousel() {
+    return StreamBuilder<List<BannerModel>>(
+      stream: _dbService.streamBanners(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) return const SizedBox(height: 155, child: Center(child: CircularProgressIndicator()));
+        final banners = snapshot.data ?? [];
+        final activeBanners = banners.where((b) => b.isActive).toList();
+        if (activeBanners.isEmpty) return const SizedBox.shrink();
+
+        return SizedBox(
+          height: 155,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: activeBanners.length,
+            itemBuilder: (context, index) {
+              final banner = activeBanners[index];
+              final isDarkText = index % 2 == 0;
+              final titleColor = isDarkText ? const Color(0xFF1E5224) : Colors.white;
+              final subtitleColor = isDarkText ? const Color(0xFF27672F) : Colors.white70;
+              final btnBgColor = isDarkText ? const Color(0xFF0F4722) : Colors.white;
+              final btnTextColor = isDarkText ? Colors.white : const Color(0xFF1B3D52);
+
+              return GestureDetector(
+                onTap: () {
+                  if (banner.linkType == 'category') {
+                    setState(() => _selectedCategoryId = banner.linkTarget ?? '1');
+                  } else if (banner.linkType == 'search' || banner.linkType == 'farmer' || banner.linkType == 'product') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SearchFilterScreen(
+                          initialQuery: banner.linkTarget,
+                        ),
+                      ),
+                    );
+                  }
+                },
+                child: Container(
+                  width: 260,
+                  margin: const EdgeInsets.only(right: 14),
+                  decoration: BoxDecoration(
+                    gradient: index % 2 == 0 
+                        ? const LinearGradient(colors: [Color(0xFFD6F0BA), Color(0xFFAFE08C)]) 
+                        : const LinearGradient(colors: [Color(0xFF23445A), Color(0xFF172E3D)]),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          right: 0, top: 0, bottom: 0, width: 135,
+                          child: ShaderMask(
+                            shaderCallback: (r) => const LinearGradient(colors: [Colors.transparent, Colors.white], stops: [0.0, 0.4]).createShader(r),
+                            blendMode: BlendMode.dstIn,
+                            child: banner.imageUrl.startsWith('data:image') 
+                                ? Image.memory(base64Decode(banner.imageUrl.split(',').last), fit: BoxFit.cover)
+                                : Image.network(banner.imageUrl, fit: BoxFit.cover, errorBuilder: (_,__,___) => Container()),
+                          ),
+                        ),
+                        Positioned(
+                          left: 20, top: 20, bottom: 20, width: 130,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(banner.title, style: TextStyle(color: titleColor, fontSize: 16, fontWeight: FontWeight.w900)),
+                              const SizedBox(height: 6),
+                              Text('Tap to explore', style: TextStyle(color: subtitleColor, fontSize: 12)),
+                              const Spacer(),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                decoration: BoxDecoration(color: btnBgColor, borderRadius: BorderRadius.circular(20)),
+                                child: Text('Explore', style: TextStyle(color: btnTextColor, fontSize: 10, fontWeight: FontWeight.w800)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildOldStaticCarousel() {
     final offers = [
       {
         'title': 'Fresh Fruits',

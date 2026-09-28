@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:harvest_hub/theme/app_theme.dart';
+import 'package:harvest_hub/services/database_service.dart';
+import 'package:harvest_hub/models/order_model.dart';
+import 'package:harvest_hub/models/farmer_model.dart';
+import 'package:intl/intl.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 class AdminReportsAnalyticsTab extends StatefulWidget {
   const AdminReportsAnalyticsTab({super.key});
@@ -9,6 +15,10 @@ class AdminReportsAnalyticsTab extends StatefulWidget {
 }
 
 class _AdminReportsAnalyticsTabState extends State<AdminReportsAnalyticsTab> {
+  final DatabaseService _db = DatabaseService();
+  int _selectedTimeFilterIndex = 0;
+  final List<String> _timeFilters = ['All Time', 'Today', 'This Week', 'This Month'];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,35 +26,96 @@ class _AdminReportsAnalyticsTabState extends State<AdminReportsAnalyticsTab> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 24),
-              _buildTitleRow(),
-              const SizedBox(height: 16),
-              _buildTimeFilters(),
-              const SizedBox(height: 24),
-              _buildGmvSection(),
-              const SizedBox(height: 16),
-              _buildMetricsRow(),
-              const SizedBox(height: 16),
-              _buildSuccessRateCard(),
-              const SizedBox(height: 16),
-              _buildCategorySalesCard(),
-              const SizedBox(height: 24),
-              _buildTopHubsSection(),
-              const SizedBox(height: 24),
-              _buildOperationalEfficiencySection(),
-              const SizedBox(height: 24),
-              _buildReportsExportSection(),
-              const SizedBox(height: 24),
-              _buildGenerateReportButton(),
-              const SizedBox(height: 32),
-            ],
+          child: StreamBuilder<List<OrderModel>>(
+            stream: _db.streamAllOrders(),
+            builder: (context, orderSnapshot) {
+              if (orderSnapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              final orders = orderSnapshot.data ?? [];
+              
+              return StreamBuilder<List<FarmerModel>>(
+                stream: _db.streamAllFarmers(),
+                builder: (context, farmerSnapshot) {
+                  final farmers = farmerSnapshot.data ?? [];
+                  return _buildContent(orders, farmers);
+                }
+              );
+            }
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildContent(List<OrderModel> orders, List<FarmerModel> farmers) {
+    // Filter orders by time
+    final now = DateTime.now();
+    final filteredOrders = orders.where((order) {
+      if (_selectedTimeFilterIndex == 0) return true; // All Time
+      
+      final orderDate = order.createdAt;
+      if (_selectedTimeFilterIndex == 1) { // Today
+        return orderDate.year == now.year && orderDate.month == now.month && orderDate.day == now.day;
+      } else if (_selectedTimeFilterIndex == 2) { // This Week
+        final difference = now.difference(orderDate).inDays;
+        return difference <= 7;
+      } else if (_selectedTimeFilterIndex == 3) { // This Month
+        return orderDate.year == now.year && orderDate.month == now.month;
+      }
+      return true;
+    }).toList();
+
+    double totalGmv = 0;
+    int completedOrders = 0;
+    int totalValidOrders = 0;
+    
+    Map<String, int> farmerOrderCount = {};
+    Map<String, double> farmerRevenue = {};
+
+    for (var order in filteredOrders) {
+      if (order.status != 'cancelled') {
+        totalGmv += order.totalAmount;
+        totalValidOrders++;
+        if (order.status == 'completed') {
+          completedOrders++;
+        }
+        
+        String farmerId = order.farmerId ?? 'unknown';
+        farmerOrderCount[farmerId] = (farmerOrderCount[farmerId] ?? 0) + 1;
+        farmerRevenue[farmerId] = (farmerRevenue[farmerId] ?? 0) + order.totalAmount;
+      }
+    }
+
+    double successRate = totalValidOrders > 0 ? (completedOrders / totalValidOrders) * 100 : 0;
+    double hubFees = completedOrders * 20.0;
+    double farmerPayouts = totalGmv - hubFees;
+
+    var sortedFarmers = farmerOrderCount.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildHeader(),
+        const SizedBox(height: 24),
+        _buildTitleRow(),
+        const SizedBox(height: 16),
+        _buildTimeFilters(),
+        const SizedBox(height: 24),
+        _buildGmvSection(totalGmv),
+        const SizedBox(height: 16),
+        _buildMetricsRow(hubFees, completedOrders, farmerPayouts),
+        const SizedBox(height: 16),
+        _buildSuccessRateCard(successRate),
+        const SizedBox(height: 24),
+        _buildTopHubsSection(sortedFarmers, farmers, farmerRevenue),
+        const SizedBox(height: 24),
+        _buildReportsExportSection(totalGmv, completedOrders, hubFees, farmerPayouts, totalValidOrders),
+        const SizedBox(height: 24),
+        _buildGenerateReportButton(totalGmv, completedOrders, hubFees, farmerPayouts, totalValidOrders),
+        const SizedBox(height: 32),
+      ],
     );
   }
 
@@ -72,7 +143,7 @@ class _AdminReportsAnalyticsTabState extends State<AdminReportsAnalyticsTab> {
                 ),
               ],
             ),
-            const Text('Reports', style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
+            const Text('Reports & Analytics', style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
           ],
         ),
         ),
@@ -85,7 +156,7 @@ class _AdminReportsAnalyticsTabState extends State<AdminReportsAnalyticsTab> {
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: const BoxDecoration(color: AppColors.error, shape: BoxShape.circle),
-                child: const Text('3', style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold)),
+                child: const Text('0', style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -106,7 +177,7 @@ class _AdminReportsAnalyticsTabState extends State<AdminReportsAnalyticsTab> {
             children: const [
               Text('Platform Analytics', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
               SizedBox(height: 4),
-              Text('Real-time marketplace revenue, volume, and node logistics', style: TextStyle(fontSize: 13, color: AppColors.onSurfaceVariant)),
+              Text('Real-time marketplace revenue & performance', style: TextStyle(fontSize: 13, color: AppColors.onSurfaceVariant)),
             ],
           ),
         ),
@@ -123,46 +194,42 @@ class _AdminReportsAnalyticsTabState extends State<AdminReportsAnalyticsTab> {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: [
-          _buildFilterChip('Today', false),
-          const SizedBox(width: 8),
-          _buildFilterChip('This Week', false),
-          const SizedBox(width: 8),
-          _buildFilterChip('This Month (Oct 2024)', true, hasDropdown: true),
-          const SizedBox(width: 8),
-          _buildFilterChip('Custom', false, isIcon: true, icon: Icons.calendar_today),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChip(String label, bool isSelected, {bool hasDropdown = false, bool isIcon = false, IconData? icon}) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: isIcon ? 12 : 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isSelected ? AppColors.primaryContainer : AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        children: [
-          if (isIcon && icon != null) Icon(icon, size: 16, color: AppColors.onSurfaceVariant),
-          if (isIcon && icon != null) const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? Colors.white : AppColors.onSurfaceVariant,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-              fontSize: 13,
+        children: _timeFilters.asMap().entries.map((entry) {
+          final index = entry.key;
+          final label = entry.value;
+          final isSelected = index == _selectedTimeFilterIndex;
+          
+          return Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedTimeFilterIndex = index;
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.primaryContainer : AppColors.surfaceVariant,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : AppColors.onSurfaceVariant,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
             ),
-          ),
-          if (hasDropdown) const SizedBox(width: 4),
-          if (hasDropdown) Icon(Icons.keyboard_arrow_down, size: 16, color: isSelected ? Colors.white : AppColors.onSurfaceVariant),
-        ],
+          );
+        }).toList(),
       ),
     );
   }
 
-  Widget _buildGmvSection() {
+  Widget _buildGmvSection(double totalGmv) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -194,41 +261,22 @@ class _AdminReportsAnalyticsTabState extends State<AdminReportsAnalyticsTab> {
                   children: const [
                     Icon(Icons.trending_up, size: 12, color: AppColors.onSecondaryContainer),
                     SizedBox(width: 4),
-                    Text('+22%', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.onSecondaryContainer)),
+                    Text('Live', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.onSecondaryContainer)),
                   ],
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text('Rs. 1,420,500', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
-                  SizedBox(height: 4),
-                  Text('vs September (Rs. 1,164,340)', style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
-                ],
-              ),
-              
-              SizedBox(
-                width: 100,
-                height: 40,
-                child: CustomPaint(
-                  painter: _SparklinePainter(color: AppColors.primaryContainer),
-                ),
-              ),
-            ],
-          ),
+          Text('Rs. ${NumberFormat.compact().format(totalGmv)}', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
+          const SizedBox(height: 4),
+          const Text('Total transaction volume', style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
         ],
       ),
     );
   }
 
-  Widget _buildMetricsRow() {
+  Widget _buildMetricsRow(double hubFees, int runs, double payouts) {
     return Row(
       children: [
         Expanded(
@@ -252,9 +300,9 @@ class _AdminReportsAnalyticsTabState extends State<AdminReportsAnalyticsTab> {
                 const SizedBox(height: 4),
                 const Text('Rs. 20 / completed order', style: TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant)),
                 const SizedBox(height: 16),
-                const Text('Rs. 36,840', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryContainer)),
+                Text('Rs. ${NumberFormat.compact().format(hubFees)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryContainer)),
                 const SizedBox(height: 4),
-                const Text('1,842 total runs', style: TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant)),
+                Text('$runs total runs', style: const TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant)),
               ],
             ),
           ),
@@ -281,7 +329,7 @@ class _AdminReportsAnalyticsTabState extends State<AdminReportsAnalyticsTab> {
                 const SizedBox(height: 4),
                 const Text('Disbursed directly', style: TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant)),
                 const SizedBox(height: 16),
-                const Text('Rs. 1,383,660', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
+                Text('Rs. ${NumberFormat.compact().format(payouts)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
                 const SizedBox(height: 4),
                 Row(
                   children: const [
@@ -298,7 +346,7 @@ class _AdminReportsAnalyticsTabState extends State<AdminReportsAnalyticsTab> {
     );
   }
 
-  Widget _buildSuccessRateCard() {
+  Widget _buildSuccessRateCard(double successRate) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -315,122 +363,20 @@ class _AdminReportsAnalyticsTabState extends State<AdminReportsAnalyticsTab> {
           const SizedBox(width: 16),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
                 Text('Fulfillment Success Rate', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
-                Text('Orders picked within fresh shelf window', style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
+                Text('Completed orders vs total', style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
               ],
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: const [
-              Text('96.8%', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.primaryContainer)),
-              Text('+1.4% MoM', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primaryContainer)),
-            ],
-          ),
+          Text('${successRate.toStringAsFixed(1)}%', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.primaryContainer)),
         ],
       ),
     );
   }
 
-  Widget _buildCategorySalesCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [BoxShadow(color: Color(0x0A000000), blurRadius: 10, offset: Offset(0, 4))],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Row(
-                children: [
-                  Icon(Icons.pie_chart, size: 18, color: AppColors.primaryContainer),
-                  SizedBox(width: 8),
-                  Text('Category Sales Distribution', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
-                ],
-              ),
-              Text('Oct 1 - Oct 31', style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Row(
-              children: [
-                Expanded(flex: 42, child: Container(height: 12, color: AppColors.primaryContainer)),
-                Expanded(flex: 28, child: Container(height: 12, color: AppColors.secondaryContainer)),
-                Expanded(flex: 18, child: Container(height: 12, color: const Color(0xFFC0DFC0))),
-                Expanded(flex: 12, child: Container(height: 12, color: const Color(0xFFD6DDD6))),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  children: [
-                    _buildLegendItem(color: AppColors.primaryContainer, label: 'Fresh Veggies', percentage: '42%', value: 'Rs. 596k'),
-                    const SizedBox(height: 12),
-                    _buildLegendItem(color: const Color(0xFFC0DFC0), label: 'Farm Dairy', percentage: '18%', value: 'Rs. 255k'),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  children: [
-                    _buildLegendItem(color: AppColors.secondaryContainer, label: 'Fruits', percentage: '28%', value: 'Rs. 397k'),
-                    const SizedBox(height: 12),
-                    _buildLegendItem(color: const Color(0xFFD6DDD6), label: 'Honey & ...', percentage: '12%', value: 'Rs. 172k'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLegendItem({required Color color, required String label, required String percentage, required String value}) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          margin: const EdgeInsets.only(top: 4),
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: const TextStyle(fontSize: 13, color: AppColors.onSurface), maxLines: 1, overflow: TextOverflow.ellipsis),
-              Row(
-                children: [
-                  Text(percentage, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
-                  const SizedBox(width: 4),
-                  Text('($value)', style: const TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant)),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTopHubsSection() {
+  Widget _buildTopHubsSection(List<MapEntry<String, int>> sortedFarmers, List<FarmerModel> allFarmers, Map<String, double> revenueMap) {
     return Column(
       children: [
         Row(
@@ -443,75 +389,33 @@ class _AdminReportsAnalyticsTabState extends State<AdminReportsAnalyticsTab> {
                 Text('Top Hubs & Producers', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
               ],
             ),
-            Text('View All', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primaryContainer)),
           ],
         ),
         const SizedBox(height: 16),
-        _buildHubItem(
-          rank: '#1',
-          title: 'Karachi Farmers Market',
-          subtitle: 'Stall 14B • Main Court',
-          orders: '680 orders',
-          revenue: 'Rs. 540k',
-        ),
-        const SizedBox(height: 12),
-        _buildHubItem(
-          rank: '#2',
-          title: 'Clifton Green Hub',
-          subtitle: 'Block 4 Pavilion',
-          orders: '490 orders',
-          revenue: 'Rs. 410k',
-        ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: const [BoxShadow(color: Color(0x0A000000), blurRadius: 10, offset: Offset(0, 4))],
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceVariant,
-                  shape: BoxShape.circle,
-                  image: const DecorationImage(image: AssetImage('assets/images/harvest_ai_assistant_bg.jpg'), fit: BoxFit.cover),
-                ),
+        if (sortedFarmers.isEmpty)
+          const Text("No orders found to determine top producers.")
+        else
+          ...List.generate(sortedFarmers.length > 5 ? 5 : sortedFarmers.length, (index) {
+            String farmerId = sortedFarmers[index].key;
+            int orderCount = sortedFarmers[index].value;
+            double revenue = revenueMap[farmerId] ?? 0;
+            
+            FarmerModel? farmer;
+            try {
+              farmer = allFarmers.firstWhere((f) => f.id == farmerId);
+            } catch (_) {}
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _buildHubItem(
+                rank: '#${index + 1}',
+                title: farmer?.farmName ?? 'Unknown Producer',
+                subtitle: farmer?.location ?? 'Unknown Location',
+                orders: '$orderCount orders',
+                revenue: 'Rs. ${NumberFormat.compact().format(revenue)}',
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: const [
-                        Text('Green Valley Farm', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
-                        SizedBox(width: 4),
-                        Icon(Icons.verified, size: 14, color: AppColors.primaryContainer),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    const Text('Tariq Mehmood • Malir District • 420 orders', style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(color: AppColors.secondaryContainer, borderRadius: BorderRadius.circular(16)),
-                child: Row(
-                  children: const [
-                    Icon(Icons.star_border, size: 12, color: AppColors.onSecondaryContainer),
-                    SizedBox(width: 2),
-                    Text('4.8', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.onSecondaryContainer)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+            );
+          }),
       ],
     );
   }
@@ -559,75 +463,7 @@ class _AdminReportsAnalyticsTabState extends State<AdminReportsAnalyticsTab> {
     );
   }
 
-  Widget _buildOperationalEfficiencySection() {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: const [
-                Icon(Icons.speed, size: 18, color: AppColors.onSurface),
-                SizedBox(width: 8),
-                Text('Operational Efficiency', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
-              ],
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: AppColors.secondaryContainer, borderRadius: BorderRadius.circular(12)),
-              child: const Text('OPTIMAL', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.onSecondaryContainer)),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(child: _buildEfficiencyBox('Pickup\nTurnaround', '4.2', 'm', 'Fast handover', true)),
-            const SizedBox(width: 12),
-            Expanded(child: _buildEfficiencyBox('Unclaimed Rate', '1.2', '%', '<2.0% Target met', false)),
-            const SizedBox(width: 12),
-            Expanded(child: _buildEfficiencyBox('Audit Speed', '4.8', 'h', 'Farmer verified', true)),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildEfficiencyBox(String title, String value, String unit, String subtitle, bool isSubtitleGreen) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7FAF3),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant)),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4, left: 2),
-                child: Text(unit, style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: isSubtitleGreen ? AppColors.primaryContainer : AppColors.onSurfaceVariant),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReportsExportSection() {
+  Widget _buildReportsExportSection(double totalGmv, int completedOrders, double hubFees, double farmerPayouts, int totalValidOrders) {
     return Column(
       children: [
         Row(
@@ -638,49 +474,129 @@ class _AdminReportsAnalyticsTabState extends State<AdminReportsAnalyticsTab> {
           ],
         ),
         const SizedBox(height: 16),
-        _buildExportItem('Export Tax & Revenue CSV', 'Includes hub fees and provincial tax ledger', Icons.table_chart_outlined, AppColors.secondaryContainer),
+        _buildExportItem(
+          'Export Tax & Revenue CSV',
+          'Includes hub fees and provincial tax ledger',
+          Icons.table_chart_outlined,
+          AppColors.secondaryContainer,
+          () {
+            final csvData = "Report Type,Amount\nTotal GMV,$totalGmv\nHub Fees,$hubFees\nFarmer Payouts,$farmerPayouts\nCompleted Orders,$completedOrders";
+            _downloadFile('Tax_Revenue_Report', csvData, 'csv');
+          }
+        ),
         const SizedBox(height: 12),
-        _buildExportItem('Monthly Farmer Statement PDF', 'Batch disbursements, weights, and returns', Icons.description_outlined, AppColors.surfaceVariant),
+        _buildExportItem(
+          'Monthly Farmer Statement Text',
+          'Batch disbursements, weights, and returns',
+          Icons.description_outlined,
+          AppColors.surfaceVariant,
+          () {
+            final txtData = "MONTHLY FARMER STATEMENT\n-------------------------\nTotal Orders: $completedOrders\nTotal Valid Orders: $totalValidOrders\nTotal Farmer Payouts: Rs. ${farmerPayouts.toStringAsFixed(2)}\nTotal Platform GMV: Rs. ${totalGmv.toStringAsFixed(2)}";
+            _downloadFile('Farmer_Statement', txtData, 'txt');
+          }
+        ),
       ],
     );
   }
 
-  Widget _buildExportItem(String title, String subtitle, IconData icon, Color iconBg) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7FAF3),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(8)),
-            child: Icon(icon, color: AppColors.onSurface, size: 20),
+  void _downloadFile(String title, String content, String extension) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          content: Row(
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(width: 24),
+              Expanded(child: Text('Downloading $title...')),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
-                const SizedBox(height: 2),
-                Text(subtitle, style: const TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant)),
-              ],
+        );
+      }
+    );
+
+    try {
+      Directory? directory;
+      
+      // On Android, we write directly to the public Download folder
+      if (Platform.isAndroid) {
+        directory = Directory('/storage/emulated/0/Download');
+        if (!await directory.exists()) {
+          directory = await getExternalStorageDirectory();
+        }
+      } else {
+        directory = await getApplicationDocumentsDirectory();
+      }
+
+      if (directory == null) throw Exception("Could not find directory");
+
+      final fileName = '${title}_${DateTime.now().millisecondsSinceEpoch}.$extension';
+      final file = File('${directory.path}/$fileName');
+      
+      await file.writeAsString(content);
+
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Successfully saved to Downloads folder as $fileName'),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to download: $e')),
+        );
+      }
+    }
+  }
+
+  Widget _buildExportItem(String title, String subtitle, IconData icon, Color iconBg, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF7FAF3),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(8)),
+              child: Icon(icon, color: AppColors.onSurface, size: 20),
             ),
-          ),
-          const Icon(Icons.file_download_outlined, color: AppColors.onSurface),
-        ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: const TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant)),
+                ],
+              ),
+            ),
+            const Icon(Icons.file_download_outlined, color: AppColors.onSurface),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildGenerateReportButton() {
+  Widget _buildGenerateReportButton(double totalGmv, int completedOrders, double hubFees, double farmerPayouts, int totalValidOrders) {
     return Column(
       children: [
         ElevatedButton.icon(
-          onPressed: () {},
+          onPressed: () {
+            final csvData = "Metric,Value\nTotal Orders,$totalValidOrders\nCompleted Orders,$completedOrders\nGMV,$totalGmv\nHub Fees,$hubFees\nFarmer Payouts,$farmerPayouts";
+            _downloadFile('Detailed_Audit_Report', csvData, 'csv');
+          },
           icon: const Icon(Icons.bar_chart, color: Colors.white),
           label: const Text('Generate Detailed Audit Report'),
           style: ElevatedButton.styleFrom(
@@ -700,45 +616,4 @@ class _AdminReportsAnalyticsTabState extends State<AdminReportsAnalyticsTab> {
       ],
     );
   }
-}
-
-class _SparklinePainter extends CustomPainter {
-  final Color color;
-
-  _SparklinePainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 2.5
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final path = Path();
-    path.moveTo(0, size.height * 0.8);
-    path.quadraticBezierTo(size.width * 0.2, size.height * 0.9, size.width * 0.4, size.height * 0.5);
-    path.quadraticBezierTo(size.width * 0.6, size.height * 0.1, size.width * 0.8, size.height * 0.4);
-    path.lineTo(size.width, 0);
-
-    canvas.drawPath(path, paint);
-
-    final fillPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [color.withOpacity(0.3), color.withOpacity(0.0)],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
-      ..style = PaintingStyle.fill;
-    
-    final fillPath = Path.from(path)
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
-      ..close();
-      
-    canvas.drawPath(fillPath, fillPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

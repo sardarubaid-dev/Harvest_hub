@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:harvest_hub/theme/app_theme.dart';
 
+import 'package:harvest_hub/services/database_service.dart';
+import 'package:harvest_hub/models/farmer_model.dart';
+import 'package:intl/intl.dart';
+
 class AdminFarmerManagementTab extends StatefulWidget {
   const AdminFarmerManagementTab({super.key});
 
@@ -11,7 +15,68 @@ class AdminFarmerManagementTab extends StatefulWidget {
 
 class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
   int _selectedFilterIndex = 0;
-  final List<String> _filters = ['All (48)', 'Pending Review (6)', 'Verified (38)', 'Suspended (2)'];
+  final _dbService = DatabaseService();
+  List<FarmerModel> _farmers = [];
+  bool _isLoading = true;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<FarmerModel> _getFilteredFarmers(bool pendingOnly) {
+    var filtered = _farmers;
+    
+    // Apply type filter
+    if (pendingOnly) {
+      filtered = filtered.where((f) => !f.isApproved).toList();
+    } else {
+      filtered = filtered.where((f) => f.isApproved).toList();
+    }
+
+    // Apply category filter tabs
+    if (_selectedFilterIndex == 1) { // Pending
+      if (!pendingOnly) return [];
+    } else if (_selectedFilterIndex == 2) { // Verified
+      if (pendingOnly) return [];
+    } else if (_selectedFilterIndex == 3) { // Suspended
+      return [];
+    }
+
+    // Apply search query
+    if (_searchQuery.isNotEmpty) {
+      final q = _searchQuery.toLowerCase();
+      filtered = filtered.where((f) => 
+        f.farmName.toLowerCase().contains(q) || 
+        f.contactNumber.toLowerCase().contains(q) || 
+        f.location.toLowerCase().contains(q)
+      ).toList();
+    }
+    
+    return filtered;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _dbService.streamAllFarmers().listen((farmers) {
+      if (mounted) {
+        setState(() {
+          _farmers = farmers;
+          _isLoading = false;
+        });
+      }
+    });
+  }
+
+  List<String> get _filters {
+    final pending = _farmers.where((f) => !f.isApproved).length;
+    final verified = _farmers.where((f) => f.isApproved).length;
+    return ['All (${_farmers.length})', 'Pending Review ($pending)', 'Verified ($verified)', 'Suspended (0)'];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,24 +90,26 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
         label: const Text('Onboard Farmer', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 24),
-              _buildSearchBar(),
-              const SizedBox(height: 16),
-              _buildFilters(),
-              const SizedBox(height: 24),
-              _buildActionRequiredSection(),
-              const SizedBox(height: 32),
-              _buildRegisteredDirectorySection(),
-              const SizedBox(height: 64), 
-            ],
-          ),
-        ),
+        child: _isLoading 
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(),
+                    const SizedBox(height: 24),
+                    _buildSearchBar(),
+                    const SizedBox(height: 16),
+                    _buildFilters(),
+                    const SizedBox(height: 24),
+                    _buildActionRequiredSection(),
+                    const SizedBox(height: 32),
+                    _buildRegisteredDirectorySection(),
+                    const SizedBox(height: 64), 
+                  ],
+                ),
+              ),
       ),
     );
   }
@@ -143,6 +210,12 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
       children: [
         Expanded(
           child: TextField(
+            controller: _searchController,
+            onChanged: (val) {
+              setState(() {
+                _searchQuery = val;
+              });
+            },
             decoration: InputDecoration(
               hintText: 'Search farmer by name, farm, market sta...',
               prefixIcon: const Icon(Icons.search, color: AppColors.onSurfaceVariant),
@@ -212,6 +285,12 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
   }
 
   Widget _buildActionRequiredSection() {
+    final pendingFarmers = _getFilteredFarmers(true);
+
+    if (pendingFarmers.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -224,10 +303,10 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
               decoration: const BoxDecoration(color: AppColors.error, shape: BoxShape.circle),
             ),
             const SizedBox(width: 8),
-            const Expanded(
+            Expanded(
               child: Text(
-                'Action Required: 6 Applicants',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.onSurface),
+                'Action Required: ${pendingFarmers.length} Applicants',
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.onSurface),
               ),
             ),
             const Text(
@@ -238,37 +317,35 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
           ],
         ),
         const SizedBox(height: 16),
-        _buildApplicantCard(
-          name: 'Indus Valley Orchards',
-          owner: 'Tariq Alvi',
-          location: 'Mirpur Khas',
-          time: 'Today, 9:30 AM',
-          products: 'Mangoes, Guavas, Citrus',
-          status: 'CNIC & Land Deed Verified',
-          isStatusGreen: true,
-          button1Label: 'Review Docs',
-          button1Icon: Icons.visibility_outlined,
-          button2Label: 'Approve & Stall',
-          button2Icon: Icons.check_circle_outline,
-          isButton2Primary: true,
-          imageInitials: 'IV',
-        ),
-        const SizedBox(height: 16),
-        _buildApplicantCard(
-          name: 'Sindh Bio-Greens',
-          owner: 'Ayesha Baloch',
-          location: 'Thatta',
-          time: 'Yesterday',
-          products: 'Spinach, Kale, Mint',
-          status: 'Soil Organic Cert Pending',
-          isStatusGreen: false,
-          button1Label: 'Request Info',
-          button1Icon: Icons.info_outline,
-          button2Label: 'View Details',
-          button2Icon: Icons.description_outlined,
-          isButton2Primary: false,
-          imageInitials: 'SB',
-        ),
+        ...pendingFarmers.map((f) {
+          final initials = f.farmName.length >= 2 ? f.farmName.substring(0, 2).toUpperCase() : 'F';
+          final timeStr = DateFormat('MMM d, yyyy').format(f.createdAt ?? DateTime.now());
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: _buildApplicantCard(
+              name: f.farmName,
+              owner: f.contactNumber,
+              location: f.location,
+              time: timeStr,
+              products: 'Multiple', 
+              status: f.isApproved ? 'Verified' : 'Pending',
+              isStatusGreen: f.isApproved,
+              button1Label: 'Review Docs',
+              button1Icon: Icons.visibility_outlined,
+              button2Label: 'Approve & Stall',
+              button2Icon: Icons.check_circle_outline,
+              isButton2Primary: true,
+              imageInitials: initials,
+              onButton2Pressed: () async {
+                await _dbService.updateFarmer(f.copyWith(isApproved: true));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('${f.farmName} approved successfully')),
+                );
+              },
+            ),
+          );
+        }).toList(),
       ],
     );
   }
@@ -287,6 +364,8 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
     required IconData button2Icon,
     required bool isButton2Primary,
     required String imageInitials,
+    VoidCallback? onButton1Pressed,
+    VoidCallback? onButton2Pressed,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -398,7 +477,7 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {},
+                  onPressed: onButton1Pressed ?? () {},
                   icon: Icon(button1Icon, size: 18),
                   label: Text(button1Label),
                   style: OutlinedButton.styleFrom(
@@ -413,7 +492,7 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
               Expanded(
                 child: isButton2Primary
                     ? ElevatedButton.icon(
-                        onPressed: () {},
+                        onPressed: onButton2Pressed ?? () {},
                         icon: Icon(button2Icon, size: 18, color: Colors.white),
                         label: Text(button2Label),
                         style: ElevatedButton.styleFrom(
@@ -422,7 +501,7 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
                         ),
                       )
                     : OutlinedButton.icon(
-                        onPressed: () {},
+                        onPressed: onButton2Pressed ?? () {},
                         icon: Icon(button2Icon, size: 18),
                         label: Text(button2Label),
                         style: OutlinedButton.styleFrom(
@@ -441,64 +520,46 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
   }
 
   Widget _buildRegisteredDirectorySection() {
+    final verifiedFarmers = _getFilteredFarmers(false);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            Text(
+          children: [
+            const Text(
               'Registered Directory',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.onSurface),
             ),
             Text(
-              '38 Verified Active',
-              style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
+              '${verifiedFarmers.length} Verified Active',
+              style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
             ),
           ],
         ),
         const SizedBox(height: 16),
-        _buildDirectoryCard(
-          name: 'Green Valley Farm',
-          owner: 'Tariq Mehmood',
-          location: 'Stall 14B, Karachi...',
-          rating: '4.8',
-          reviews: '(120)',
-          productsCount: '24 Active Products',
-          revenue: 'Rs. 142k/mo',
-          status: 'Active & Selling',
-          stall: 'Stall 14B',
-          isStatusGreen: true,
-          initials: 'GV',
-        ),
-        const SizedBox(height: 12),
-        _buildDirectoryCard(
-          name: 'Indus Organic Fields',
-          owner: 'Rashid Khan',
-          location: 'Stall 8A',
-          rating: '4.9',
-          reviews: '(84)',
-          productsCount: '16 Active Products',
-          revenue: 'Rs. 98k/mo',
-          status: 'Active',
-          stall: 'Stall 8A',
-          isStatusGreen: true,
-          initials: 'IO',
-        ),
-        const SizedBox(height: 12),
-        _buildDirectoryCard(
-          name: 'Meadow Dairy Farm',
-          owner: 'Zubair Ahmed',
-          location: 'Stall 3C',
-          rating: '4.7',
-          reviews: '(62)',
-          productsCount: '8 Dairy Products',
-          revenue: 'Rs. 210k/mo',
-          status: 'Low Stock Alert',
-          stall: 'Stall 3C',
-          isStatusGreen: false,
-          initials: 'MD',
-        ),
+        if (verifiedFarmers.isEmpty)
+          const Text('No verified farmers found.', style: TextStyle(color: AppColors.onSurfaceVariant)),
+        ...verifiedFarmers.map((f) {
+          final initials = f.farmName.length >= 2 ? f.farmName.substring(0, 2).toUpperCase() : 'F';
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _buildDirectoryCard(
+              name: f.farmName,
+              owner: f.contactNumber,
+              location: f.location,
+              rating: f.rating.toStringAsFixed(1),
+              reviews: '(0)',
+              productsCount: 'Products Active',
+              revenue: 'Rs. 0/mo',
+              status: 'Active & Selling',
+              stall: 'Stall',
+              isStatusGreen: true,
+              initials: initials,
+            ),
+          );
+        }).toList(),
       ],
     );
   }

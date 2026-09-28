@@ -11,7 +11,10 @@ import '../models/market_model.dart';
 import '../models/pickup_slot_model.dart';
 import '../models/notification_model.dart';
 import '../models/review_model.dart';
-
+import '../models/audit_log_model.dart';
+import '../models/banner_model.dart';
+import '../models/offer_model.dart';
+import '../models/app_config_model.dart';
 
 class DatabaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -29,6 +32,10 @@ class DatabaseService {
   CollectionReference get _notificationsRef =>
       _firestore.collection('notifications');
   CollectionReference get _reviewsRef => _firestore.collection('reviews');
+  CollectionReference get _auditLogsRef => _firestore.collection('audit_logs');
+  CollectionReference get _bannersRef => _firestore.collection('banners');
+  CollectionReference get _offersRef => _firestore.collection('offers');
+  CollectionReference get _appConfigRef => _firestore.collection('app_config');
 
   Stream<UserModel?> streamUser(String uid) {
     return _usersRef.doc(uid).snapshots().map((doc) {
@@ -37,6 +44,19 @@ class DatabaseService {
       }
       return null;
     });
+  }
+
+  Future<CustomerModel?> getCustomer(String id) async {
+    final doc = await _usersRef.doc(id).get();
+    if (doc.exists) {
+      return CustomerModel.fromMap(id, doc.data() as Map<String, dynamic>);
+    }
+    // Fallback if there's a separate customers collection
+    final custDoc = await _customersRef.doc(id).get();
+    if (custDoc.exists) {
+      return CustomerModel.fromMap(id, custDoc.data() as Map<String, dynamic>);
+    }
+    return null;
   }
 
   Future<void> updateUserProfile({
@@ -78,6 +98,14 @@ class DatabaseService {
     });
   }
 
+  Future<FarmerModel?> getFarmer(String id) async {
+    final doc = await _farmersRef.doc(id).get();
+    if (doc.exists) {
+      return FarmerModel.fromMap(id, doc.data() as Map<String, dynamic>);
+    }
+    return null;
+  }
+
   Future<FarmerModel?> getFarmerByUserId(String userId) async {
 
     QuerySnapshot snap = await _farmersRef
@@ -99,6 +127,10 @@ class DatabaseService {
       return FarmerModel.fromMap(doc.id, doc.data() as Map<String, dynamic>);
     }
     return null;
+  }
+
+  Future<void> updateFarmer(FarmerModel farmer) async {
+    await _firestore.collection('farmers').doc(farmer.id).update(farmer.toMap());
   }
 
   Future<void> updateFarmerProfile({
@@ -494,6 +526,32 @@ class DatabaseService {
     });
   }
 
+  Future<Map<String, dynamic>> getPaginatedOrders({int limit = 20, DocumentSnapshot? startAfter}) async {
+    Query query = _ordersRef.orderBy('createdAt', descending: true).limit(limit);
+    if (startAfter != null) {
+      query = query.startAfterDocument(startAfter);
+    }
+    final querySnapshot = await query.get();
+    final orders = querySnapshot.docs.map((doc) => OrderModel.fromMap(doc.id, doc.data() as Map<String, dynamic>)).toList();
+    
+    DocumentSnapshot? lastDoc;
+    if (querySnapshot.docs.isNotEmpty) {
+      lastDoc = querySnapshot.docs.last;
+    }
+    return {
+      'orders': orders,
+      'lastDoc': lastDoc,
+    };
+  }
+
+  Future<OrderModel?> getOrder(String id) async {
+    final doc = await _ordersRef.doc(id).get();
+    if (doc.exists) {
+      return OrderModel.fromMap(id, doc.data() as Map<String, dynamic>);
+    }
+    return null;
+  }
+
   Future<void> updateOrderStatus(
     String orderId,
     String status, {
@@ -655,4 +713,95 @@ class DatabaseService {
     await _reviewsRef.doc(reviewId).delete();
   }
 
+  // --- Audit Logs ---
+
+  Future<void> logAdminAction(AuditLogModel log) async {
+    DocumentReference ref = _auditLogsRef.doc();
+    AuditLogModel newLog = AuditLogModel(
+      id: ref.id,
+      actionName: log.actionName,
+      performedBy: log.performedBy,
+      targetId: log.targetId,
+      details: log.details,
+      timestamp: log.timestamp,
+    );
+    await ref.set(newLog.toMap());
+  }
+
+  Stream<List<AuditLogModel>> streamAuditLogs() {
+    return _auditLogsRef
+        .orderBy('timestamp', descending: true)
+        .limit(50)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) =>
+              AuditLogModel.fromMap(doc.id, doc.data() as Map<String, dynamic>))
+          .toList();
+    });
+  }
+
+  // --- Banners ---
+  Stream<List<BannerModel>> streamBanners() {
+    return _bannersRef.orderBy('createdAt', descending: true).snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) => BannerModel.fromMap(doc.id, doc.data() as Map<String, dynamic>)).toList();
+    });
+  }
+
+  Future<void> addBanner(BannerModel banner) async {
+    await _bannersRef.doc(banner.id).set(banner.toMap());
+  }
+
+  Future<void> updateBanner(BannerModel banner) async {
+    await _bannersRef.doc(banner.id).update(banner.toMap());
+  }
+
+  Future<void> deleteBanner(String id) async {
+    await _bannersRef.doc(id).delete();
+  }
+
+  // --- Offers ---
+  Stream<List<OfferModel>> streamOffers() {
+    return _offersRef.orderBy('createdAt', descending: true).snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) => OfferModel.fromMap(doc.id, doc.data() as Map<String, dynamic>)).toList();
+    });
+  }
+
+  Future<void> addOffer(OfferModel offer) async {
+    await _offersRef.doc(offer.id).set(offer.toMap());
+  }
+
+  Future<void> updateOffer(OfferModel offer) async {
+    await _offersRef.doc(offer.id).update(offer.toMap());
+  }
+
+  Future<void> deleteOffer(String id) async {
+    await _offersRef.doc(id).delete();
+  }
+
+  Future<void> makeOfferLive(OfferModel offer) async {
+    await updateOffer(offer.copyWith(isActive: true));
+    
+    // Broadcast Notification
+    await sendNotification(
+      userId: offer.targetAudience,
+      title: 'New Offer: ${offer.title}',
+      message: offer.description,
+      type: 'promotion',
+    );
+  }
+
+  // --- App Config ---
+  Stream<AppConfigModel?> streamAppConfig() {
+    return _appConfigRef.doc('global').snapshots().map((doc) {
+      if (doc.exists) {
+        return AppConfigModel.fromMap(doc.data() as Map<String, dynamic>);
+      }
+      return null;
+    });
+  }
+
+  Future<void> updateAppConfig(AppConfigModel config) async {
+    await _appConfigRef.doc('global').set(config.toMap(), SetOptions(merge: true));
+  }
 }

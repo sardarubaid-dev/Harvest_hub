@@ -5,6 +5,7 @@ import 'admin_dashboard_tab.dart';
 import 'admin_farmer_management_tab.dart';
 import 'admin_order_moderation_tab.dart';
 import 'admin_reports_analytics_tab.dart';
+import 'admin_manage_tab.dart';
 
 class AdminMainScreen extends StatefulWidget {
   final String initialTab;
@@ -40,6 +41,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
       case 'farmers': return 1;
       case 'orders': return 2;
       case 'reports': return 3;
+      case 'manage': return 4;
       default: return 0;
     }
   }
@@ -55,11 +57,12 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: const [
-          AdminDashboardTab(),
-          AdminFarmerManagementTab(),
-          AdminOrderModerationTab(),
-          AdminReportsAnalyticsTab(),
+        children: [
+          AdminDashboardTab(onNavigateToTab: _onTabTapped),
+          const AdminFarmerManagementTab(),
+          const AdminOrderModerationTab(),
+          const AdminReportsAnalyticsTab(),
+          const AdminManageTab(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -88,6 +91,11 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
             icon: Icon(Icons.bar_chart_outlined), 
             activeIcon: Icon(Icons.bar_chart), 
             label: 'Reports'
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings_outlined), 
+            activeIcon: Icon(Icons.settings), 
+            label: 'Manage'
           ),
         ],
       ),
