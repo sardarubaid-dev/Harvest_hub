@@ -166,18 +166,6 @@ class _RegisterFarmerScreenState extends State<RegisterFarmerScreen> {
     }
   }
 
-    if (success && mounted) {
-      Navigator.pop(context);
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authProvider.errorMessage ?? "Registration failed."),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);

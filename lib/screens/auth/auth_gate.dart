@@ -5,7 +5,7 @@ import '../../providers/auth_provider.dart';
 import 'login_screen.dart';
 import '../customer/customer_home_screen.dart';
 import '../farmer/farmer_dashboard_tab.dart';
-import '../admin/admin_dashboard_screen.dart';
+import '../admin/admin_main_screen.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
@@ -46,7 +46,7 @@ class AuthGate extends StatelessWidget {
     }
 
     if (user.isAdmin) {
-      return const AdminDashboardScreen();
+      return const AdminMainScreen();
     } else if (user.isFarmer) {
       return const FarmerDashboardTab();
     } else {

@@ -16,8 +16,6 @@ class AuthService {
 
   static String get adminPassword => 'admin123';
 
-
-
   Future<UserModel> signUpCustomer({
     required String email,
     required String password,

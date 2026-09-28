@@ -412,7 +412,7 @@ class _FarmerMarketPickupScreenState extends State<FarmerMarketPickupScreen> {
               const SizedBox(height: 8),
 
               StreamBuilder<List<PickupSlotModel>>(
-                stream: _dbService.streamPickupSlots(currentMarket.id),
+                stream: _dbService.streamPickupSlots(marketId: currentMarket.id),
                 builder: (context, slotSnapshot) {
                   if (slotSnapshot.connectionState == ConnectionState.waiting) {
                     return const Center(

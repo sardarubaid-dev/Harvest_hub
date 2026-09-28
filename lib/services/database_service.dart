@@ -13,8 +13,9 @@ import '../models/notification_model.dart';
 import '../models/review_model.dart';
 import '../models/banner_model.dart';
 import '../models/offer_model.dart';
-import '../models/audit_log_model.dart';
 import '../models/app_config_model.dart';
+import '../models/audit_log_model.dart';
+
 
 class DatabaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -853,127 +854,6 @@ class DatabaseService {
       'updatedAt': FieldValue.serverTimestamp(),
       'items': <Map<String, dynamic>>[],
     });
-  }
-
-  // ==== Restored Missing Methods ====
-
-  Future<void> updateFarmer(FarmerModel farmer) async {
-    await _firestore.collection('farmers').doc(farmer.id).set(farmer.toMap(), SetOptions(merge: true));
-  }
-
-  Future<void> deleteFarmer(String id) async {
-    await _firestore.collection('farmers').doc(id).delete();
-  }
-
-  Future<FarmerModel?> getFarmer(String id) async {
-    return getFarmerById(id);
-  }
-
-  Future<CustomerModel?> getCustomer(String id) async {
-    final doc = await _customersRef.doc(id).get();
-    if (doc.exists && doc.data() != null) {
-      return CustomerModel.fromMap(doc.id, doc.data() as Map<String, dynamic>);
-    }
-    return null;
-  }
-
-  Future<OrderModel?> getOrder(String id) async {
-    final doc = await _ordersRef.doc(id).get();
-    if (doc.exists && doc.data() != null) {
-      return OrderModel.fromMap(doc.id, doc.data() as Map<String, dynamic>);
-    }
-    return null;
-  }
-
-  Future<Map<String, dynamic>> getPaginatedOrders({required int limit, DocumentSnapshot? startAfter}) async {
-    Query query = _ordersRef.orderBy('createdAt', descending: true).limit(limit);
-    if (startAfter != null) {
-      query = query.startAfterDocument(startAfter);
-    }
-    final snap = await query.get();
-    final orders = snap.docs.map((doc) => OrderModel.fromMap(doc.id, doc.data() as Map<String, dynamic>)).toList();
-    return {
-      'orders': orders,
-      'lastDoc': snap.docs.isNotEmpty ? snap.docs.last : null,
-    };
-  }
-
-  Stream<List<BannerModel>> streamBanners() {
-    return _firestore.collection('banners').snapshots().map((snap) =>
-        snap.docs.map((doc) => BannerModel.fromMap(doc.id, doc.data() as Map<String, dynamic>)).toList());
-  }
-
-  Future<void> addBanner(BannerModel banner) async {
-    await _firestore.collection('banners').doc(banner.id).set(banner.toMap());
-  }
-
-  Future<void> updateBanner(BannerModel banner) async {
-    await _firestore.collection('banners').doc(banner.id).update(banner.toMap());
-  }
-
-  Future<void> deleteBanner(String id) async {
-    await _firestore.collection('banners').doc(id).delete();
-  }
-
-  Stream<List<OfferModel>> streamOffers() {
-    return _firestore.collection('offers').snapshots().map((snap) =>
-        snap.docs.map((doc) => OfferModel.fromMap(doc.id, doc.data() as Map<String, dynamic>)).toList());
-  }
-
-  Future<void> addOffer(OfferModel offer) async {
-    await _firestore.collection('offers').doc(offer.id).set(offer.toMap());
-  }
-
-  Future<void> updateOffer(OfferModel offer) async {
-    await _firestore.collection('offers').doc(offer.id).update(offer.toMap());
-  }
-
-  Future<void> deleteOffer(String id) async {
-    await _firestore.collection('offers').doc(id).delete();
-  }
-
-  Future<void> makeOfferLive(OfferModel offer) async {
-    await updateOffer(offer.copyWith(isActive: true));
-  }
-
-  Stream<AppConfigModel?> streamAppConfig() {
-    return _firestore.collection('config').doc('global').snapshots().map((snap) {
-      if (!snap.exists || snap.data() == null) return null;
-      return AppConfigModel.fromMap(snap.data() as Map<String, dynamic>);
-    });
-  }
-
-  Future<void> updateAppConfig(AppConfigModel config) async {
-    await _firestore.collection('config').doc('global').set(config.toMap(), SetOptions(merge: true));
-  }
-
-  Stream<List<AuditLogModel>> streamAuditLogs() {
-    return _firestore.collection('auditLogs')
-        .orderBy('timestamp', descending: true)
-        .snapshots()
-        .map((snap) => snap.docs.map((doc) => AuditLogModel.fromMap(doc.id, doc.data() as Map<String, dynamic>)).toList());
-  }
-
-  Future<void> logAdminAction(AuditLogModel log) async {
-    await _firestore.collection('auditLogs').add(log.toMap());
-  }
-
-  // ==== Admin Profile Methods ====
-
-  Future<UserModel?> getUser(String uid) async {
-    final doc = await _usersRef.doc(uid).get();
-    if (doc.exists && doc.data() != null) {
-      return UserModel.fromMap(doc.id, doc.data() as Map<String, dynamic>);
-    }
-    return null;
-  }
-
-  Future<void> updateUser(UserModel user) async {
-    await _usersRef.doc(user.uid).set(user.toMap(), SetOptions(merge: true));
-  }
-
-  Future<void> deleteUser(String uid) async {
-    await _usersRef.doc(uid).delete();
   }
 }
 

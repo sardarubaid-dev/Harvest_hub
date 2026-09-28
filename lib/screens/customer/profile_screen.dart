@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
+import 'edit_profile_screen.dart';
 
 import 'package:go_router/go_router.dart';
+import '../shared/notifications_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -139,6 +141,18 @@ class ProfileScreen extends StatelessWidget {
               child: Column(
                 children: [
                   _buildListTile(
+                    Icons.edit_outlined,
+                    'Edit Profile',
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const EditProfileScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildListTile(
                     Icons.shopping_bag_outlined,
                     'My Orders',
                     () {},
@@ -156,7 +170,9 @@ class ProfileScreen extends StatelessWidget {
                   _buildListTile(
                     Icons.notifications_outlined,
                     'Notifications',
-                    () {},
+                    () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => NotificationsScreen()));
+                    },
                   ),
                   _buildListTile(Icons.security_outlined, 'Security', () {}),
                   _buildListTile(Icons.help_outline, 'Help & Support', () {}),

@@ -13,6 +13,7 @@ class ProductModel {
   final bool isAvailable;
   final bool isOrganic;
   final String? farmerName;
+  final String? marketName;
   final DateTime? createdAt;
 
   ProductModel({
@@ -30,6 +31,7 @@ class ProductModel {
     required this.isAvailable,
     this.isOrganic = false,
     this.farmerName,
+    this.marketName,
     this.createdAt,
   });
 
@@ -60,13 +62,14 @@ class ProductModel {
           ((map['quantity'] ?? map['Stock_Qty'] ?? 0) > 0),
       isOrganic: map['isOrganic'] ?? false,
       farmerName: map['farmerName'] ?? map['Farmer_Name'],
+      marketName: map['marketName'] ?? map['Market_Name'],
       createdAt: map['createdAt'] != null
           ? DateTime.tryParse(map['createdAt'].toString())
           : null,
     );
   }
 
-  get widget => null;
+
 
   Map<String, dynamic> toMap() {
     return {
@@ -89,6 +92,7 @@ class ProductModel {
       'isAvailable': isAvailable && quantity > 0,
       'isOrganic': isOrganic,
       'farmerName': farmerName,
+      'marketName': marketName,
       'createdAt':
           createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
     };
@@ -109,6 +113,7 @@ class ProductModel {
     bool? isAvailable,
     bool? isOrganic,
     String? farmerName,
+    String? marketName,
     DateTime? createdAt,
   }) {
     return ProductModel(
@@ -126,6 +131,8 @@ class ProductModel {
       isAvailable: isAvailable ?? this.isAvailable,
       isOrganic: isOrganic ?? this.isOrganic,
       farmerName: farmerName ?? this.farmerName,
+      marketName: marketName ?? this.marketName,
+
       createdAt: createdAt ?? this.createdAt,
     );
   }

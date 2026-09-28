@@ -6,6 +6,7 @@ import '../../core/auth_interceptor.dart';
 import '../../providers/auth_provider.dart' as app_auth;
 import '../../models/product_model.dart';
 import '../../services/database_service.dart';
+import '../../providers/wishlist_provider.dart';
 import 'product_detail_screen.dart';
 
 class WishlistScreen extends StatefulWidget {
@@ -29,15 +30,12 @@ class _WishlistScreenState extends State<WishlistScreen> {
     }
   }
 
-  void _toggleFavorite(String productId) async {
-    final uid = _currentUid;
-    if (uid == null) return;
-    await _dbService.toggleWishlistProduct(uid, productId);
-    if (!mounted) return;
+  void _toggleFavorite(String productId) {
+    Provider.of<WishlistProvider>(context, listen: false).toggleWishlist(productId);
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Removed from Wishlist'),
+        content: Text('Wishlist Updated'),
         duration: Duration(seconds: 1),
       ),
     );
@@ -60,14 +58,9 @@ class _WishlistScreenState extends State<WishlistScreen> {
 
     return Scaffold(
       backgroundColor: background,
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance.collection('customers').doc(uid).snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData || !snapshot.data!.exists) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final customerData = snapshot.data!.data() as Map<String, dynamic>?;
-          final wishlistIds = List<String>.from(customerData?['wishlist'] ?? []);
+      body: Consumer<WishlistProvider>(
+        builder: (context, wishlistProvider, _) {
+          final wishlistIds = wishlistProvider.wishlistIds;
 
           if (wishlistIds.isEmpty) {
             return Center(

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../models/product_model.dart';
 import '../../providers/cart_provider.dart';
 import '../../services/database_service.dart';
+import '../../core/auth_interceptor.dart';
 import 'product_detail_screen.dart';
 
 class FarmerProfileScreen extends StatefulWidget {
@@ -26,9 +28,27 @@ class _FarmerProfileScreenState extends State<FarmerProfileScreen> {
     isFollowing = widget.farmer['isFollowing'] ?? false;
   }
 
-  void _toggleFollow() {
-    setState(() {
-      isFollowing = !isFollowing;
+  void _toggleFollow() async {
+    AuthInterceptor.executeAction(context, () async {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+      
+      setState(() {
+        isFollowing = !isFollowing;
+      });
+
+      try {
+        await _dbService.toggleFollowFarmer(uid, widget.farmer['id'] ?? '');
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            isFollowing = !isFollowing;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to update follow status')),
+          );
+        }
+      }
     });
   }
 
