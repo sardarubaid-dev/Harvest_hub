@@ -1,211 +1,130 @@
-import 'package:flutter/material.dart';
-import 'package:harvest_hub/screens/customer/customer_home_screen.dart';
-
 import 'dart:async';
-
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:video_player/video_player.dart';
+
+import '../../providers/auth_provider.dart';
+import 'onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _logoController;
-  late Animation<double> _logoScaleAnimation;
-  late Animation<double> _logoOpacityAnimation;
-
-  late AnimationController _textController;
-  late Animation<Offset> _textSlideAnimation;
-  late Animation<double> _textOpacityAnimation;
+class _SplashScreenState extends State<SplashScreen> {
+  VideoPlayerController? _videoController;
+  bool _isVideoReady = false;
+  bool _hasNavigated = false;
+  Timer? _safetyTimer;
 
   @override
   void initState() {
     super.initState();
-
-    _logoController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1400),
-    );
-
-    _logoScaleAnimation = Tween<double>(begin: 0.3, end: 1.0).animate(
-      CurvedAnimation(parent: _logoController, curve: Curves.elasticOut),
-    );
-
-    _logoOpacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _logoController,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeIn),
-      ),
-    );
-
-    _textController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-
-    _textSlideAnimation =
-        Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(
-          CurvedAnimation(parent: _textController, curve: Curves.easeOutCubic),
-        );
-
-    _textOpacityAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _textController, curve: Curves.easeIn));
-
-    _startAnimations();
+    _initSplashVideo();
   }
 
-  void _startAnimations() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    _logoController.forward();
+  Future<void> _initSplashVideo() async {
+    final controller = VideoPlayerController.asset(
+      'assets/Splash.mp4',
+      videoPlayerOptions: VideoPlayerOptions(
+        mixWithOthers: true,
+        allowBackgroundPlayback: false,
+      ),
+    );
+    _videoController = controller;
 
-    await Future.delayed(const Duration(milliseconds: 600));
-    _textController.forward();
+    // Safety fallback so the screen never hangs if hardware decoder is busy
+    _safetyTimer = Timer(const Duration(milliseconds: 6000), _navigateNext);
 
-    Timer(const Duration(milliseconds: 3500), () {
+    try {
+      await controller.initialize();
+      await controller.setVolume(0.0);
+      await controller.setLooping(false);
+      controller.addListener(_onVideoTick);
+
       if (mounted) {
+        setState(() {
+          _isVideoReady = true;
+        });
+        await controller.play();
+      }
+    } catch (_) {
+      Timer(const Duration(milliseconds: 1200), _navigateNext);
+    }
+  }
+
+  void _onVideoTick() {
+    final controller = _videoController;
+    if (controller == null || !controller.value.isInitialized || _hasNavigated) {
+      return;
+    }
+    final position = controller.value.position;
+    final duration = controller.value.duration;
+
+    if (duration > Duration.zero &&
+        position >= duration - const Duration(milliseconds: 60)) {
+      _navigateNext();
+    }
+  }
+
+  void _navigateNext() {
+    if (_hasNavigated || !mounted) return;
+    _hasNavigated = true;
+    _safetyTimer?.cancel();
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final user = authProvider.currentUser;
+
+    if (authProvider.isAuthenticated && user != null) {
+      if (user.isAdmin) {
+        context.go('/admin/dashboard');
+      } else if (user.isFarmer) {
+        context.go('/farmer/dashboard');
+      } else {
         context.go('/customer');
       }
-    });
+    } else if (OnboardingScreen.hasSeenOnboarding) {
+      context.go('/customer');
+    } else {
+      context.go('/onboarding');
+    }
   }
 
   @override
   void dispose() {
-    _logoController.dispose();
-    _textController.dispose();
+    _safetyTimer?.cancel();
+    _videoController?.removeListener(_onVideoTick);
+    _videoController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final controller = _videoController;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF1B5E20),
-      body: Stack(
-        children: [
-          Positioned(
-            top: -100,
-            right: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.05),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -50,
-            left: -50,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.05),
-              ),
-            ),
-          ),
-
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AnimatedBuilder(
-                  animation: _logoController,
-                  builder: (context, child) {
-                    return Opacity(
-                      opacity: _logoOpacityAnimation.value,
-                      child: Transform.scale(
-                        scale: _logoScaleAnimation.value,
-                        child: Container(
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 40,
-                                offset: const Offset(0, 20),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(50),
-                            child: Image.asset(
-                              'assets/images/logo.png',
-                              width: 140,
-                              height: 140,
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
+      backgroundColor: const Color(0xFFF3F8F3),
+      body: _isVideoReady && controller != null
+          ? RepaintBoundary(
+              child: SizedBox.expand(
+                child: FittedBox(
+                  fit: BoxFit.cover,
+                  clipBehavior: Clip.hardEdge,
+                  child: SizedBox(
+                    width: controller.value.size.width,
+                    height: controller.value.size.height,
+                    child: VideoPlayer(controller),
+                  ),
                 ),
-
-                const SizedBox(height: 48),
-
-                AnimatedBuilder(
-                  animation: _textController,
-                  builder: (context, child) {
-                    return Opacity(
-                      opacity: _textOpacityAnimation.value,
-                      child: SlideTransition(
-                        position: _textSlideAnimation,
-                        child: Column(
-                          children: [
-                            const Text(
-                              'HarvestHub',
-                              style: TextStyle(
-                                fontSize: 48,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                                letterSpacing: 1.5,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(30),
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.3),
-                                  width: 1,
-                                ),
-                              ),
-                              child: const Text(
-                                'Cultivating Connections',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ],
+              ),
+            )
+          : const ColoredBox(
+              color: Color(0xFFF3F8F3),
+              child: SizedBox.expand(),
             ),
-          ),
-        ],
-      ),
     );
   }
 }

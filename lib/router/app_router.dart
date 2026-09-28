@@ -1,11 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:harvest_hub/screens/auth/create_account_screen.dart';
 import 'package:harvest_hub/screens/role_selection_screen.dart';
-import 'package:provider/provider.dart';
 
 import '../providers/auth_provider.dart';
 import '../screens/common/splash_screen.dart';
+import '../screens/common/onboarding_screen.dart';
 import '../screens/auth/sign_in_screen.dart';
 import '../screens/admin/admin_main_screen.dart';
 import '../screens/farmer/farmer_main_screen.dart';
@@ -26,8 +25,14 @@ class AppRouter {
         final user = authProvider.currentUser;
 
         final bool isSplash = state.matchedLocation == '/splash';
+        final bool isOnboarding = state.matchedLocation == '/onboarding';
         final bool isLogin = state.matchedLocation == '/login';
         final String uriStr = state.uri.toString();
+
+        // Never hijack /splash; let SplashScreen finish playing Splash.mp4 and navigate when done
+        if (isSplash) {
+          return null;
+        }
 
         if (isAuthenticated && user != null) {
           if (user.isAdmin && !uriStr.startsWith('/admin')) return '/admin/dashboard';
@@ -37,8 +42,8 @@ class AppRouter {
             // If they are a customer and they just logged in on the /login screen (modal pop),
             // return null so the modal can Navigator.pop() back to their previous screen/action.
             if (isLogin) return null;
-            // Otherwise, keep them off splash/root
-            if (isSplash || state.matchedLocation == '/') return '/customer';
+            // Otherwise, keep them off onboarding/root
+            if (isOnboarding || state.matchedLocation == '/') return '/customer';
           }
         } else {
           // User is logged out / unauthenticated
@@ -53,6 +58,10 @@ class AppRouter {
         GoRoute(
           path: '/splash',
           builder: (context, state) => const SplashScreen(),
+        ),
+        GoRoute(
+          path: '/onboarding',
+          builder: (context, state) => const OnboardingScreen(),
         ),
         GoRoute(
           path: '/login',
