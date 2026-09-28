@@ -11,6 +11,10 @@ import '../models/market_model.dart';
 import '../models/pickup_slot_model.dart';
 import '../models/notification_model.dart';
 import '../models/review_model.dart';
+import '../models/banner_model.dart';
+import '../models/offer_model.dart';
+import '../models/app_config_model.dart';
+import '../models/audit_log_model.dart';
 
 
 class DatabaseService {
@@ -858,5 +862,127 @@ class DatabaseService {
     return FirebaseFirestore.instance.collection('notifications').where('userId', isEqualTo: userId).orderBy('createdAt', descending: true).snapshots().map((snapshot) {
       return snapshot.docs.map((doc) => NotificationModel.fromMap(doc.id, doc.data() as Map<String, dynamic>)).toList();
     });
+  }
+
+  // ── BANNERS ──────────────────────────────────────────────────────────────
+  CollectionReference get _bannersRef => _firestore.collection('banners');
+
+  Stream<List<BannerModel>> streamBanners() {
+    return _bannersRef.orderBy('createdAt', descending: true).snapshots().map(
+        (s) => s.docs.map((d) => BannerModel.fromMap(d.id, d.data() as Map<String, dynamic>)).toList());
+  }
+
+  Future<void> addBanner(BannerModel banner) async {
+    final ref = _bannersRef.doc();
+    await ref.set(banner.toMap());
+  }
+
+  Future<void> updateBanner(BannerModel banner) async {
+    await _bannersRef.doc(banner.id).update(banner.toMap());
+  }
+
+  Future<void> deleteBanner(String bannerId) async {
+    await _bannersRef.doc(bannerId).delete();
+  }
+
+  // ── OFFERS ───────────────────────────────────────────────────────────────
+  CollectionReference get _offersRef => _firestore.collection('offers');
+
+  Stream<List<OfferModel>> streamOffers() {
+    return _offersRef.orderBy('createdAt', descending: true).snapshots().map(
+        (s) => s.docs.map((d) => OfferModel.fromMap(d.id, d.data() as Map<String, dynamic>)).toList());
+  }
+
+  Future<void> addOffer(OfferModel offer) async {
+    final ref = _offersRef.doc();
+    await ref.set(offer.toMap());
+  }
+
+  Future<void> updateOffer(OfferModel offer) async {
+    await _offersRef.doc(offer.id).update(offer.toMap());
+  }
+
+  Future<void> deleteOffer(String offerId) async {
+    await _offersRef.doc(offerId).delete();
+  }
+
+  Future<void> makeOfferLive(OfferModel offer) async {
+    await _offersRef.doc(offer.id).update({'isActive': true});
+  }
+
+  // ── APP CONFIG ───────────────────────────────────────────────────────────
+  Stream<AppConfigModel> streamAppConfig() {
+    return _firestore.collection('app_config').doc('global').snapshots().map((doc) {
+      if (doc.exists && doc.data() != null) {
+        return AppConfigModel.fromMap(doc.data() as Map<String, dynamic>);
+      }
+      return AppConfigModel(lastUpdated: DateTime.now());
+    });
+  }
+
+  Future<void> updateAppConfig(AppConfigModel config) async {
+    await _firestore.collection('app_config').doc('global').set(config.toMap(), SetOptions(merge: true));
+  }
+
+  // ── AUDIT LOGS ───────────────────────────────────────────────────────────
+  CollectionReference get _auditLogsRef => _firestore.collection('audit_logs');
+
+  Future<void> logAdminAction(AuditLogModel log) async {
+    final ref = _auditLogsRef.doc();
+    await ref.set(log.toMap());
+  }
+
+  Stream<List<AuditLogModel>> streamAuditLogs() {
+    return _auditLogsRef.orderBy('timestamp', descending: true).limit(100).snapshots().map(
+        (s) => s.docs.map((d) => AuditLogModel.fromMap(d.id, d.data() as Map<String, dynamic>)).toList());
+  }
+
+  // ── PAGINATED ORDERS ─────────────────────────────────────────────────────
+  Future<Map<String, dynamic>> getPaginatedOrders({
+    int limit = 20,
+    DocumentSnapshot? startAfter,
+  }) async {
+    Query query = _ordersRef.orderBy('createdAt', descending: true).limit(limit);
+    if (startAfter != null) {
+      query = query.startAfterDocument(startAfter);
+    }
+    final snap = await query.get();
+    final orders = snap.docs
+        .map((d) => OrderModel.fromMap(d.id, d.data() as Map<String, dynamic>))
+        .toList();
+    return {
+      'orders': orders,
+      'lastDoc': snap.docs.isNotEmpty ? snap.docs.last : null,
+    };
+  }
+
+  // ── SINGLE ORDER ─────────────────────────────────────────────────────────
+  Future<OrderModel?> getOrder(String orderId) async {
+    final doc = await _ordersRef.doc(orderId).get();
+    if (doc.exists) {
+      return OrderModel.fromMap(doc.id, doc.data() as Map<String, dynamic>);
+    }
+    return null;
+  }
+
+  // ── CUSTOMER ─────────────────────────────────────────────────────────────
+  Future<CustomerModel?> getCustomer(String customerId) async {
+    final doc = await _customersRef.doc(customerId).get();
+    if (doc.exists) {
+      return CustomerModel.fromMap(doc.id, doc.data() as Map<String, dynamic>);
+    }
+    // Try by userId field
+    final snap = await _customersRef.where('userId', isEqualTo: customerId).limit(1).get();
+    if (snap.docs.isNotEmpty) {
+      return CustomerModel.fromMap(snap.docs.first.id, snap.docs.first.data() as Map<String, dynamic>);
+    }
+    return null;
+  }
+
+  // ── FARMER (alias) ────────────────────────────────────────────────────────
+  Future<FarmerModel?> getFarmer(String farmerId) => getFarmerById(farmerId);
+
+  Future<void> updateFarmer(FarmerModel farmer) async {
+    await _farmersRef.doc(farmer.id).update(farmer.toMap());
   }
 }

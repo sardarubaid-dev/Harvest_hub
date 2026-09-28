@@ -6,7 +6,8 @@ import '../../services/database_service.dart';
 import 'product_detail_screen.dart';
 
 class SearchFilterScreen extends StatefulWidget {
-  const SearchFilterScreen({Key? key}) : super(key: key);
+  final String? initialQuery;
+  const SearchFilterScreen({Key? key, this.initialQuery}) : super(key: key);
 
   @override
   State<SearchFilterScreen> createState() => _SearchFilterScreenState();
