@@ -101,8 +101,8 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   ];
 
   Timer? _countdownTimer;
-  Duration _dealRemainingTime =
-      const Duration(hours: 12, minutes: 36, seconds: 24);
+  final ValueNotifier<Duration> _dealRemainingTime =
+      ValueNotifier(const Duration(hours: 12, minutes: 36, seconds: 24));
 
   final List<Map<String, dynamic>> _dealsOfTheDay = [
     {
@@ -192,22 +192,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
       setState(() => _categories = categories);
     });
 
-    _farmersSub = _dbService.streamAllFarmers().listen((farmers) {
-      if (!mounted) return;
-      setState(() {
-        _popularFarmers = farmers.map((f) => {
-          'id': f.id,
-          'name': f.farmName,
-          'location': f.location,
-          'rating': 5.0,
-          'image': f.profileImageUrl ?? '',
-          'isFollowing': false,
-          'model': f,
-        }).toList();
-      });
-    });
-    _startCountdownTimer();
-
     // 1. Stream live Cart from Firestore ('carts' collection)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -275,10 +259,8 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   void _startCountdownTimer() {
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) return;
-      if (_dealRemainingTime.inSeconds > 0) {
-        setState(() {
-          _dealRemainingTime -= const Duration(seconds: 1);
-        });
+      if (_dealRemainingTime.value.inSeconds > 0) {
+        _dealRemainingTime.value -= const Duration(seconds: 1);
       } else {
         _countdownTimer?.cancel();
       }
@@ -291,6 +273,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     _categoriesSub?.cancel();
     _farmersSub?.cancel();
     _countdownTimer?.cancel();
+    _dealRemainingTime.dispose();
     super.dispose();
   }
 
@@ -298,6 +281,13 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     if (products.isEmpty) return;
 
     final sorted = LocationService.sortByNearest(products);
+    sorted.sort((a, b) {
+      final distA = LocationService.getDistanceForProduct(a) ?? double.infinity;
+      final distB = LocationService.getDistanceForProduct(b) ?? double.infinity;
+      final distCmp = distA.compareTo(distB);
+      if (distCmp != 0) return distCmp;
+      return a.id.compareTo(b.id);
+    });
 
     final mappedProducts = sorted.map((p) {
       final dist = LocationService.getDistanceForProduct(p);
@@ -436,8 +426,8 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<app_auth.AuthProvider>(context);
-    final userName = authProvider.currentUser?.name ?? 'Guest User';
+    final userName = context.select<app_auth.AuthProvider, String>(
+        (p) => p.currentUser?.name ?? 'Guest User');
 
     const Color primaryGreen = Color(0xFF2E7D32);
     const Color darkText = Color(0xFF1F2937);
@@ -732,6 +722,21 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   ) {
     final topPadding = MediaQuery.of(context).padding.top;
 
+    final String selectedCategoryName = _selectedCategoryId == '1'
+        ? ''
+        : _categories
+            .firstWhere(
+              (c) => c.id == _selectedCategoryId,
+              orElse: () => CategoryModel(id: '', name: ''),
+            )
+            .name
+            .toLowerCase();
+
+    final List<Map<String, dynamic>> filteredProducts = _freshProducts.where((p) {
+      if (_selectedCategoryId == '1') return true;
+      return p['category'].toString().toLowerCase() == selectedCategoryName;
+    }).toList();
+
     return CustomScrollView(
       physics: const BouncingScrollPhysics(
         parent: AlwaysScrollableScrollPhysics(),
@@ -902,48 +907,19 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _freshProducts
-                  .where(
-                    (p) =>
-                        _selectedCategoryId == '1' ||
-                        p['category'].toString().toLowerCase() ==
-                            _categories
-                                .firstWhere(
-                                  (c) => c.id == _selectedCategoryId,
-                                  orElse: () => CategoryModel(id: '', name: ''),
-                                ).name
-                                .toLowerCase(),
-                  )
-                  .toList()
-                  .length,
+              itemCount: filteredProducts.length,
               itemBuilder: (context, index) {
-                final filteredList = _freshProducts
-                    .where(
-                      (p) =>
-                          _selectedCategoryId == '1' ||
-                          p['category'].toString().toLowerCase() ==
-                              _categories
-                                  .firstWhere(
-                                    (c) => c.id == _selectedCategoryId,
-                                    orElse: () => CategoryModel(id: '', name: ''),
-                                  ).name
-                                  .toLowerCase(),
-                    )
-                    .toList();
-
-                if (filteredList.isEmpty) return const SizedBox();
-
                 return Padding(
                   padding: const EdgeInsets.only(right: 16.0),
                   child: _buildProductCard(
-                    data: filteredList[index],
+                    data: filteredProducts[index],
                     onFavoriteTap: () {
                       final originalIndex = _freshProducts.indexWhere(
-                        (element) => element['id'] == filteredList[index]['id'],
+                        (element) => element['id'] == filteredProducts[index]['id'],
                       );
                       _toggleFavorite(_freshProducts, originalIndex);
                     },
-                    onAddTap: () => _addToCart(filteredList[index]),
+                    onAddTap: () => _addToCart(filteredProducts[index]),
                   ),
                 );
               },
@@ -1478,11 +1454,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     Color darkText,
     Color greyText,
   ) {
-    final hoursStr = _dealRemainingTime.inHours.toString().padLeft(2, '0');
-    final minsStr =
-        (_dealRemainingTime.inMinutes % 60).toString().padLeft(2, '0');
-    final secsStr =
-        (_dealRemainingTime.inSeconds % 60).toString().padLeft(2, '0');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1506,14 +1477,22 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      _buildTimerPill('$hoursStr Hours'),
-                      const SizedBox(width: 4),
-                      _buildTimerPill('$minsStr Mins'),
-                      const SizedBox(width: 4),
-                      _buildTimerPill('$secsStr Secs'),
-                    ],
+                  ValueListenableBuilder<Duration>(
+                    valueListenable: _dealRemainingTime,
+                    builder: (context, duration, child) {
+                      final hoursStr = duration.inHours.toString().padLeft(2, '0');
+                      final minsStr = (duration.inMinutes % 60).toString().padLeft(2, '0');
+                      final secsStr = (duration.inSeconds % 60).toString().padLeft(2, '0');
+                      return Row(
+                        children: [
+                          _buildTimerPill('$hoursStr Hours'),
+                          const SizedBox(width: 4),
+                          _buildTimerPill('$minsStr Mins'),
+                          const SizedBox(width: 4),
+                          _buildTimerPill('$secsStr Secs'),
+                        ],
+                      );
+                    },
                   ),
                 ],
               ),

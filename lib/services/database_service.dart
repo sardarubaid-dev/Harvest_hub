@@ -375,6 +375,7 @@ class DatabaseService {
     String? pickupSlotId,
     String? pickupSlotTime,
     String? marketId,
+    String? deliveryAddress,
   }) async {
     for (var item in items) {
       DocumentSnapshot productDoc = await _productsRef
@@ -415,6 +416,7 @@ class DatabaseService {
       pickupSlotId: pickupSlotId,
       pickupSlotTime: pickupSlotTime,
       marketId: marketId,
+      deliveryAddress: deliveryAddress,
       status: 'Pending',
       paymentMethod: 'Simulated Cash on Pickup',
       createdAt: DateTime.now(),
@@ -524,7 +526,7 @@ class DatabaseService {
     }
   }
 
-  Stream<List<PickupSlotModel>> streamPickupSlots(String marketId) {
+  Stream<List<PickupSlotModel>> streamPickupSlots({required String marketId}) {
     return _pickupSlotsRef
         .where('marketId', isEqualTo: marketId)
         .snapshots()
@@ -564,7 +566,7 @@ class DatabaseService {
     await ref.set(notif.toMap());
   }
 
-  Stream<List<NotificationModel>> streamUserNotifications(String userId) {
+  Stream<List<NotificationModel>> streamNotifications(String userId) {
     return _notificationsRef.where('userId', isEqualTo: userId).snapshots().map(
       (snapshot) {
 
@@ -580,6 +582,10 @@ class DatabaseService {
         return list;
       },
     );
+  }
+
+  Stream<List<NotificationModel>> streamUserNotifications(String userId) {
+    return streamNotifications(userId);
   }
 
   Future<void> markNotificationAsRead(String notificationId) async {
@@ -855,5 +861,129 @@ class DatabaseService {
       'items': <Map<String, dynamic>>[],
     });
   }
-}
 
+  // ===========================================================================
+  // MISSING METHODS FROM MERGE CONFLICT
+  // ===========================================================================
+
+  Stream<List<BannerModel>> streamBanners() {
+    return _firestore.collection('banners').snapshots().map((snap) =>
+        snap.docs.map((doc) => BannerModel.fromMap(doc.id, doc.data() as Map<String, dynamic>)).toList());
+  }
+
+  Future<void> addBanner(BannerModel banner) async {
+    await _firestore.collection('banners').add(banner.toMap());
+  }
+
+  Future<void> updateBanner(BannerModel banner) async {
+    await _firestore.collection('banners').doc(banner.id).update(banner.toMap());
+  }
+
+  Future<void> deleteBanner(String id) async {
+    await _firestore.collection('banners').doc(id).delete();
+  }
+
+  Future<void> updateFarmer(FarmerModel farmer) async {
+    await _farmersRef.doc(farmer.id).set(farmer.toMap(), SetOptions(merge: true));
+  }
+
+  Future<void> deleteFarmer(String id) async {
+    await _farmersRef.doc(id).delete();
+  }
+
+  Future<Map<String, dynamic>> getPaginatedOrders({required int limit, DocumentSnapshot? startAfter}) async {
+    Query query = _ordersRef.orderBy('createdAt', descending: true).limit(limit);
+    if (startAfter != null) {
+      query = query.startAfterDocument(startAfter);
+    }
+    final snap = await query.get();
+    final orders = snap.docs.map((doc) => OrderModel.fromMap(doc.id, doc.data() as Map<String, dynamic>)).toList();
+    return {
+      'orders': orders,
+      'lastDoc': snap.docs.isNotEmpty ? snap.docs.last : null,
+    };
+  }
+
+  Stream<AppConfigModel?> streamAppConfig() {
+    return _firestore.collection('config').doc('global').snapshots().map((snap) {
+      if (!snap.exists || snap.data() == null) return null;
+      return AppConfigModel.fromMap(snap.data() as Map<String, dynamic>);
+    });
+  }
+
+  Future<void> updateAppConfig(AppConfigModel config) async {
+    await _firestore.collection('config').doc('global').set(config.toMap(), SetOptions(merge: true));
+  }
+
+  Stream<List<OfferModel>> streamOffers() {
+    return _firestore.collection('offers').snapshots().map((snap) =>
+        snap.docs.map((doc) => OfferModel.fromMap(doc.id, doc.data() as Map<String, dynamic>)).toList());
+  }
+
+  Future<void> makeOfferLive(OfferModel offer) async {
+    await updateOffer(offer.copyWith(isActive: true));
+  }
+
+  Future<void> updateOffer(OfferModel offer) async {
+    await _firestore.collection('offers').doc(offer.id).update(offer.toMap());
+  }
+
+  Future<void> deleteOffer(String id) async {
+    await _firestore.collection('offers').doc(id).delete();
+  }
+
+  Future<void> addOffer(OfferModel offer) async {
+    await _firestore.collection('offers').add(offer.toMap());
+  }
+
+  Future<void> logAdminAction(AuditLogModel log) async {
+    await _firestore.collection('auditLogs').add(log.toMap());
+  }
+
+  Stream<List<AuditLogModel>> streamAuditLogs() {
+    return _firestore.collection('auditLogs')
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snap) => snap.docs.map((doc) => AuditLogModel.fromMap(doc.id, doc.data() as Map<String, dynamic>)).toList());
+  }
+
+  Future<UserModel?> getUser(String uid) async {
+    final doc = await _usersRef.doc(uid).get();
+    if (doc.exists && doc.data() != null) {
+      return UserModel.fromMap(doc.id, doc.data() as Map<String, dynamic>);
+    }
+    return null;
+  }
+
+  Future<void> updateUser(UserModel user) async {
+    await _usersRef.doc(user.uid).set(user.toMap(), SetOptions(merge: true));
+  }
+
+  Future<void> deleteUser(String uid) async {
+    await _usersRef.doc(uid).delete();
+  }
+
+  Future<OrderModel?> getOrder(String orderId) async {
+    final doc = await _ordersRef.doc(orderId).get();
+    if (doc.exists && doc.data() != null) {
+      return OrderModel.fromMap(doc.id, doc.data() as Map<String, dynamic>);
+    }
+    return null;
+  }
+
+  Future<CustomerModel?> getCustomer(String customerId) async {
+    final doc = await _customersRef.doc(customerId).get();
+    if (doc.exists && doc.data() != null) {
+      return CustomerModel.fromMap(doc.id, doc.data() as Map<String, dynamic>);
+    }
+    return null;
+  }
+
+  Future<FarmerModel?> getFarmer(String farmerId) async {
+    final doc = await _farmersRef.doc(farmerId).get();
+    if (doc.exists && doc.data() != null) {
+      return FarmerModel.fromMap(doc.id, doc.data() as Map<String, dynamic>);
+    }
+    return null;
+  }
+}
