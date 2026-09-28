@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/auth_interceptor.dart';
-
-
+import '../../providers/auth_provider.dart' as app_auth;
+import '../../models/product_model.dart';
+import '../../services/database_service.dart';
 import 'product_detail_screen.dart';
 
 class WishlistScreen extends StatefulWidget {
@@ -12,10 +16,24 @@ class WishlistScreen extends StatefulWidget {
 }
 
 class _WishlistScreenState extends State<WishlistScreen> {
-  void _toggleFavorite(int dummyDataIndex) {
-    setState(() {
-      [][dummyDataIndex]['isFavorite'] = false;
-    });
+  final DatabaseService _dbService = DatabaseService();
+
+  String? get _currentUid {
+    final fbUid = FirebaseAuth.instance.currentUser?.uid;
+    if (fbUid != null && fbUid.isNotEmpty) return fbUid;
+    try {
+      final authProv = Provider.of<app_auth.AuthProvider>(context, listen: false);
+      return authProv.currentUser?.uid;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _toggleFavorite(String productId) async {
+    final uid = _currentUid;
+    if (uid == null) return;
+    await _dbService.toggleWishlistProduct(uid, productId);
+    if (!mounted) return;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -32,14 +50,27 @@ class _WishlistScreenState extends State<WishlistScreen> {
     const Color greyText = Color(0xFF6B7280);
     const Color background = Color(0xFFF9FBF9);
 
-    final favoriteProducts = []
-        .where((p) => p['isFavorite'] == true)
-        .toList();
+    final uid = _currentUid;
+    if (uid == null) {
+      return Scaffold(
+        backgroundColor: background,
+        body: Center(child: Text('Please login to view wishlist')),
+      );
+    }
 
     return Scaffold(
       backgroundColor: background,
-      body: favoriteProducts.isEmpty
-          ? Center(
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: FirebaseFirestore.instance.collection('customers').doc(uid).snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final customerData = snapshot.data!.data() as Map<String, dynamic>?;
+          final wishlistIds = List<String>.from(customerData?['wishlist'] ?? []);
+
+          if (wishlistIds.isEmpty) {
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -48,261 +79,239 @@ class _WishlistScreenState extends State<WishlistScreen> {
                     size: 64,
                     color: Colors.grey[300],
                   ),
-                  const SizedBox(height: 25),
+                  const SizedBox(height: 16),
                   const Text(
-                    'Your wishlist is empty',
+                    'No items in your wishlist',
                     style: TextStyle(fontSize: 16, color: greyText),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Tap the heart icon on products to save them.',
-                    style: TextStyle(fontSize: 12, color: greyText),
                   ),
                 ],
               ),
-            )
-          : GridView.builder(
-              padding: const EdgeInsets.all(16.0),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 0.8,
-              ),
-              itemCount: favoriteProducts.length,
-              itemBuilder: (context, index) {
-                final data = favoriteProducts[index];
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ProductDetailScreen(product: data),
+            );
+          }
+
+          return StreamBuilder<List<ProductModel>>(
+            stream: _dbService.streamAllProducts(),
+            builder: (context, prodSnapshot) {
+              if (!prodSnapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final allProducts = prodSnapshot.data!;
+              final favoriteProducts = allProducts.where((p) => wishlistIds.contains(p.id)).toList();
+
+              if (favoriteProducts.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.favorite_border,
+                        size: 64,
+                        color: Colors.grey[300],
                       ),
-                    ).then((_) {
-                      setState(() {});
-                    });
-                  },
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: Container(
-                      decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'No items in your wishlist',
+                        style: TextStyle(fontSize: 16, color: greyText),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return GridView.builder(
+                padding: const EdgeInsets.all(16.0),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 0.65,
+                ),
+                itemCount: favoriteProducts.length,
+                itemBuilder: (context, index) {
+                  final p = favoriteProducts[index];
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProductDetailScreen(product: {
+                            'model': p,
+                            'id': p.id,
+                            'title': p.name,
+                            'category': p.categoryName,
+                            'farmerName': p.farmerName ?? '',
+                            'price': p.price.toStringAsFixed(0),
+                            'unit': p.unit,
+                            'imageUrl': p.imageUrl ?? '',
+                            'description': p.description,
+                          }),
                         ),
-                      ],
-                    ),
-                    child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Stack(
-                          children: [
-                            Container(
-                              height: 120,
-                              decoration: BoxDecoration(
-                                color: data['imageColor'],
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(16),
-                                  topRight: Radius.circular(16),
-                                ),
-                              ),
-                              child: ClipRRect(
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(16),
-                                  topRight: Radius.circular(16),
-                                ),
-                                child: (data['imageUrl'] != null && data['imageUrl'].toString().isNotEmpty)
-                                    ? Image.network(
-                                        data['imageUrl'],
-                                        fit: BoxFit.cover,
-                                        width: double.infinity,
-                                        height: double.infinity,
-                                      )
-                                    : Center(
-                                        child: Icon(
-                                          Icons.image,
-                                          size: 40,
-                                          color: Colors.black.withOpacity(0.2),
-                                        ),
-                                      ),
-                              ),
-                            ),
-                            Positioned(
-                              top: 8,
-                              right: 8,
-                              child: GestureDetector(
-                                onTap: () {
-                                  AuthInterceptor.executeAction(context, () {
-                                    int realIndex = [].indexWhere((p) => p['id'] == data['id']);
-                                    if (realIndex != -1) {
-                                      _toggleFavorite(realIndex);
-                                    }
-                                  });
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: const BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.favorite,
-                                    size: 16,
-                                    color: Colors.red,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 8,
-                              left: 8,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const CircleAvatar(
-                                      radius: 3,
-                                      backgroundColor: Color(0xFF2E7D32),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      data['stockBadge'],
-                                      style: const TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF2E7D32),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                      );
+                    },
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.04),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                data['category'],
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF6B7280),
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                data['title'],
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1F2937),
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      data['farmerName'],
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Color(0xFF4B5563),
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Stack(
+                              children: [
+                                Container(
+                                  height: 120,
+                                  decoration: BoxDecoration(
+                                    color: Colors.green[100],
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(16),
+                                      topRight: Radius.circular(16),
                                     ),
                                   ),
-                                  const SizedBox(width: 4),
-                                  const Icon(
-                                    Icons.verified,
-                                    size: 12,
-                                    color: Color(0xFF2E7D32),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        'Price',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          color: Color(0xFF6B7280),
-                                        ),
-                                      ),
-                                      Row(
-                                        crossAxisAlignment: CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            'Rs. ',
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Color(0xFF1F2937),
+                                  child: ClipRRect(
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(16),
+                                      topRight: Radius.circular(16),
+                                    ),
+                                    child: (p.imageUrl != null && p.imageUrl!.isNotEmpty)
+                                        ? Image.network(
+                                            p.imageUrl!,
+                                            fit: BoxFit.cover,
+                                            width: double.infinity,
+                                            height: double.infinity,
+                                          )
+                                        : Center(
+                                            child: Icon(
+                                              Icons.image,
+                                              size: 40,
+                                              color: Colors.black.withOpacity(0.2),
                                             ),
                                           ),
-                                          Text(
-                                            data['unit'],
-                                            style: const TextStyle(
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 8,
+                                  right: 8,
+                                  child: GestureDetector(
+                                    onTap: () => _toggleFavorite(p.id),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.favorite,
+                                        size: 16,
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    p.categoryName,
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF6B7280),
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    p.name,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1F2937),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          p.farmerName ?? '',
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Color(0xFF4B5563),
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Price',
+                                            style: TextStyle(
                                               fontSize: 10,
                                               color: Color(0xFF6B7280),
                                             ),
+                                          ),
+                                          Row(
+                                            crossAxisAlignment: CrossAxisAlignment.end,
+                                            children: [
+                                              Text(
+                                                'Rs.  ',
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Color(0xFF1F2937),
+                                                ),
+                                              ),
+                                              Text(
+                                                '/',
+                                                style: const TextStyle(
+                                                  fontSize: 10,
+                                                  color: Color(0xFF6B7280),
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),
                                     ],
                                   ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      AuthInterceptor.executeAction(context, () {
-                                        
-                                      });
-                                    },
-                                    child: Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFF2E7D32),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.add,
-                                        color: Colors.white,
-                                        size: 18,
-                                      ),
-                                    ),
-                                  ),
                                 ],
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ));
-              },
-            ),
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

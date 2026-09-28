@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/dummy_data.dart';
+import '../../providers/cart_provider.dart';
 import '../../models/order_model.dart';
 import '../../models/market_model.dart';
 import '../../models/pickup_slot_model.dart';
@@ -43,7 +43,7 @@ class _CartScreenState extends State<CartScreen> {
   @override
   void initState() {
     super.initState();
-    _cartItems = List<Map<String, dynamic>>.from(DummyData.cart);
+    _cartItems = [];
     _subscribeToFirestoreCart();
     _subscribeToMarketsAndSlots();
   }
@@ -54,9 +54,6 @@ class _CartScreenState extends State<CartScreen> {
       if (!mounted) return;
       setState(() {
         _cartItems = items;
-        DummyData.cart
-          ..clear()
-          ..addAll(items);
       });
     });
   }
@@ -95,9 +92,6 @@ class _CartScreenState extends State<CartScreen> {
 
     setState(() {
       _cartItems.removeAt(index);
-      DummyData.cart
-        ..clear()
-        ..addAll(_cartItems);
     });
 
     await _dbService.removeFromCart(
@@ -130,9 +124,6 @@ class _CartScreenState extends State<CartScreen> {
 
     setState(() {
       _cartItems[index]['quantity'] = newQuantity;
-      DummyData.cart
-        ..clear()
-        ..addAll(_cartItems);
     });
 
     await _dbService.updateCartItemQuantity(
@@ -219,7 +210,6 @@ class _CartScreenState extends State<CartScreen> {
       );
 
       await _dbService.clearCart(_currentUid);
-      DummyData.cart.clear();
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -499,9 +489,9 @@ class _CartScreenState extends State<CartScreen> {
                                             12,
                                           ),
                                           child:
-                                              (item.product.imageUrl?.isNotEmpty ?? false)
+                                              (item['imageUrl']?.isNotEmpty ?? false)
                                               ? Image.network(
-                                                  item.product.imageUrl ?? '',
+                                                  item['imageUrl'] ?? '',
                                                   fit: BoxFit.cover,
                                                   width: double.infinity,
                                                   height: double.infinity,
@@ -565,7 +555,7 @@ class _CartScreenState extends State<CartScreen> {
                                           children: [
                                             Expanded(
                                               child: Text(
-                                                '${item.product.name} (${item.product.unit.replaceAll('/', '').trim()})',
+                                                '${item['title']} (${item['unit'].replaceAll('/', '').trim()})',
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.bold,
                                                   fontSize: 14,
@@ -577,7 +567,7 @@ class _CartScreenState extends State<CartScreen> {
                                             ),
                                             GestureDetector(
                                               onTap: () =>
-                                                  _removeFromCart(item.product.id),
+                                                  _removeFromCart(item['id']),
                                               child: const Icon(
                                                 Icons.delete_outline,
                                                 size: 20,
@@ -597,7 +587,7 @@ class _CartScreenState extends State<CartScreen> {
                                             const SizedBox(width: 4),
                                             Expanded(
                                               child: Text(
-                                                'From ${item.product.farmerId}',
+                                                'From ${item['farmerName']}',
                                                 style: const TextStyle(
                                                   fontSize: 11,
                                                   color: greyText,
@@ -650,11 +640,7 @@ class _CartScreenState extends State<CartScreen> {
                                                 children: [
                                                   InkWell(
                                                     onTap: () =>
-                                                        _updateQuantity(
-                                                          item.product.id,
-                                                          qty.toDouble(),
-                                                          -1.0,
-                                                        ),
+                                                        _updateQuantity(index, -1),
                                                     child: const Padding(
                                                       padding:
                                                           EdgeInsets.symmetric(
@@ -679,11 +665,7 @@ class _CartScreenState extends State<CartScreen> {
                                                   ),
                                                   InkWell(
                                                     onTap: () =>
-                                                        _updateQuantity(
-                                                          item.product.id,
-                                                          qty.toDouble(),
-                                                          1.0,
-                                                        ),
+                                                        _updateQuantity(index, 1),
                                                     child: const Padding(
                                                       padding:
                                                           EdgeInsets.symmetric(

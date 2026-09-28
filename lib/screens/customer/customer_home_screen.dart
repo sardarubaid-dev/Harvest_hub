@@ -165,7 +165,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   ];
 
   StreamSubscription<List<Map<String, dynamic>>>? _cartSub;
-  StreamSubscription<dynamic>? _farmersSub;
   StreamSubscription<dynamic>? _reviewsSub;
 
   String? get _currentUid {
@@ -212,9 +211,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
       _cartSub = _dbService.streamCart(_currentUid).listen((cartItems) {
         if (!mounted) return;
         setState(() {
-          DummyData.cart
-            ..clear()
-            ..addAll(cartItems);
         });
       });
     });
@@ -325,33 +321,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     setState(() {
       _freshProducts = mappedProducts;
 
-      // Sync global DummyData.freshProducts so ProductsScreen & CategoriesScreen also use live Firestore data
-      DummyData.freshProducts
-        ..clear()
-        ..addAll(mappedProducts);
-
       // Dynamically derive Recently Restocked from live in-stock Firestore products
-      _recentlyRestocked = mappedProducts.reversed.take(6).map((item) {
-        return {
-          'id': p.id,
-          'title': p.name,
-          'category': p.categoryName.isNotEmpty
-              ? p.categoryName.toUpperCase()
-              : 'PRODUCE',
-          'farmerName': p.farmerName ?? 'Green Valley Farm',
-          'price': p.price.toStringAsFixed(0),
-          'unit': '/ ${p.unit}',
-          'stockBadge': '${p.quantity.toInt()} ${p.unit} available',
-          'isFavorite': false,
-          'imageColor': _getColorForCategory(p.categoryName),
-          'imageUrl': p.imageUrl ?? '',
-          'distance': LocationService.formatDistance(dist),
-          'isOrganic': p.isOrganic,
-          'description': p.description,
-          'model': p,
-        };
-      }).toList();
-      
       _recentlyRestocked = List.from(_freshProducts);
     });
   }

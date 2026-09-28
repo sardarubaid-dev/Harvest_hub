@@ -7,12 +7,25 @@ import '../../providers/cart_provider.dart';
 import '../../services/database_service.dart';
 import 'product_detail_screen.dart';
 
-class CategoryProductsScreen extends StatelessWidget {
+class CategoryProductsScreen extends StatefulWidget {
   final String categoryName;
-  final DatabaseService _dbService = DatabaseService();
 
-  CategoryProductsScreen({Key? key, required this.categoryName})
+  const CategoryProductsScreen({Key? key, required this.categoryName})
     : super(key: key);
+
+  @override
+  State<CategoryProductsScreen> createState() => _CategoryProductsScreenState();
+}
+
+class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
+  final DatabaseService _dbService = DatabaseService();
+  late Stream<List<ProductModel>> _productsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _productsStream = _dbService.streamAllProducts();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,13 +44,13 @@ class CategoryProductsScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          categoryName,
+          widget.categoryName,
           style: const TextStyle(color: darkText, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
       body: StreamBuilder<List<ProductModel>>(
-        stream: _dbService.streamAllProducts(),
+        stream: _productsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -45,7 +58,7 @@ class CategoryProductsScreen extends StatelessWidget {
 
           final rawProducts = snapshot.data ?? [];
           final filteredProducts = rawProducts.where((p) {
-            return p.categoryName.toLowerCase().contains(categoryName.toLowerCase());
+            return p.widget.categoryName.toLowerCase().contains(widget.categoryName.toLowerCase());
           }).toList();
 
           final products = filteredProducts.map((p) {
@@ -53,7 +66,7 @@ class CategoryProductsScreen extends StatelessWidget {
               'productModel': p,
               'id': p.id,
               'title': p.name,
-              'category': p.categoryName.isNotEmpty ? p.categoryName.toUpperCase() : 'PRODUCE',
+              'category': p.widget.categoryName.isNotEmpty ? p.widget.categoryName.toUpperCase() : 'PRODUCE',
               'farmerName': p.farmerName ?? 'Green Valley Farm',
               'price': p.price.toStringAsFixed(0),
               'unit': '/ ${p.unit}',
@@ -77,7 +90,7 @@ class CategoryProductsScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'No products found in $categoryName',
+                        'No products found in ${widget.categoryName}',
                         style: const TextStyle(fontSize: 16, color: greyText),
                       ),
                     ],
@@ -123,7 +136,7 @@ class CategoryProductsScreen extends StatelessWidget {
                                 Container(
                                   height: 100,
                                   decoration: BoxDecoration(
-                                    color: data['imageColor'],
+                                    color: data['imageColor'] as Color?,
                                     borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(16),
                                       topRight: Radius.circular(16),
@@ -133,10 +146,9 @@ class CategoryProductsScreen extends StatelessWidget {
                                     borderRadius: const BorderRadius.vertical(
                                       top: Radius.circular(16),
                                     ),
-                                    child: (data['imageUrl'] != null &&
-                                            data['imageUrl'].toString().isNotEmpty)
+                                    child: (data['imageUrl'] != null && data['imageUrl'].toString().isNotEmpty)
                                         ? Image.network(
-                                            data['imageUrl'],
+                                            data['imageUrl'].toString(),
                                             fit: BoxFit.cover,
                                             width: double.infinity,
                                             height: double.infinity,
@@ -206,7 +218,7 @@ class CategoryProductsScreen extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      data['category'],
+                                      data['category'].toString(),
                                       style: const TextStyle(
                                         fontSize: 9,
                                         fontWeight: FontWeight.bold,
@@ -216,7 +228,7 @@ class CategoryProductsScreen extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      data['title'],
+                                      data['title'].toString(),
                                       style: const TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
@@ -230,7 +242,7 @@ class CategoryProductsScreen extends StatelessWidget {
                                       children: [
                                         Expanded(
                                           child: Text(
-                                            data['farmerName'],
+                                            data['farmerName'].toString(),
                                             style: const TextStyle(
                                               fontSize: 10,
                                               color: Color(0xFF4B5563),
@@ -267,7 +279,7 @@ class CategoryProductsScreen extends StatelessWidget {
                                                   CrossAxisAlignment.end,
                                               children: [
                                                 Text(
-                                                  'Rs. ${data['price']}',
+                                                  'Rs. ${data['price'].toString()}',
                                                   style: const TextStyle(
                                                     fontSize: 13,
                                                     fontWeight: FontWeight.bold,
@@ -275,7 +287,7 @@ class CategoryProductsScreen extends StatelessWidget {
                                                   ),
                                                 ),
                                                 Text(
-                                                  data['unit'],
+                                                  data['unit'].toString(),
                                                   style: const TextStyle(
                                                     fontSize: 9,
                                                     color: greyText,

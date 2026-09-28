@@ -969,23 +969,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   onPressed: () {
                     AuthInterceptor.executeAction(context, () async {
                       if (widget.product != null) {
-                        int index = DummyData.cart.indexWhere(
-                          (p) =>
-                              p['id'] == widget.product!['id'] ||
-                              p['title'] == widget.product!['title'],
-                        );
-                        if (index != -1) {
-                          DummyData.cart[index]['quantity'] =
-                              ((DummyData.cart[index]['quantity'] as num?)?.toInt() ?? 1) +
-                              _quantity;
-                        } else {
-                          Map<String, dynamic> cartItem = Map<String, dynamic>.from(
-                            widget.product!,
-                          );
-                          cartItem['quantity'] = _quantity;
-                          DummyData.cart.add(cartItem);
-                        }
-
                         await DatabaseService().addToCart(
                           uid: FirebaseAuth.instance.currentUser?.uid,
                           product: widget.product!,

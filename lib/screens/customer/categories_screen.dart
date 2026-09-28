@@ -4,12 +4,25 @@ import '../../models/category_model.dart';
 import '../../services/database_service.dart';
 import 'products_screen.dart';
 
-class CategoriesScreen extends StatelessWidget {
+class CategoriesScreen extends StatefulWidget {
   final Function(String) onCategorySelected;
-  final DatabaseService _dbService = DatabaseService();
 
-  CategoriesScreen({Key? key, required this.onCategorySelected})
+  const CategoriesScreen({Key? key, required this.onCategorySelected})
     : super(key: key);
+
+  @override
+  State<CategoriesScreen> createState() => _CategoriesScreenState();
+}
+
+class _CategoriesScreenState extends State<CategoriesScreen> {
+  final DatabaseService _dbService = DatabaseService();
+  late Stream<List<CategoryModel>> _categoriesStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _categoriesStream = _dbService.streamCategories();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +110,7 @@ class CategoriesScreen extends StatelessWidget {
 
             Expanded(
               child: StreamBuilder<List<CategoryModel>>(
-                stream: _dbService.streamCategories(),
+                stream: _categoriesStream,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -135,7 +148,7 @@ class CategoriesScreen extends StatelessWidget {
 
                       return GestureDetector(
                         onTap: () {
-                          onCategorySelected(cat.name);
+                          widget.onCategorySelected(cat.name);
                         },
                         child: Container(
                           decoration: BoxDecoration(

@@ -66,6 +66,8 @@ class ProductModel {
     );
   }
 
+  get widget => null;
+
   Map<String, dynamic> toMap() {
     return {
       'farmerId': farmerId,

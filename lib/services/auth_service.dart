@@ -6,12 +6,15 @@ import '../models/customer_model.dart';
 import '../models/farmer_model.dart';
 
 class AuthService {
+  static const String adminEmail = 'admin@harvesthub.com';
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
   String? get currentUserId => _auth.currentUser?.uid;
+
+  static String get adminPassword => 'admin123';
 
 
 
@@ -208,7 +211,7 @@ class AuthService {
             ? fbUser.displayName!
             : (email.isNotEmpty ? email.split('@').first : 'Customer'),
         email: email,
-        role: email.toLowerCase() == adminEmail.toLowerCase()
+        role: email.toLowerCase() == AuthService.adminEmail.toLowerCase()
             ? 'Admin'
             : 'Customer',
         isActive: true,
