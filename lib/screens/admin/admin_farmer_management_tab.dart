@@ -4,6 +4,7 @@ import 'package:harvest_hub/theme/app_theme.dart';
 import 'package:harvest_hub/services/database_service.dart';
 import 'package:harvest_hub/models/farmer_model.dart';
 import 'package:intl/intl.dart';
+import 'admin_onboard_farmer_screen.dart';
 
 class AdminFarmerManagementTab extends StatefulWidget {
   const AdminFarmerManagementTab({super.key});
@@ -29,24 +30,26 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
 
   List<FarmerModel> _getFilteredFarmers(bool pendingOnly) {
     var filtered = _farmers;
-    
-    // Apply type filter
-    if (pendingOnly) {
-      filtered = filtered.where((f) => !f.isApproved).toList();
-    } else {
-      filtered = filtered.where((f) => f.isApproved).toList();
-    }
 
-    // Apply category filter tabs
     if (_selectedFilterIndex == 1) { // Pending
-      if (!pendingOnly) return [];
+      filtered = filtered.where((f) => !f.isApproved && !f.isSuspended).toList();
     } else if (_selectedFilterIndex == 2) { // Verified
-      if (pendingOnly) return [];
+      filtered = filtered.where((f) => f.isApproved && !f.isSuspended).toList();
     } else if (_selectedFilterIndex == 3) { // Suspended
-      return [];
+      filtered = filtered.where((f) => f.isSuspended).toList();
     }
 
-    // Apply search query
+    if (_selectedFilterIndex == 0) {
+      if (pendingOnly) {
+        filtered = filtered.where((f) => !f.isApproved && !f.isSuspended).toList();
+      } else {
+        filtered = filtered.where((f) => f.isApproved || f.isSuspended).toList();
+      }
+    } else {
+       if (pendingOnly && _selectedFilterIndex != 1) return [];
+       if (!pendingOnly && _selectedFilterIndex == 1) return [];
+    }
+
     if (_searchQuery.isNotEmpty) {
       final q = _searchQuery.toLowerCase();
       filtered = filtered.where((f) => 
@@ -69,13 +72,16 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
           _isLoading = false;
         });
       }
+    }, onError: (e) {
+      print("Stream Error: $e");
     });
   }
 
   List<String> get _filters {
-    final pending = _farmers.where((f) => !f.isApproved).length;
-    final verified = _farmers.where((f) => f.isApproved).length;
-    return ['All (${_farmers.length})', 'Pending Review ($pending)', 'Verified ($verified)', 'Suspended (0)'];
+    final pending = _farmers.where((f) => !f.isApproved && !f.isSuspended).length;
+    final verified = _farmers.where((f) => f.isApproved && !f.isSuspended).length;
+    final suspended = _farmers.where((f) => f.isSuspended).length;
+    return ['All (${_farmers.length})', 'Pending Review ($pending)', 'Verified ($verified)', 'Suspended ($suspended)'];
   }
 
   @override
@@ -83,7 +89,9 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
     return Scaffold(
       backgroundColor: AppColors.background,
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminOnboardFarmerScreen()));
+        },
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
@@ -553,10 +561,20 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
               reviews: '(0)',
               productsCount: 'Products Active',
               revenue: 'Rs. 0/mo',
-              status: 'Active & Selling',
+              status: f.isSuspended ? 'Suspended' : 'Active & Selling',
               stall: 'Stall',
-              isStatusGreen: true,
+              isStatusGreen: !f.isSuspended,
               initials: initials,
+              isSuspended: f.isSuspended,
+              onActionSelected: (action) async {
+                if (action == 'suspend') {
+                  await _dbService.updateFarmer(f.copyWith(isSuspended: true));
+                } else if (action == 'reactivate') {
+                  await _dbService.updateFarmer(f.copyWith(isSuspended: false));
+                } else if (action == 'delete') {
+                  await _dbService.deleteFarmer(f.id);
+                }
+              },
             ),
           );
         }).toList(),
@@ -576,6 +594,8 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
     required String stall,
     required bool isStatusGreen,
     required String initials,
+    required bool isSuspended,
+    required Function(String) onActionSelected,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -612,7 +632,30 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
                         const SizedBox(width: 4),
                         const Icon(Icons.verified, size: 14, color: AppColors.primaryContainer),
                         const Spacer(),
-                        const Icon(Icons.more_vert, size: 20, color: AppColors.onSurfaceVariant),
+                        PopupMenuButton<String>(
+                          icon: const Icon(Icons.more_vert, size: 20, color: AppColors.onSurfaceVariant),
+                          onSelected: onActionSelected,
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: 'profile',
+                              child: Row(children: [Icon(Icons.person, size: 18), SizedBox(width: 8), Text('View Profile')]),
+                            ),
+                            if (!isSuspended)
+                              const PopupMenuItem(
+                                value: 'suspend',
+                                child: Row(children: [Icon(Icons.block, size: 18, color: Colors.orange), SizedBox(width: 8), Text('Suspend', style: TextStyle(color: Colors.orange))]),
+                              )
+                            else
+                              const PopupMenuItem(
+                                value: 'reactivate',
+                                child: Row(children: [Icon(Icons.check_circle, size: 18, color: Colors.green), SizedBox(width: 8), Text('Reactivate', style: TextStyle(color: Colors.green))]),
+                              ),
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Row(children: [Icon(Icons.delete, size: 18, color: Colors.red), SizedBox(width: 8), Text('Delete', style: TextStyle(color: Colors.red))]),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                     const SizedBox(height: 2),

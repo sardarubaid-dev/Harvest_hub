@@ -11,6 +11,7 @@ class FarmerModel {
   final String? profileImageUrl;
   final double? latitude;
   final double? longitude;
+  final bool isSuspended;
   final DateTime? createdAt;
 
   FarmerModel({
@@ -26,6 +27,7 @@ class FarmerModel {
     this.profileImageUrl,
     this.latitude,
     this.longitude,
+    this.isSuspended = false,
     this.createdAt,
   });
 
@@ -45,6 +47,7 @@ class FarmerModel {
       profileImageUrl: map['profileImageUrl'] ?? map['ProfileImageUrl'],
       latitude: map['latitude'] != null ? (map['latitude'] as num).toDouble() : null,
       longitude: map['longitude'] != null ? (map['longitude'] as num).toDouble() : null,
+      isSuspended: map['isSuspended'] ?? false,
       createdAt: map['createdAt'] != null
           ? DateTime.tryParse(map['createdAt'].toString())
           : null,
@@ -65,6 +68,7 @@ class FarmerModel {
       'profileImageUrl': profileImageUrl,
       'latitude': latitude,
       'longitude': longitude,
+      'isSuspended': isSuspended,
       'createdAt':
           createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
     };
@@ -83,6 +87,7 @@ class FarmerModel {
     String? profileImageUrl,
     double? latitude,
     double? longitude,
+    bool? isSuspended,
     DateTime? createdAt,
   }) {
     return FarmerModel(
@@ -98,6 +103,7 @@ class FarmerModel {
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
+      isSuspended: isSuspended ?? this.isSuspended,
       createdAt: createdAt ?? this.createdAt,
     );
   }

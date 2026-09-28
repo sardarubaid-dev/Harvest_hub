@@ -10,6 +10,7 @@ import 'admin_broadcast_screen.dart';
 import 'admin_audit_logs_screen.dart';
 import 'package:harvest_hub/models/user_model.dart';
 import 'package:harvest_hub/models/product_model.dart';
+import 'admin_profile_screen.dart';
 
 
 class AdminDashboardData {
@@ -295,10 +296,15 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
           ],
         ),
         const SizedBox(width: 8),
-        const CircleAvatar(
-          backgroundColor: AppColors.primaryContainer,
-          radius: 16,
-          child: Icon(Icons.person, color: Colors.white, size: 20),
+        GestureDetector(
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminProfileScreen()));
+          },
+          child: const CircleAvatar(
+            backgroundColor: AppColors.primaryContainer,
+            radius: 16,
+            child: Icon(Icons.person, color: Colors.white, size: 20),
+          ),
         ),
       ],
     );
