@@ -239,7 +239,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Text(
-                  '? Step 2 of 2 ?',
+                  'Step 2 of 2 ',
                   style: TextStyle(
                     color: primaryGreen,
                     fontSize: 12,
@@ -338,7 +338,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         controller: _passwordController,
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
-                          hintText: '������������',
+                          hintText: 'password',
                           hintStyle: TextStyle(color: Colors.grey.shade400),
                           prefixIcon: const Icon(
                             Icons.lock_outline,

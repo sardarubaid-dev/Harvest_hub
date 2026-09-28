@@ -8,7 +8,7 @@ import '../../models/product_model.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/wishlist_provider.dart';
 import 'package:provider/provider.dart';
-import 'product_reviews_widget.dart';
+import '../../models/review_model.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Map<String, dynamic>? product;
@@ -871,17 +871,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                           ),
 
-                          const SizedBox(height: 32),
-
-                          // NEW REVIEWS SECTION
-                          if (widget.product != null)
-                            ProductReviewsWidget(
-                              product: ProductModel.fromMap(
-                                widget.product!['id'] ?? '',
-                                widget.product!,
-                              ),
-                            ),
-                          
                           const SizedBox(height: 32),
                         ],
                       ),

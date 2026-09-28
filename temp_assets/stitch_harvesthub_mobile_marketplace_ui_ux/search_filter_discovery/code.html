@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;min-height:100vh;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-secondary-fixed": "#002105", "on-primary-container": "#cbffc2", "tertiary-fixed-dim": "#bdcabe", "inverse-primary": "#88d982", "tertiary-container": "#657167", "outline-variant": "#bfcaba", "on-surface-variant": "#40493d", "on-error-container": "#93000a", "on-primary": "#ffffff", "secondary-fixed-dim": "#83da85", "inverse-surface": "#2d312d", "on-secondary": "#ffffff", "on-tertiary": "#ffffff", "outline": "#707a6c", "on-primary-fixed-variant": "#005312", "surface-container-high": "#e6e9e2", "on-tertiary-fixed-variant": "#3e4a41", "background": "#f7faf3", "error-container": "#ffdad6", "on-tertiary-container": "#e8f5e9", "primary": "#0d631b", "surface-container": "#ecefe8", "secondary-container": "#9cf49c", "primary-fixed": "#a3f69c", "surface-variant": "#e0e3dd", "primary-container": "#2e7d32", "surface": "#f7faf3", "on-secondary-fixed-variant": "#005318", "secondary": "#126d27", "inverse-on-surface": "#eff2eb", "surface-tint": "#1b6d24", "tertiary": "#4d5950", "error": "#ba1a1a", "on-primary-fixed": "#002204", "surface-bright": "#f7faf3", "on-error": "#ffffff", "surface-dim": "#d8dbd4", "primary-fixed-dim": "#88d982", "surface-container-low": "#f2f5ee", "surface-container-lowest": "#ffffff", "on-tertiary-fixed": "#131e17", "surface-container-highest": "#e0e3dd", "on-surface": "#191d19", "secondary-fixed": "#9ff79f", "tertiary-fixed": "#d9e6da", "on-secondary-container": "#19722b", "on-background": "#191d19" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-xl": "2rem", "space-xs": "0.25rem", "margin": "2rem", "gutter": "1.5rem", "space-lg": "1.5rem", "space-sm": "0.5rem", "gutter-mobile": "1rem", "margin-mobile": "1rem", "space-md": "1rem" }, "fontFamily": { "headline-xl-mobile": ["Inter"], "headline-md": ["Inter"], "body-sm": ["Inter"], "label-lg": ["Inter"], "display-lg": ["Inter"], "body-md": ["Inter"], "display-lg-mobile": ["Inter"], "label-sm": ["Inter"], "body-lg": ["Inter"], "label-md": ["Inter"], "headline-xl": ["Inter"], "caption": ["Inter"], "headline-lg": ["Inter"] }, "fontSize": { "headline-xl-mobile": ["26px", { "lineHeight": "34px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }], "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "display-lg-mobile": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.015em", "fontWeight": "700" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.03em", "fontWeight": "600" }], "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "caption": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter-mobile flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="HarvestHub official logo with deep green icon badge featuring clean geometric dual leaf sprout and refined modern typography wordmark" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1WcikHZagj-KoRhjVBDm6at2NOHcXjYnCWepE3lxRCEWD4ObszqsN-UdexcTA_zfxU7522Au2GTuBUkZyv3NGl50YqrmtHvC1xIC_40970fm1M4odMHTlLj3w_QfVaB1Une6uOWCVG8piIUGlG0gn57L6xi5--HTziIL0Eq6bFl3QFTMXSMnbQvNbND9cnByI-HPtqCIlFvCL5jpxLPaqR5dPwilfrk5YbvEFzqsZ6gGZ4Rk6s9UbRUMeM"/><span class="font-headline-md text-headline-md text-primary tracking-tight">HarvestHub</span><span class="font-label-md text-label-md text-on-surface-variant truncate max-w-[120px]">Categories</span></div><div class="flex items-center gap-space-xs"><button aria-label="Search" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined text-[22px]">search</span></button><button aria-label="Notifications" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:text-primary transition-colors relative"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-error"></span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-space-xs"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-24 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- Sticky Search & Quick Controls Section -->
+<section class="sticky top-16 z-30 bg-surface/95 backdrop-blur-md pb-space-sm px-gutter-mobile shadow-[0_4px_20px_rgba(27,31,27,0.05)]">
+<!-- Search Bar with Query & Badged Trigger -->
+<div class="pt-space-xs">
+<div class="flex items-center gap-space-xs bg-surface-container-lowest rounded-xl shadow-sm px-space-md py-2.5">
+<span class="material-symbols-outlined text-primary text-[22px]">search</span>
+<input class="flex-1 min-w-0 bg-transparent font-body-md text-body-md text-on-surface focus:outline-none placeholder:text-outline" id="searchInput" placeholder="Search farm fresh produce..." type="text" value="Organic Tomatoes"/>
+<button aria-label="Clear query" class="w-8 h-8 flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface transition-colors" id="clearSearchBtn">
+<span class="material-symbols-outlined text-[18px]">cancel</span>
+</button>
+<button aria-label="Filter settings" class="relative flex items-center justify-center w-10 h-10 rounded-lg bg-surface-container-high text-primary hover:bg-secondary-container transition-all" id="filterSheetToggle">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+<span class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary text-on-primary font-label-sm text-label-sm flex items-center justify-center shadow-sm">2</span>
+</button>
+</div>
+</div>
+<!-- Recent Searches Pill Trail -->
+<div class="flex items-center gap-1.5 overflow-x-auto py-2 scrollbar-none text-nowrap">
+<span class="font-label-sm text-label-sm text-outline flex items-center gap-0.5 pl-0.5">
+<span class="material-symbols-outlined text-[14px]">history</span> Recent:
+      </span>
+<button class="px-2.5 py-1 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors">Fresh Cow Milk</button>
+<button class="px-2.5 py-1 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors">Raw Honey</button>
+<button class="px-2.5 py-1 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors">Bitter Gourd</button>
+</div>
+<!-- Active Filter Pills Strip -->
+<div class="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none">
+<div class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm shadow-xs">
+<span>Vegetables</span>
+<button class="w-4 h-4 flex items-center justify-center rounded-full hover:bg-primary/20"><span class="material-symbols-outlined text-[12px]">close</span></button>
+</div>
+<div class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm shadow-xs">
+<span>&lt; 5 km</span>
+<button class="w-4 h-4 flex items-center justify-center rounded-full hover:bg-primary/20"><span class="material-symbols-outlined text-[12px]">close</span></button>
+</div>
+<div class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm shadow-xs">
+<span>In Stock Only</span>
+<button class="w-4 h-4 flex items-center justify-center rounded-full hover:bg-primary/20"><span class="material-symbols-outlined text-[12px]">close</span></button>
+</div>
+<button class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm hover:bg-surface-variant transition-colors" id="addFilterBtn">
+<span class="material-symbols-outlined text-[14px]">add</span>
+<span>Filter</span>
+</button>
+</div>
+<!-- Quick Category Horizontal Filter Bar -->
+<div class="flex items-center gap-2 overflow-x-auto pt-2 scrollbar-none">
+<button class="px-3.5 py-1.5 rounded-full font-label-md text-label-md bg-primary text-on-primary shadow-xs whitespace-nowrap">All</button>
+<button class="px-3.5 py-1.5 rounded-full font-label-md text-label-md bg-surface-container text-on-surface-variant hover:bg-surface-container-high whitespace-nowrap">Vegetables</button>
+<button class="px-3.5 py-1.5 rounded-full font-label-md text-label-md bg-surface-container text-on-surface-variant hover:bg-surface-container-high whitespace-nowrap">Fruits</button>
+<button class="px-3.5 py-1.5 rounded-full font-label-md text-label-md bg-surface-container text-on-surface-variant hover:bg-surface-container-high whitespace-nowrap">Dairy &amp; Eggs</button>
+<button class="px-3.5 py-1.5 rounded-full font-label-md text-label-md bg-surface-container text-on-surface-variant hover:bg-surface-container-high whitespace-nowrap">Farm Honey</button>
+<button class="px-3.5 py-1.5 rounded-full font-label-md text-label-md bg-surface-container text-on-surface-variant hover:bg-surface-container-high whitespace-nowrap">Organic Herbs</button>
+<button class="px-3.5 py-1.5 rounded-full font-label-md text-label-md bg-surface-container text-on-surface-variant hover:bg-surface-container-high whitespace-nowrap">Cold Pressed Oils</button>
+</div>
+</section>
+<!-- Sort & Result Count Header Bar -->
+<section class="px-gutter-mobile pt-3 pb-2 flex items-center justify-between">
+<div class="flex items-baseline gap-1.5">
+<span class="font-headline-md text-headline-md text-on-surface font-semibold">6 Matches</span>
+<span class="font-caption text-caption text-outline">near you</span>
+</div>
+<!-- Sort Trigger Dropdown Mock -->
+<div class="relative">
+<button class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container-lowest shadow-sm text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" id="sortDropdownBtn">
+<span class="material-symbols-outlined text-[16px] text-primary">sort</span>
+<span id="sortSelectedLabel">Distance (Nearest First)</span>
+<span class="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+</button>
+<!-- Sort Popover Menu -->
+<div class="hidden absolute right-0 mt-1 w-56 rounded-xl bg-surface-container-lowest shadow-xl z-40 py-1.5 text-on-surface" id="sortMenu">
+<button class="w-full text-left px-3.5 py-2 font-label-md text-label-md flex items-center justify-between text-primary bg-secondary-container/40" onclick="selectSort('Distance (Nearest First)')">
+<span>Distance (Nearest First)</span>
+<span class="material-symbols-outlined text-[16px]">check</span>
+</button>
+<button class="w-full text-left px-3.5 py-2 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container" onclick="selectSort('Price (Low to High)')">
+<span>Price (Low to High)</span>
+</button>
+<button class="w-full text-left px-3.5 py-2 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container" onclick="selectSort('Farmer Rating')">
+<span>Farmer Rating</span>
+</button>
+<button class="w-full text-left px-3.5 py-2 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container" onclick="selectSort('Freshness (Harvested Today)')">
+<span>Freshness (Harvested Today)</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Farmer Match Spotlight Banner -->
+<section class="px-gutter-mobile py-2">
+<div class="relative overflow-hidden rounded-xl bg-gradient-to-r from-primary/10 via-secondary-container/30 to-surface-container-lowest shadow-sm p-4 flex flex-col gap-3">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-3">
+<div class="relative w-12 h-12 rounded-full overflow-hidden bg-surface-container shadow-xs">
+<img class="w-full h-full object-cover" data-alt="Close-up portrait of friendly Pakistani organic farmer Tariq Mehmood wearing traditional agricultural attire with sunlit vegetable fields in background, warm natural lighting and genuine warm smile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDY3ez1uTgX1XU5kgz8xxdof3OalkErEeLFm2iCO3Y5gUkKLR0HNAnidBkbw0MtP-EXZI3D85XSYfiOCiZJKXbFmj0pRtbO9V4P2VFYq0H3MsmEVOlgbqMKj0Y9JYj1GlJs7qbSl8_hoCv8KUwnN_CV7HKVWPeBNP2EPD6-Ju7F83CKkCNTVRKYZ5wR26WIURkqguSbE8q45F0rmlXm7XLQsExg-JLwFtBorYyyIiN5n17LSl3xwt2s"/>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-primary font-bold">Farmer Match</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span class="font-caption text-caption text-outline">Verified Grower</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface leading-tight">Green Valley Farm</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Tariq Mehmood • Malir District</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest px-2 py-1 rounded-md text-primary font-label-sm text-label-sm shadow-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">near_me</span>
+<span>2.4 km</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-1">
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container-lowest text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px] text-primary">eco</span> 14 Active Products
+          </span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-lowest text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px] text-amber-600" style="font-variation-settings: 'FILL' 1;">star</span> 4.9 (142)
+          </span>
+</div>
+<a class="inline-flex items-center gap-1 font-label-md text-label-md text-primary hover:underline" href="#">
+<span>View Farm Profile</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</section>
+<!-- Product Results Grid / Cards List -->
+<section class="px-gutter-mobile py-2 flex flex-col gap-3.5">
+<!-- Card 1: Fresh Beefsteak Tomatoes -->
+<article class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col transition-all hover:shadow-md">
+<div class="relative w-full aspect-[4/3] bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Vibrant cluster of ripe red beefsteak tomatoes freshly harvested with dewdrops on natural wooden farm table, soft morning golden sunlight, authentic organic farming background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCm-mDzGEIDKFTFG2f_j4LlFQsQcls-M0Irb2NHpOnhhGiB-fCkWjLhvCfLsBUp2sXL33a-Xk4GvXBNpsuyP1uipW1ViVFXxLw1HS1v51I0dInTdgTZpnD5Ks5tCI3in0hpqhZUGCl6NA8bNLa4tglAtmz0zgY0CF-Vg69NHJoa-kfHnWmLtYbd5Xj3RARx7AanuvgQnhoJYXXpFq68ubRqnCLKSHpQSojRLF6JR-1sqa2mr2w8kXsq"/>
+<!-- Origin Badge Top Left -->
+<div class="absolute top-2.5 left-2.5 flex items-center gap-1.5 bg-surface-container-lowest/90 backdrop-blur-md px-2.5 py-1 rounded-full shadow-xs">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-label-sm text-label-sm text-primary font-bold">Harvested Yesterday</span>
+</div>
+<!-- Distance Tag Top Right -->
+<div class="absolute top-2.5 right-2.5 bg-inverse-surface/80 text-inverse-on-surface px-2 py-0.5 rounded-full font-label-sm text-label-sm backdrop-blur-xs flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">location_on</span>
+<span>2.4 km</span>
+</div>
+</div>
+<div class="p-3.5 flex flex-col gap-2">
+<div class="flex items-start justify-between gap-2">
+<div class="min-w-0">
+<h4 class="font-headline-md text-headline-md text-on-surface truncate">Fresh Beefsteak Tomatoes</h4>
+<div class="flex items-center gap-1 mt-0.5">
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Green Valley Farm</span>
+<span class="material-symbols-outlined text-primary text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-outline text-caption">• Malir</span>
+</div>
+</div>
+<button aria-label="Add to wishlist" class="w-9 h-9 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+</button>
+</div>
+<div class="flex items-center justify-between pt-1">
+<div class="flex flex-col">
+<div class="flex items-baseline gap-1">
+<span class="font-headline-md text-headline-md font-bold text-primary">Rs. 280</span>
+<span class="font-body-sm text-body-sm text-outline">/ kg</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> In stock (12 kg left)
+            </span>
+</div>
+<button class="inline-flex items-center justify-center gap-1.5 px-4 h-10 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg shadow-xs hover:bg-primary-container active:scale-98 transition-all">
+<span class="material-symbols-outlined text-[18px]">add_shopping_cart</span>
+<span>Add</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Card 2: Organic Cherry Tomatoes -->
+<article class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col transition-all hover:shadow-md">
+<div class="relative w-full aspect-[4/3] bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Sun-ripened organic red and orange cherry tomatoes resting in rustic woven cane basket, natural earthy background, bright daylight highlighting glistening natural texture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNdfXJoHl_3jXTtcJEYKbuKN44R4W4DpJZKu1aNxzAiVv6D8m8zduHYOaZhwtbaxys8cuFPQ8NHqKgi5EriCtqVCuhZzw5vRBVrGnhE1I6zfCpqlcevgDzTcx17jbTZTlpSULt2yZ6Y6oIWIJNjC3M9icP9yMW5SQye-Zp301kleBkMDMr-e_JQ-jCRbl8VQBF_E0WjQvfu6_r6KFci9LiGaQs-X9J8uiDS2UOWtg6q8Vb7S7KQvaI"/>
+<div class="absolute top-2.5 left-2.5 flex items-center gap-1 bg-secondary-container text-on-secondary-container px-2.5 py-1 rounded-full shadow-xs">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+<span class="font-label-sm text-label-sm font-bold">Picked Today 6 AM</span>
+</div>
+<div class="absolute top-2.5 right-2.5 bg-inverse-surface/80 text-inverse-on-surface px-2 py-0.5 rounded-full font-label-sm text-label-sm backdrop-blur-xs flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">location_on</span>
+<span>4.1 km</span>
+</div>
+</div>
+<div class="p-3.5 flex flex-col gap-2">
+<div class="flex items-start justify-between gap-2">
+<div class="min-w-0">
+<h4 class="font-headline-md text-headline-md text-on-surface truncate">Organic Cherry Tomatoes</h4>
+<div class="flex items-center gap-1 mt-0.5">
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Indus Organic Fields</span>
+<span class="material-symbols-outlined text-primary text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-outline text-caption">• Thatta</span>
+</div>
+</div>
+<button aria-label="Add to wishlist" class="w-9 h-9 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+</button>
+</div>
+<div class="flex items-center justify-between pt-1">
+<div class="flex flex-col">
+<div class="flex items-baseline gap-1">
+<span class="font-headline-md text-headline-md font-bold text-primary">Rs. 340</span>
+<span class="font-body-sm text-body-sm text-outline">/ 500g</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> In stock (6 packs)
+            </span>
+</div>
+<button class="inline-flex items-center justify-center gap-1.5 px-4 h-10 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg shadow-xs hover:bg-primary-container active:scale-98 transition-all">
+<span class="material-symbols-outlined text-[18px]">add_shopping_cart</span>
+<span>Add</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Card 3: Hydroponic Spinach -->
+<article class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col transition-all hover:shadow-md">
+<div class="relative w-full aspect-[4/3] bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Lush, ultra-fresh vibrant green hydroponic spinach bundle held gently by clean hands, clean water mist spray droplets, modern organic sustainable indoor greenhouse setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvhGGWP3U1TCm_DlzHFoM_mLQ952QTaG6LSg4e4SlFhP1jDNfrJica6AoK5eEOzj8erC0hEO6RS9Fq3FwgA_cK69dwfu5wA4DCsXKRDhq6P-kemze_NHjZswTu3Dv5rWa4y7PU3ha3X4T6rWN-VL9hoMXAqJoLk64TXnnQIj9WfMO_BHz0vH7MoAxDY2HaD558eqjmzzNDJ0ATX0jNhLBPy05scFpkMRog5KOE1osbygAFl1-E6oxH"/>
+<div class="absolute top-2.5 left-2.5 flex items-center gap-1 bg-surface-container-lowest/90 backdrop-blur-md px-2.5 py-1 rounded-full shadow-xs text-primary font-label-sm text-label-sm font-bold">
+<span class="material-symbols-outlined text-[14px]">pest_control</span>
+<span>Pesticide-Free</span>
+</div>
+<div class="absolute top-2.5 right-2.5 bg-inverse-surface/80 text-inverse-on-surface px-2 py-0.5 rounded-full font-label-sm text-label-sm backdrop-blur-xs flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">location_on</span>
+<span>4.8 km</span>
+</div>
+</div>
+<div class="p-3.5 flex flex-col gap-2">
+<div class="flex items-start justify-between gap-2">
+<div class="min-w-0">
+<h4 class="font-headline-md text-headline-md text-on-surface truncate">Hydroponic Spinach</h4>
+<div class="flex items-center gap-1 mt-0.5">
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Sindh Bio-Greens</span>
+<span class="material-symbols-outlined text-primary text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<button aria-label="Add to wishlist" class="w-9 h-9 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+</button>
+</div>
+<div class="flex items-center justify-between pt-1">
+<div class="flex flex-col">
+<div class="flex items-baseline gap-1">
+<span class="font-headline-md text-headline-md font-bold text-primary">Rs. 160</span>
+<span class="font-body-sm text-body-sm text-outline">/ bunch</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> In stock (18 bunches)
+            </span>
+</div>
+<button class="inline-flex items-center justify-center gap-1.5 px-4 h-10 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg shadow-xs hover:bg-primary-container active:scale-98 transition-all">
+<span class="material-symbols-outlined text-[18px]">add_shopping_cart</span>
+<span>Add</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Card 4: Desi Pure Cow Ghee -->
+<article class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col transition-all hover:shadow-md">
+<div class="relative w-full aspect-[4/3] bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Traditional glass jar of golden homemade desi cow ghee with wooden ladle dripping pure clarified butter, warm amber glow on rustic wooden farm table with earthen kitchenware" src="https://lh3.googleusercontent.com/aida-public/AB6AXuARwYRaRvdzsI9ePmstzH549seM9h_VcAAg7-XwRpV9zg6lNrQZ4n8oU_U6Kw0xXKmh6ZAlRF0afM217snMwMoQmIX-_ZkkgnsZETJoLMxGOm4pZRjuBM2L7Ia9q9zXurXllAmL81CR6VJSqPBxinm8hEjCm5LahaIEg96-RL36sT6i1vJQQSPEqnmgEhMyaTTQZb9K3srYJtuyTWBGH5n3jCQg_kp8sAODdfntFXfPgOmXF1QtI46p"/>
+<div class="absolute top-2.5 left-2.5 flex items-center gap-1 bg-surface-container-lowest/90 backdrop-blur-md px-2.5 py-1 rounded-full shadow-xs text-amber-700 font-label-sm text-label-sm font-bold">
+<span class="material-symbols-outlined text-[14px]">workspace_premium</span>
+<span>A2 Gir Cow</span>
+</div>
+<div class="absolute top-2.5 right-2.5 bg-inverse-surface/80 text-inverse-on-surface px-2 py-0.5 rounded-full font-label-sm text-label-sm backdrop-blur-xs flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">location_on</span>
+<span>6.2 km</span>
+</div>
+</div>
+<div class="p-3.5 flex flex-col gap-2">
+<div class="flex items-start justify-between gap-2">
+<div class="min-w-0">
+<h4 class="font-headline-md text-headline-md text-on-surface truncate">Desi Pure Cow Ghee</h4>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Meadow Dairy Farm</span>
+<span class="material-symbols-outlined text-primary text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<div class="flex items-center gap-0.5 text-amber-600 font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>4.9</span>
+<span class="text-outline text-caption">(88)</span>
+</div>
+</div>
+</div>
+<button aria-label="Add to wishlist" class="w-9 h-9 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+</button>
+</div>
+<div class="flex items-center justify-between pt-1">
+<div class="flex flex-col">
+<div class="flex items-baseline gap-1">
+<span class="font-headline-md text-headline-md font-bold text-primary">Rs. 1,450</span>
+<span class="font-body-sm text-body-sm text-outline">/ 500g</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Slow-churned fresh
+            </span>
+</div>
+<button class="inline-flex items-center justify-center gap-1.5 px-4 h-10 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg shadow-xs hover:bg-primary-container active:scale-98 transition-all">
+<span class="material-symbols-outlined text-[18px]">add_shopping_cart</span>
+<span>Add</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Card 5: Wild Blossom Forest Honey -->
+<article class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col transition-all hover:shadow-md">
+<div class="relative w-full aspect-[4/3] bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Raw unprocessed dark amber wild blossom honey in hexagonal glass jar with raw honeycomb slice beside it, surrounded by fresh eucalyptus blossoms, soft gentle sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5cWfNM19Dyna0DDSGe4X4hfMI1JFWM-L_pxP5VpQOHuLRzPDV3eIk486NHwypDhdT6XulRtmTUcog8eRbpsMZs5DP0kmAk3n6eOhoikxa5uj7Sl8brerQJfoqgFOaQuM6v_uiKfXX-4umezjFfw5k2_Ie_KtU39pBPmycTp6aZ5hVQDnhPkkSGxrdgclOIh9YctGgvF7I12KeQSY2Bj72JRQLAverB2rWzRJCmtOK6jkagRN5URwj"/>
+<div class="absolute top-2.5 left-2.5 flex items-center gap-1 bg-surface-container-lowest/90 backdrop-blur-md px-2.5 py-1 rounded-full shadow-xs text-primary font-label-sm text-label-sm font-bold">
+<span class="material-symbols-outlined text-[14px]">nature</span>
+<span>100% Raw Unfiltered</span>
+</div>
+<div class="absolute top-2.5 right-2.5 bg-inverse-surface/80 text-inverse-on-surface px-2 py-0.5 rounded-full font-label-sm text-label-sm backdrop-blur-xs flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">location_on</span>
+<span>7.5 km</span>
+</div>
+</div>
+<div class="p-3.5 flex flex-col gap-2">
+<div class="flex items-start justify-between gap-2">
+<div class="min-w-0">
+<h4 class="font-headline-md text-headline-md text-on-surface truncate">Wild Blossom Raw Honey</h4>
+<div class="flex items-center gap-1 mt-0.5">
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Potohar Apiaries</span>
+<span class="material-symbols-outlined text-primary text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<button aria-label="Add to wishlist" class="w-9 h-9 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+</button>
+</div>
+<div class="flex items-center justify-between pt-1">
+<div class="flex flex-col">
+<div class="flex items-baseline gap-1">
+<span class="font-headline-md text-headline-md font-bold text-primary">Rs. 950</span>
+<span class="font-body-sm text-body-sm text-outline">/ 350g</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> In stock (8 jars)
+            </span>
+</div>
+<button class="inline-flex items-center justify-center gap-1.5 px-4 h-10 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg shadow-xs hover:bg-primary-container active:scale-98 transition-all">
+<span class="material-symbols-outlined text-[18px]">add_shopping_cart</span>
+<span>Add</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Card 6: Farm Fresh Country Eggs -->
+<article class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col transition-all hover:shadow-md">
+<div class="relative w-full aspect-[4/3] bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Dozen brown free-range country eggs nestled in natural straw egg crate on sunlit farm porch, soft morning breeze, authentic rural poultry agriculture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDypAgNAA5fgzaZXoOrMzEKTnxHi6opb220OpoOq1WprNN_71_nzZ4fRb8zFb99v1Xmli3Rzv-Mmr98kl4a8mNSZfmNlc6An5ulZ3Qg-ecvB6QFnzOJX976O3i6fPEYeKk05Spla51COxACF0WCoWLxf8MnbHFJ4qYsa7iZCfuvEnS1kzcNCfLo74V7lgyHRQxzQdLLJTg0uYlMB9Gesu9tb0hcnajwjg2Wm5DBfQSZOqClmBOqcE7g"/>
+<div class="absolute top-2.5 left-2.5 flex items-center gap-1 bg-surface-container-lowest/90 backdrop-blur-md px-2.5 py-1 rounded-full shadow-xs text-primary font-label-sm text-label-sm font-bold">
+<span class="material-symbols-outlined text-[14px]">egg</span>
+<span>Free-Range Pastured</span>
+</div>
+<div class="absolute top-2.5 right-2.5 bg-inverse-surface/80 text-inverse-on-surface px-2 py-0.5 rounded-full font-label-sm text-label-sm backdrop-blur-xs flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">location_on</span>
+<span>3.6 km</span>
+</div>
+</div>
+<div class="p-3.5 flex flex-col gap-2">
+<div class="flex items-start justify-between gap-2">
+<div class="min-w-0">
+<h4 class="font-headline-md text-headline-md text-on-surface truncate">Desi Free-Range Eggs (Dozen)</h4>
+<div class="flex items-center gap-1 mt-0.5">
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Al-Barakah Farm</span>
+<span class="material-symbols-outlined text-primary text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<button aria-label="Add to wishlist" class="w-9 h-9 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+</button>
+</div>
+<div class="flex items-center justify-between pt-1">
+<div class="flex flex-col">
+<div class="flex items-baseline gap-1">
+<span class="font-headline-md text-headline-md font-bold text-primary">Rs. 420</span>
+<span class="font-body-sm text-body-sm text-outline">/ 12 pcs</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Collected this morning
+            </span>
+</div>
+<button class="inline-flex items-center justify-center gap-1.5 px-4 h-10 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg shadow-xs hover:bg-primary-container active:scale-98 transition-all">
+<span class="material-symbols-outlined text-[18px]">add_shopping_cart</span>
+<span>Add</span>
+</button>
+</div>
+</div>
+</article>
+</section>
+<!-- Delightful Discovery Tip / End Of Results Note -->
+<section class="px-gutter-mobile py-4 mt-2">
+<div class="rounded-xl bg-surface-container p-4 text-center flex flex-col items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">yard</span>
+</div>
+<h5 class="font-headline-md text-headline-md text-on-surface">You've explored all local matches!</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-xs">Looking for something specific? Expand your radius or request seasonal alerts from our growers.</p>
+<button class="mt-1 px-4 py-2 rounded-lg bg-surface-container-lowest text-primary font-label-md text-label-md shadow-xs hover:bg-surface-container-high transition-colors">
+        Broaden Distance to 15 km
+      </button>
+</div>
+</section>
+<!-- Filter Bottom Sheet Drawer Overlay (Toggleable Modal) -->
+<div class="hidden fixed inset-0 z-50 flex flex-col justify-end bg-inverse-surface/40 backdrop-blur-xs" id="filterDrawer">
+<div class="w-full bg-surface-container-lowest rounded-t-2xl shadow-2xl max-h-[751px] flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300">
+<!-- Drawer Header -->
+<div class="flex items-center justify-between px-space-md py-3.5 border-b border-surface-container">
+<div class="flex items-center gap-2">
+<span class="font-headline-md text-headline-md text-on-surface font-semibold">Filter Produce</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">3 Active</span>
+</div>
+<button class="w-9 h-9 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container transition-colors" id="closeDrawerBtn">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Drawer Content -->
+<div class="overflow-y-auto px-space-md py-4 flex flex-col gap-5">
+<!-- Max Distance Slider -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<span class="font-label-lg text-label-lg text-on-surface">Distance Radius</span>
+<span class="font-label-md text-label-md font-bold text-primary" id="distVal">5 km</span>
+</div>
+<input class="w-full accent-primary bg-surface-container rounded-lg h-2" max="30" min="1" oninput="document.getElementById('distVal').innerText = this.value + ' km'" type="range" value="5"/>
+<div class="flex justify-between font-caption text-caption text-outline">
+<span>1 km</span>
+<span>10 km</span>
+<span>30 km</span>
+</div>
+</div>
+<!-- Harvest Recency Options -->
+<div class="flex flex-col gap-2">
+<span class="font-label-lg text-label-lg text-on-surface">Harvest Time</span>
+<div class="grid grid-cols-2 gap-2">
+<label class="flex items-center gap-2 p-2.5 rounded-lg bg-secondary-container/50 cursor-pointer">
+<input checked="" class="accent-primary w-4 h-4" name="harvest_time" type="radio"/>
+<span class="font-body-sm text-body-sm text-on-surface">Within 24 Hours</span>
+</label>
+<label class="flex items-center gap-2 p-2.5 rounded-lg bg-surface-container cursor-pointer">
+<input class="accent-primary w-4 h-4" name="harvest_time" type="radio"/>
+<span class="font-body-sm text-body-sm text-on-surface">Today Only</span>
+</label>
+<label class="flex items-center gap-2 p-2.5 rounded-lg bg-surface-container cursor-pointer">
+<input class="accent-primary w-4 h-4" name="harvest_time" type="radio"/>
+<span class="font-body-sm text-body-sm text-on-surface">Within 3 Days</span>
+</label>
+<label class="flex items-center gap-2 p-2.5 rounded-lg bg-surface-container cursor-pointer">
+<input class="accent-primary w-4 h-4" name="harvest_time" type="radio"/>
+<span class="font-body-sm text-body-sm text-on-surface">Any Harvest Date</span>
+</label>
+</div>
+</div>
+<!-- Farming Practices -->
+<div class="flex flex-col gap-2">
+<span class="font-label-lg text-label-lg text-on-surface">Farming Practices</span>
+<div class="flex flex-wrap gap-2">
+<button class="px-3 py-1.5 rounded-full bg-secondary-container text-on-secondary-container font-label-md text-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">check</span> Certified Organic
+            </button>
+<button class="px-3 py-1.5 rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md">
+              Pesticide-Free
+            </button>
+<button class="px-3 py-1.5 rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md">
+              Hydroponic
+            </button>
+<button class="px-3 py-1.5 rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md">
+              Heritage Seeds
+            </button>
+</div>
+</div>
+<!-- Stock Status Toggle -->
+<div class="flex items-center justify-between py-2">
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface">In Stock Only</span>
+<span class="font-caption text-caption text-outline">Hide sold out harvest batches</span>
+</div>
+<input checked="" class="w-5 h-5 rounded accent-primary cursor-pointer" type="checkbox"/>
+</div>
+</div>
+<!-- Drawer Footer Actions -->
+<div class="p-space-md bg-surface-container-low flex items-center gap-3">
+<button class="flex-1 py-3 rounded-lg bg-surface-container font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high transition-colors" id="resetFilterBtn">
+          Reset All
+        </button>
+<button class="flex-[2] py-3 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg shadow-sm hover:bg-primary-container transition-all" id="applyFilterBtn">
+          Apply Filters (6)
+        </button>
+</div>
+</div>
+</div>
+<!-- Interactive Logic Micro-Script -->
+<script>
+    // Search Clear Interaction
+    const searchInput = document.getElementById('searchInput');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    
+    if (clearSearchBtn && searchInput) {
+      clearSearchBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        searchInput.focus();
+      });
+    }
+
+    // Sort Dropdown Toggle
+    const sortBtn = document.getElementById('sortDropdownBtn');
+    const sortMenu = document.getElementById('sortMenu');
+    
+    if (sortBtn && sortMenu) {
+      sortBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sortMenu.classList.toggle('hidden');
+      });
+
+      document.addEventListener('click', () => {
+        sortMenu.classList.add('hidden');
+      });
+    }
+
+    function selectSort(label) {
+      const selected = document.getElementById('sortSelectedLabel');
+      if (selected) selected.innerText = label;
+      if (sortMenu) sortMenu.classList.add('hidden');
+    }
+
+    // Filter Drawer Bottom Sheet Logic
+    const drawer = document.getElementById('filterDrawer');
+    const openBtn = document.getElementById('filterSheetToggle');
+    const addFilterBtn = document.getElementById('addFilterBtn');
+    const closeBtn = document.getElementById('closeDrawerBtn');
+    const applyBtn = document.getElementById('applyFilterBtn');
+    const resetBtn = document.getElementById('resetFilterBtn');
+
+    function toggleDrawer(open) {
+      if (!drawer) return;
+      if (open) {
+        drawer.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      } else {
+        drawer.classList.add('hidden');
+        document.body.style.overflow = '';
+      }
+    }
+
+    if (openBtn) openBtn.addEventListener('click', () => toggleDrawer(true));
+    if (addFilterBtn) addFilterBtn.addEventListener('click', () => toggleDrawer(true));
+    if (closeBtn) closeBtn.addEventListener('click', () => toggleDrawer(false));
+    if (applyBtn) applyBtn.addEventListener('click', () => toggleDrawer(false));
+    if (resetBtn) resetBtn.addEventListener('click', () => toggleDrawer(false));
+
+    if (drawer) {
+      drawer.addEventListener('click', (e) => {
+        if (e.target === drawer) toggleDrawer(false);
+      });
+    }
+  </script>
+</div></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-2px_12px_rgba(0,0,0,0.05)]" data-active-classes="text-primary font-label-md"><div class="flex justify-around items-center h-16 px-space-xs"><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] py-1 text-on-surface-variant hover:text-primary transition-colors" data-path="home" href="#"><span class="material-symbols-outlined text-[24px]">storefront</span><span class="font-label-sm text-label-sm mt-0.5">Home</span></a><a aria-current="page" class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] py-1 transition-colors text-primary font-label-md" data-path="categories" href="#"><span class="material-symbols-outlined text-[24px]">grid_view</span><span class="font-label-sm text-label-sm mt-0.5">Categories</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] py-1 text-on-surface-variant hover:text-primary transition-colors" data-path="wishlist" href="#"><span class="material-symbols-outlined text-[24px]">favorite</span><span class="font-label-sm text-label-sm mt-0.5">Wishlist</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] py-1 text-on-surface-variant hover:text-primary transition-colors" data-path="orders" href="#"><span class="material-symbols-outlined text-[24px]">receipt_long</span><span class="font-label-sm text-label-sm mt-0.5">Orders</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] py-1 text-on-surface-variant hover:text-primary transition-colors" data-path="profile" href="#"><span class="material-symbols-outlined text-[24px]">account_circle</span><span class="font-label-sm text-label-sm mt-0.5">Profile</span></a></div></nav></body></html>

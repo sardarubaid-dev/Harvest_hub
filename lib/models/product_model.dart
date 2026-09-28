@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class ProductModel {
   final String id;
   final String farmerId;
@@ -15,9 +17,10 @@ class ProductModel {
   final String? farmerName;
   final String? marketName;
   final DateTime? createdAt;
-  final double averageRating;
-  final int totalReviews;
-  final Map<String, int> ratingBreakdown;
+
+  // New fields for Deals of the Day
+  final double? originalPrice;
+  final bool isDealOfTheDay;
 
   ProductModel({
     required this.id,
@@ -31,84 +34,61 @@ class ProductModel {
     required this.quantity,
     this.imageUrl,
     this.imageUrls,
-    required this.isAvailable,
+    this.isAvailable = true,
     this.isOrganic = false,
     this.farmerName,
     this.marketName,
     this.createdAt,
-    this.averageRating = 0.0,
-    this.totalReviews = 0,
-    this.ratingBreakdown = const {'5': 0, '4': 0, '3': 0, '2': 0, '1': 0},
+    this.originalPrice,
+    this.isDealOfTheDay = false,
   });
 
   factory ProductModel.fromMap(String id, Map<String, dynamic> map) {
     return ProductModel(
       id: id,
       farmerId: map['farmerId'] ?? map['Farmer_Id'] ?? '',
-      categoryId:
-          map['categoryId'] ??
-          map['Category_Id'] ??
-          map['category'] ??
-          map['Category'] ??
-          '',
-      categoryName: map['categoryName'] ?? map['Category'] ?? '',
-      name: map['name'] ?? map['Item_Name'] ?? map['itemName'] ?? '',
+      categoryId: map['categoryId'] ?? map['Category_Id'] ?? '',
+      categoryName: map['categoryName'] ?? '',
+      name: map['name'] ?? map['Name'] ?? '',
       description: map['description'] ?? map['Description'] ?? '',
-      price: (map['price'] ?? map['Price_Per_Unit'] ?? map['pricePerUnit'] ?? 0)
-          .toDouble(),
+      price: (map['price'] ?? map['Price'] ?? 0).toDouble(),
       unit: map['unit'] ?? map['Unit'] ?? 'kg',
-      quantity: (map['quantity'] ?? map['Stock_Qty'] ?? map['stockQty'] ?? 0)
-          .toDouble(),
+      quantity: (map['quantity'] ?? map['Quantity'] ?? 0).toDouble(),
       imageUrl: map['imageUrl'] ?? map['Image_Url'],
-      imageUrls: map['imageUrls'] != null 
-          ? (map['imageUrls'] as List).where((e) => e != null).map((e) => e.toString()).toList()
-          : (map['imageUrl'] != null ? [map['imageUrl'].toString()] : null),
-      isAvailable:
-          map['isAvailable'] ??
-          ((map['quantity'] ?? map['Stock_Qty'] ?? 0) > 0),
-      isOrganic: map['isOrganic'] ?? false,
-      farmerName: map['farmerName'] ?? map['Farmer_Name'],
-      marketName: map['marketName'] ?? map['Market_Name'],
+      imageUrls: map['imageUrls'] != null ? List<String>.from(map['imageUrls']) : null,
+      isAvailable: map['isAvailable'] ?? map['Is_Available'] ?? true,
+      isOrganic: map['isOrganic'] ?? map['Is_Organic'] ?? false,
+      farmerName: map['farmerName'],
+      marketName: map['marketName'],
       createdAt: map['createdAt'] != null
-          ? DateTime.tryParse(map['createdAt'].toString())
+          ? (map['createdAt'] is Timestamp
+              ? (map['createdAt'] as Timestamp).toDate()
+              : DateTime.tryParse(map['createdAt'].toString()) ?? DateTime.now())
           : null,
-      averageRating: (map['averageRating'] ?? 0.0).toDouble(),
-      totalReviews: (map['totalReviews'] ?? 0).toInt(),
-      ratingBreakdown: map['ratingBreakdown'] != null 
-          ? Map<String, int>.from(map['ratingBreakdown'])
-          : {'5': 0, '4': 0, '3': 0, '2': 0, '1': 0},
+      originalPrice: map['originalPrice'] != null ? (map['originalPrice'] as num).toDouble() : null,
+      isDealOfTheDay: map['isDealOfTheDay'] ?? false,
     );
   }
-
-
 
   Map<String, dynamic> toMap() {
     return {
       'farmerId': farmerId,
-      'Farmer_Id': farmerId,
       'categoryId': categoryId,
       'categoryName': categoryName,
-      'Category': categoryName.isNotEmpty ? categoryName : categoryId,
       'name': name,
-      'Item_Name': name,
       'description': description,
       'price': price,
-      'Price_Per_Unit': price,
       'unit': unit,
       'quantity': quantity,
-      'Stock_Qty': quantity,
       'imageUrl': imageUrl,
-      'Image_Url': imageUrl,
       'imageUrls': imageUrls,
-      'isAvailable': isAvailable && quantity > 0,
+      'isAvailable': isAvailable,
       'isOrganic': isOrganic,
       'farmerName': farmerName,
       'marketName': marketName,
-      'createdAt':
-          createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
-      'averageRating': averageRating,
-      'totalReviews': totalReviews,
-      'ratingBreakdown': ratingBreakdown,
+      'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : FieldValue.serverTimestamp(),
+      'originalPrice': originalPrice,
+      'isDealOfTheDay': isDealOfTheDay,
     };
   }
 
@@ -129,9 +109,6 @@ class ProductModel {
     String? farmerName,
     String? marketName,
     DateTime? createdAt,
-    double? averageRating,
-    int? totalReviews,
-    Map<String, int>? ratingBreakdown,
   }) {
     return ProductModel(
       id: id ?? this.id,
@@ -149,10 +126,8 @@ class ProductModel {
       isOrganic: isOrganic ?? this.isOrganic,
       farmerName: farmerName ?? this.farmerName,
       marketName: marketName ?? this.marketName,
+
       createdAt: createdAt ?? this.createdAt,
-      averageRating: averageRating ?? this.averageRating,
-      totalReviews: totalReviews ?? this.totalReviews,
-      ratingBreakdown: ratingBreakdown ?? this.ratingBreakdown,
     );
   }
 }
