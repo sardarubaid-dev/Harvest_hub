@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'cart_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/auth_interceptor.dart';
 import '../../models/product_model.dart';
 import '../../providers/cart_provider.dart';
+import '../../providers/wishlist_provider.dart';
+import '../../providers/wishlist_provider.dart';
 import '../../services/database_service.dart';
 import 'product_detail_screen.dart';
 
@@ -48,6 +52,44 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
           style: const TextStyle(color: darkText, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const Icon(Icons.shopping_bag_outlined, color: darkText),
+                Consumer<CartProvider>(
+                  builder: (context, cart, child) {
+                    if (cart.itemCount == 0) return const SizedBox.shrink();
+                    return Positioned(
+                      top: -4,
+                      right: -4,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF2E7D32),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          '${cart.itemCount}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen()));
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: StreamBuilder<List<ProductModel>>(
         stream: _productsStream,
@@ -58,7 +100,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
 
           final rawProducts = snapshot.data ?? [];
           final filteredProducts = rawProducts.where((p) {
-            return p.widget.categoryName.toLowerCase().contains(widget.categoryName.toLowerCase());
+            return p.categoryName.toLowerCase().contains(widget.categoryName.toLowerCase());
           }).toList();
 
           final products = filteredProducts.map((p) {
@@ -66,7 +108,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
               'productModel': p,
               'id': p.id,
               'title': p.name,
-              'category': p.widget.categoryName.isNotEmpty ? p.widget.categoryName.toUpperCase() : 'PRODUCE',
+              'category': p.categoryName.isNotEmpty ? p.categoryName.toUpperCase() : 'PRODUCE',
               'farmerName': p.farmerName ?? 'Green Valley Farm',
               'price': p.price.toStringAsFixed(0),
               'unit': '/ ${p.unit}',
@@ -167,24 +209,31 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                                   right: 8,
                                   child: GestureDetector(
                                     onTap: () {
-                                      AuthInterceptor.executeAction(context, () {});
-                                    },
-                                    child: Container(
-                                      padding: const EdgeInsets.all(6),
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
+                                        AuthInterceptor.executeAction(context, () {
+                                          final id = data['id']?.toString();
+                                          if (id != null) {
+                                            Provider.of<WishlistProvider>(context, listen: false).toggleWishlist(id);
+                                          }
+                                        });
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Consumer<WishlistProvider>(
+                                          builder: (context, wishlistProvider, _) {
+                                            final id = data['id']?.toString();
+                                            final isFav = id != null && wishlistProvider.isFavorite(id);
+                                            return Icon(
+                                              isFav ? Icons.favorite : Icons.favorite_border,
+                                              size: 16,
+                                              color: isFav ? Colors.red : const Color(0xFF6B7280),
+                                            );
+                                          },
+                                        ),
                                       ),
-                                      child: Icon(
-                                        data['isFavorite']
-                                            ? Icons.favorite
-                                            : Icons.favorite_border,
-                                        size: 16,
-                                        color: data['isFavorite']
-                                            ? Colors.red
-                                            : const Color(0xFF6B7280),
-                                      ),
-                                    ),
                                   ),
                                 ),
                                 Positioned(
@@ -200,7 +249,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
-                                      data['stockBadge'],
+                                      data['stockBadge'].toString(),
                                       style: const TextStyle(
                                         fontSize: 9,
                                         fontWeight: FontWeight.bold,
@@ -218,7 +267,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      data['category'].toString(),
+                                      data['category'].toString().toString(),
                                       style: const TextStyle(
                                         fontSize: 9,
                                         fontWeight: FontWeight.bold,
@@ -228,7 +277,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      data['title'].toString(),
+                                      data['title'].toString().toString(),
                                       style: const TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
@@ -242,7 +291,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                                       children: [
                                         Expanded(
                                           child: Text(
-                                            data['farmerName'].toString(),
+                                            data['farmerName'].toString().toString(),
                                             style: const TextStyle(
                                               fontSize: 10,
                                               color: Color(0xFF4B5563),
@@ -279,7 +328,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                                                   CrossAxisAlignment.end,
                                               children: [
                                                 Text(
-                                                  'Rs. ${data['price'].toString()}',
+                                                  'Rs. ${data['price'].toString().toString()}',
                                                   style: const TextStyle(
                                                     fontSize: 13,
                                                     fontWeight: FontWeight.bold,
@@ -287,7 +336,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                                                   ),
                                                 ),
                                                 Text(
-                                                  data['unit'].toString(),
+                                                  data['unit'].toString().toString(),
                                                   style: const TextStyle(
                                                     fontSize: 9,
                                                     color: greyText,
@@ -300,7 +349,23 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                                         GestureDetector(
                                           onTap: () {
                                             AuthInterceptor.executeAction(context, () {
-                                              Provider.of<CartProvider>(context, listen: false).addItem(data['productModel']);
+                                              final user = FirebaseAuth.instance.currentUser;
+                                                if (user != null) {
+                                                  final p = data['productModel'] as ProductModel;
+                                                  DatabaseService().addToCart(
+                                                    uid: user.uid,
+                                                    product: {
+                                                      'id': p.id,
+                                                      'title': p.name,
+                                                      'price': p.price,
+                                                      'unit': p.unit,
+                                                      'imageUrl': p.imageUrl ?? '',
+                                                      'farmerName': p.farmerName ?? '',
+                                                      'farmerId': p.farmerId,
+                                                    },
+                                                    quantityDelta: 1,
+                                                  );
+                                                }
                                             });
                                           },
                                           child: Container(

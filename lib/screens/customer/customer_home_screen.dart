@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../providers/wishlist_provider.dart';
 
 import '../../widgets/harvi_avatar.dart';
 import 'chatbot_screen.dart';
@@ -18,7 +20,7 @@ import '../../providers/cart_provider.dart';
 import '../../services/database_service.dart';
 import '../../services/location_service.dart';
 import '../../core/auth_interceptor.dart';
-import '../../providers/auth_provider.dart';
+import '../../providers/auth_provider.dart' as app_auth;
 import 'product_detail_screen.dart';
 import 'categories_screen.dart';
 import 'products_screen.dart';
@@ -169,7 +171,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
   String? get _currentUid {
     try {
-      final authProv = Provider.of<AuthProvider>(context, listen: false);
+      final authProv = Provider.of<app_auth.AuthProvider>(context, listen: false);
       if (authProv.currentUser != null && authProv.currentUser!.uid.isNotEmpty) {
         return authProv.currentUser!.uid;
       }
@@ -381,13 +383,30 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   }
 
   void _addToCart(Map<String, dynamic> product) {
-    AuthInterceptor.executeAction(context, () {
-      if (product['model'] != null) {
-        Provider.of<CartProvider>(context, listen: false).addItem(product['model'] as ProductModel);
+    AuthInterceptor.executeAction(context, () async {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final unitStr = product['unit']?.toString().replaceAll('/ ', '') ?? 'unit';
+        final priceRaw = product['price']?.toString() ?? '0';
+        final doublePrice = double.tryParse(priceRaw) ?? 0.0;
+        await DatabaseService().addToCart(
+          uid: user.uid,
+          product: {
+            'id': product['id']?.toString() ?? '',
+            'title': product['title']?.toString() ?? '',
+            'price': doublePrice,
+            'unit': unitStr,
+            'imageUrl': product['imageUrl']?.toString() ?? '',
+            'farmerName': product['farmerName']?.toString() ?? '',
+            'farmerId': product['farmerId']?.toString() ?? '',
+          },
+          quantityDelta: 1,
+        );
       }
+      if (!mounted) return;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Added to Cart!')));
+          .showSnackBar(SnackBar(content: Text('Added ${product['title'] ?? 'item'} to Cart!')));
     });
   }
 
@@ -416,7 +435,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
+    final authProvider = Provider.of<app_auth.AuthProvider>(context);
     final userName = authProvider.currentUser?.name ?? 'Guest User';
 
     const Color primaryGreen = Color(0xFF2E7D32);
@@ -497,30 +516,53 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
           fontWeight: FontWeight.w600,
           fontSize: 10,
         ),
-        items: const [
-          BottomNavigationBarItem(
+        items: [
+          const BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
             activeIcon: Icon(Icons.home),
             label: 'Home',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.storefront_outlined),
             activeIcon: Icon(Icons.storefront),
             label: 'Products',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.grid_view),
             label: 'Categories',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite_border),
+            icon: Consumer<WishlistProvider>(
+              builder: (context, wishlist, _) {
+                if (wishlist.wishlistIds.isEmpty) {
+                  return const Icon(Icons.favorite_border);
+                }
+                return Badge(
+                  label: Text(wishlist.wishlistIds.length.toString()),
+                  backgroundColor: Colors.red,
+                  child: const Icon(Icons.favorite_border),
+                );
+              },
+            ),
+            activeIcon: Consumer<WishlistProvider>(
+              builder: (context, wishlist, _) {
+                if (wishlist.wishlistIds.isEmpty) {
+                  return const Icon(Icons.favorite);
+                }
+                return Badge(
+                  label: Text(wishlist.wishlistIds.length.toString()),
+                  backgroundColor: Colors.red,
+                  child: const Icon(Icons.favorite),
+                );
+              },
+            ),
             label: 'Wishlist',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.receipt_long),
             label: 'Orders',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             label: 'Profile',
           ),
@@ -1548,7 +1590,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
                     // Unit & Farmer
                     Text(
-                      '${deal['unit']} • ${deal['farmerName']}',
+                      '${deal['unit']} - ${deal['farmerName']}',
                       style: TextStyle(
                         fontSize: 11,
                         color: greyText,
@@ -2272,28 +2314,37 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                   ),
                 ),
                 Positioned(
-                  top: 8,
-                  right: 8,
-                  child: GestureDetector(
-                    onTap: onFavoriteTap,
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        data['isFavorite']
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        size: 16,
-                        color: data['isFavorite']
-                            ? Colors.red
-                            : const Color(0xFF6B7280),
+                    top: 8,
+                    right: 8,
+                    child: GestureDetector(
+                      onTap: () {
+                        AuthInterceptor.executeAction(context, () {
+                          final id = data['id']?.toString();
+                          if (id != null) {
+                            Provider.of<WishlistProvider>(context, listen: false).toggleWishlist(id);
+                          }
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Consumer<WishlistProvider>(
+                          builder: (context, wishlistProvider, _) {
+                            final id = data['id']?.toString();
+                            final isFav = id != null && wishlistProvider.isFavorite(id);
+                            return Icon(
+                              isFav ? Icons.favorite : Icons.favorite_border,
+                              size: 16,
+                              color: isFav ? Colors.red : const Color(0xFF6B7280),
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ),
-                ),
                 Positioned(
                   bottom: 8,
                   left: 8,

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
 
 import '../../widgets/harvi_avatar.dart';
 
@@ -24,13 +22,19 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   bool _isLoading = false;
   HarviExpression _expression = HarviExpression.greeting;
 
-  late final GenerativeModel _model;
-  late final ChatSession _chatSession;
+  final Map<String, String> _qaDictionary = {
+    'hello': 'Hello! I am Harvi, your AI Farm Assistant. How can I help you?',
+    'hi': 'Hi there! What farming or product questions do you have?',
+    'how to store tomatoes': 'Store tomatoes at room temperature away from direct sunlight. Do not refrigerate them as it affects their flavor and texture.',
+    'how to store potatoes': 'Store potatoes in a cool, dark, and well-ventilated place. Keep them away from onions to prevent them from sprouting too quickly.',
+    'what is organic farming': 'Organic farming relies on natural principles like composting and crop rotation, without synthetic fertilizers or pesticides.',
+    'best season for apples': 'Apples are typically best harvested in late summer through autumn.',
+    'default': 'I am currently operating in offline demo mode. I can answer basic questions like "how to store tomatoes" or "what is organic farming".'
+  };
 
   @override
   void initState() {
     super.initState();
-    _initGemini();
 
     _messages.add(
       ChatMessage(
@@ -48,18 +52,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     });
   }
 
-  void _initGemini() {
-    final apiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
-    _model = GenerativeModel(
-      model: 'gemini-3.8-flash',
-      apiKey: apiKey,
-      systemInstruction: Content.system(
-        "You are Harvi, an expert AI Farm Products Assistant for the HarvestHub app. You help customers with questions about fruits, vegetables, agriculture, nutrition, seasonal produce, and storage tips. Keep your answers concise, friendly, and use emojis like ??, ??, etc. Do not answer questions completely unrelated to food, farming, or the HarvestHub marketplace. When asked about yourself, introduce yourself as Harvi.",
-      ),
-    );
-    _chatSession = _model.startChat();
-  }
-
   Future<void> _sendMessage() async {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
@@ -72,9 +64,20 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     _controller.clear();
     _scrollToBottom();
 
-    try {
-      final response = await _chatSession.sendMessage(Content.text(text));
+    // Simulated network delay
+    await Future.delayed(const Duration(seconds: 1));
 
+    String lowercaseText = text.toLowerCase();
+    String responseText = _qaDictionary['default']!;
+
+    for (var key in _qaDictionary.keys) {
+      if (key != 'default' && lowercaseText.contains(key)) {
+        responseText = _qaDictionary[key]!;
+        break;
+      }
+    }
+
+    if (mounted) {
       setState(() {
         _expression = HarviExpression.talking;
       });
@@ -83,26 +86,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         if (mounted) setState(() => _expression = HarviExpression.idle);
       });
 
-      if (response.text != null) {
-        setState(() {
-          _messages.add(ChatMessage(text: response.text!, isUser: false));
-          _isLoading = false;
-        });
-        _scrollToBottom();
-      }
-    } catch (e) {
       setState(() {
-        _expression = HarviExpression.error;
-        _messages.add(
-          ChatMessage(
-            text: "Oops! My internet roots got tangled. Try again!",
-            isUser: false,
-          ),
-        );
+        _messages.add(ChatMessage(text: responseText, isUser: false));
         _isLoading = false;
-      });
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) setState(() => _expression = HarviExpression.idle);
       });
       _scrollToBottom();
     }

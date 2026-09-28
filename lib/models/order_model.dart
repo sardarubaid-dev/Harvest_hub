@@ -62,6 +62,7 @@ class OrderModel {
   final String? marketId;
   final String status;
   final String paymentMethod;
+  final String? deliveryAddress;
   final String? cancellationReason;
   final DateTime createdAt;
 
@@ -78,6 +79,7 @@ class OrderModel {
     this.marketId,
     required this.status,
     required this.paymentMethod,
+    this.deliveryAddress,
     this.cancellationReason,
     required this.createdAt,
   });
@@ -132,6 +134,8 @@ class OrderModel {
       'status': status,
       'Status': status,
       'paymentMethod': paymentMethod,
+      'deliveryAddress': deliveryAddress,
+      'Delivery_Address': deliveryAddress,
       'cancellationReason': cancellationReason,
       'createdAt': createdAt.toIso8601String(),
     };
@@ -150,6 +154,7 @@ class OrderModel {
     String? marketId,
     String? status,
     String? paymentMethod,
+    String? deliveryAddress,
     String? cancellationReason,
     DateTime? createdAt,
   }) {
@@ -166,6 +171,7 @@ class OrderModel {
       marketId: marketId ?? this.marketId,
       status: status ?? this.status,
       paymentMethod: paymentMethod ?? this.paymentMethod,
+      deliveryAddress: deliveryAddress ?? this.deliveryAddress,
       cancellationReason: cancellationReason ?? this.cancellationReason,
       createdAt: createdAt ?? this.createdAt,
     );

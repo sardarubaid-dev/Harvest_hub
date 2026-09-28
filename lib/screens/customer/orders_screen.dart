@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'order_detail_screen.dart';
+import 'order_detail_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -198,8 +201,8 @@ class OrdersScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: background,
-      body: StreamBuilder<List<OrderModel>>(
-        stream: dbService.streamCustomerOrders(customerId),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance.collection('orders').where('customerId', isEqualTo: customerId).snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting &&
               !snapshot.hasData) {
@@ -208,7 +211,8 @@ class OrdersScreen extends StatelessWidget {
             );
           }
 
-          final orders = snapshot.data ?? [];
+          final orderDocs = snapshot.data?.docs ?? [];
+          final orders = orderDocs.map((doc) => OrderModel.fromMap(doc.id, doc.data() as Map<String, dynamic>)).toList();
 
           if (orders.isEmpty) {
             return Center(
@@ -293,8 +297,17 @@ class OrdersScreen extends StatelessWidget {
                   ? order.items.first.imageUrl
                   : null;
 
-              return Container(
-                margin: const EdgeInsets.only(bottom: 16.0),
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => OrderDetailScreen(order: order),
+                    ),
+                  ).then((_) {});
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 16.0),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -454,7 +467,14 @@ class OrdersScreen extends StatelessWidget {
                           ],
                         ),
                         GestureDetector(
-                          onTap: () => _showOrderDetailsSheet(context, order),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => OrderDetailScreen(order: order),
+                              ),
+                            );
+                          },
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,
@@ -478,7 +498,8 @@ class OrdersScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-              );
+              ),
+            );
             },
           );
         },
@@ -486,3 +507,5 @@ class OrdersScreen extends StatelessWidget {
     );
   }
 }
+
+

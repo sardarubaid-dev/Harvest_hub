@@ -1,14 +1,8 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/cart_provider.dart';
-import '../../models/order_model.dart';
-import '../../models/market_model.dart';
-import '../../models/pickup_slot_model.dart';
-import '../../providers/auth_provider.dart' as app_auth;
-import '../../services/database_service.dart';
+import 'checkout_screen.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({Key? key}) : super(key: key);
@@ -18,222 +12,29 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  final DatabaseService _dbService = DatabaseService();
-  StreamSubscription<List<Map<String, dynamic>>>? _cartSub;
-  StreamSubscription<List<MarketModel>>? _marketsSub;
-  StreamSubscription<List<PickupSlotModel>>? _slotsSub;
-
-  List<Map<String, dynamic>> _cartItems = [];
-  List<MarketModel> _markets = [];
-  List<PickupSlotModel> _pickupSlots = [];
-  int _selectedSlot = 0;
-  bool _isPlacingOrder = false;
-
-  String? get _currentUid {
-    final fbUid = FirebaseAuth.instance.currentUser?.uid;
-    if (fbUid != null && fbUid.isNotEmpty) return fbUid;
-    try {
-      final authProv = Provider.of<app_auth.AuthProvider>(context, listen: false);
-      return authProv.currentUser?.uid;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _cartItems = [];
-    _subscribeToFirestoreCart();
-    _subscribeToMarketsAndSlots();
-  }
-
-  void _subscribeToFirestoreCart() {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    _cartSub = _dbService.streamCart(uid).listen((items) {
-      if (!mounted) return;
-      setState(() {
-        _cartItems = items;
-      });
-    });
-  }
-
-  void _subscribeToMarketsAndSlots() {
-    _marketsSub = _dbService.streamMarkets().listen((markets) {
-      if (!mounted) return;
-      setState(() {
-        _markets = markets;
-      });
-      if (markets.isNotEmpty) {
-        _slotsSub?.cancel();
-        _slotsSub = _dbService.streamPickupSlots(markets.first.id).listen((slots) {
-          if (!mounted) return;
-          setState(() {
-            _pickupSlots = slots;
-          });
-        });
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _cartSub?.cancel();
-    _marketsSub?.cancel();
-    _slotsSub?.cancel();
-    super.dispose();
-  }
-
-  Future<void> _removeFromCart(int index) async {
-    if (index < 0 || index >= _cartItems.length) return;
-    final item = _cartItems[index];
-    final String prodId = (item['id'] ?? '').toString();
-    final String title = (item['title'] ?? '').toString();
-
-    setState(() {
-      _cartItems.removeAt(index);
-    });
-
-    await _dbService.removeFromCart(
-      uid: _currentUid,
-      productId: prodId,
-      title: title,
-    );
-
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Item removed from cart'),
-        duration: Duration(seconds: 1),
-      ),
-    );
-  }
-
-  Future<void> _updateQuantity(int index, int delta) async {
-    if (index < 0 || index >= _cartItems.length) return;
-    final item = _cartItems[index];
-    final int currentQty = (item['quantity'] is num)
-        ? (item['quantity'] as num).toInt()
-        : 1;
-    final int newQuantity = currentQty + delta;
-    if (newQuantity <= 0) {
-      await _removeFromCart(index);
-      return;
-    }
-
-    setState(() {
-      _cartItems[index]['quantity'] = newQuantity;
-    });
-
-    await _dbService.updateCartItemQuantity(
-      uid: _currentUid,
-      productId: (item['id'] ?? '').toString(),
-      title: (item['title'] ?? '').toString(),
-      newQuantity: newQuantity,
-    );
-  }
-
-  int get _itemsTotal {
+  int _calculateItemsTotal(List<dynamic> items) {
     int total = 0;
-    for (var item in _cartItems) {
-      int price = int.tryParse(
-            item['price'].toString().replaceAll(RegExp(r'[^0-9]'), ''),
-          ) ??
-          0;
+    for (var item in items) {
+      double priceDouble = double.tryParse(item['price']?.toString().replaceAll(RegExp(r'[^0-9.]'), '') ?? '0') ?? 0.0;
+      int price = priceDouble.toInt();
       int qty = (item['quantity'] is num) ? (item['quantity'] as num).toInt() : 1;
       total += (price * qty);
     }
     return total;
   }
 
-  Future<void> _handleConfirmOrder(int totalPayable) async {
-    if (_cartItems.isEmpty || _isPlacingOrder) return;
-
-    setState(() {
-      _isPlacingOrder = true;
-    });
-
-    try {
-      final authProv = Provider.of<app_auth.AuthProvider>(context, listen: false);
-      final user = authProv.currentUser;
-      final String customerId = user?.uid ?? FirebaseAuth.instance.currentUser?.uid ?? 'guest_customer';
-      final String customerName = (user != null && user.name.trim().isNotEmpty)
-          ? user.name
-          : (FirebaseAuth.instance.currentUser?.displayName ?? 'Customer');
-      final String customerPhone = (user?.phone != null && user!.phone!.trim().isNotEmpty)
-          ? user.phone!
-          : '0300-0000000';
-
-      final List<OrderItem> orderItems = _cartItems.map((item) {
-        final double price = double.tryParse(
-              item['price'].toString().replaceAll(RegExp(r'[^0-9.]'), ''),
-            ) ??
-            0.0;
-        final double qty = (item['quantity'] is num)
-            ? (item['quantity'] as num).toDouble()
-            : 1.0;
-        return OrderItem(
-          productId: (item['id'] ?? '').toString(),
-          farmerId: (item['farmerId'] ?? '').toString(),
-          productName: (item['title'] ?? 'Produce').toString(),
-          price: price,
-          quantity: qty,
-          unit: (item['unit'] ?? 'kg').toString().replaceAll('/', '').trim(),
-          imageUrl: (item['imageUrl'] ?? '').toString(),
-        );
-      }).toList();
-
-      final List<String> slotLabels = _pickupSlots.isNotEmpty
-          ? _pickupSlots.map((s) => '${s.date} (${s.startTime} - ${s.endTime})').toList()
-          : [
-              'Today (09:00 AM - 12:00 PM)',
-              'Today (04:00 PM - 07:00 PM)',
-              'Tomorrow (09:00 AM - 12:00 PM)',
-            ];
-      final String selectedSlotLabel =
-          slotLabels[_selectedSlot.clamp(0, slotLabels.length - 1)];
-      final String? selectedMarketId =
-          _markets.isNotEmpty ? _markets.first.id : 'karachi_farmers_market';
-
-      await _dbService.placeOrder(
-        customerId: customerId,
-        customerName: customerName,
-        customerPhone: customerPhone,
-        items: orderItems,
-        totalAmount: totalPayable.toDouble(),
-        pickupSlotId: _pickupSlots.isNotEmpty && _selectedSlot < _pickupSlots.length
-            ? _pickupSlots[_selectedSlot].id
-            : 'slot_${_selectedSlot + 1}',
-        pickupSlotTime: selectedSlotLabel,
-        marketId: selectedMarketId,
-      );
-
-      await _dbService.clearCart(_currentUid);
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Order placed and saved to database successfully!'),
-          backgroundColor: Color(0xFF2E7D32),
+  void _proceedToCheckout(List<dynamic> items, int total) {
+    if (items.isEmpty) return;
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CheckoutScreen(
+          cartItems: items,
+          totalAmount: total,
         ),
-      );
-      Navigator.pop(context);
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString().replaceAll('Exception: ', '')),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isPlacingOrder = false;
-        });
-      }
-    }
+      ),
+    );
   }
 
   @override
@@ -241,1181 +42,247 @@ class _CartScreenState extends State<CartScreen> {
     const Color primaryGreen = Color(0xFF2E7D32);
     const Color darkText = Color(0xFF1F2937);
     const Color greyText = Color(0xFF6B7280);
-    const Color background = Color(0xFFF9FBF9);
 
-    final cartProvider = Provider.of<CartProvider>(context);
-    final cartItems = cartProvider.items.values.toList();
-    final _itemsTotal = cartProvider.totalAmount.toInt();
-
-    int totalPayable = _itemsTotal > 0
-        ? _itemsTotal + 20
-        : 0; 
+    final cartProv = Provider.of<CartProvider>(context);
+    final items = cartProv.items;
+    final total = _calculateItemsTotal(items);
 
     return Scaffold(
-      backgroundColor: background,
+      backgroundColor: const Color(0xFFF9FBF9),
       body: SafeArea(
         child: Column(
           children: [
-            
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 12.0,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back, color: darkText),
-                    onPressed: () => Navigator.pop(context),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: primaryGreen,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Icon(
-                          Icons.eco,
-                          color: Colors.white,
-                          size: 16,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            'HarvestHub',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: darkText,
-                              height: 1.0,
-                            ),
-                          ),
-                          Text(
-                            'LOCAL FARM MARKETPLACE',
-                            style: TextStyle(
-                              fontSize: 6,
-                              fontWeight: FontWeight.bold,
-                              color: greyText,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const Text(
-                    'Cart...',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: darkText,
-                    ),
-                  ),
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: const BoxDecoration(
-                      color: primaryGreen,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.person,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
             Expanded(
               child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE8F5E9),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: const BoxDecoration(
-                                color: primaryGreen,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.eco,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Harvested fresh today from local Sindh growers',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                      color: primaryGreen,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Zero storage transit • Handled with clean orga...',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: primaryGreen.withOpacity(0.8),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const Icon(
-                              Icons.verified_outlined,
-                              color: primaryGreen,
-                              size: 20,
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Items in Basket',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: darkText,
-                            ),
-                          ),
-                          Text(
-                            '${_cartItems.length} local items',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: primaryGreen,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-
-                      if (_cartItems.isEmpty)
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(32.0),
-                            child: Column(
-                              children: [
-                                Icon(
-                                  Icons.shopping_basket_outlined,
-                                  size: 48,
-                                  color: Colors.grey[300],
-                                ),
-                                const SizedBox(height: 16),
-                                const Text(
-                                  'Your basket is empty',
-                                  style: TextStyle(color: greyText),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      else
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: _cartItems.length,
-                          itemBuilder: (context, index) {
-                            final item = _cartItems[index];
-                            final int qty = (item['quantity'] is num)
-                                ? (item['quantity'] as num).toInt()
-                                : 1;
-                            final int unitPrice =
-                                int.tryParse(item['price'].toString()) ?? 0;
-                            final int rowTotal = unitPrice * qty;
-
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.02),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  
-                                  Stack(
-                                    children: [
-                                      Container(
-                                        width: 72,
-                                        height: 72,
-                                        decoration: BoxDecoration(
-                                          color: Colors.green[100],
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                        ),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                          child:
-                                              (item['imageUrl']?.isNotEmpty ?? false)
-                                              ? Image.network(
-                                                  item['imageUrl'] ?? '',
-                                                  fit: BoxFit.cover,
-                                                  width: double.infinity,
-                                                  height: double.infinity,
-                                                )
-                                              : Center(
-                                                  child: Icon(
-                                                    Icons.image,
-                                                    color: Colors.black
-                                                        .withOpacity(0.2),
-                                                  ),
-                                                ),
-                                        ),
-                                      ),
-                                      Positioned(
-                                        top: 4,
-                                        left: 4,
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 6,
-                                            vertical: 2,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white.withOpacity(
-                                              0.9,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                          ),
-                                          child: Row(
-                                            children: const [
-                                              Icon(
-                                                Icons.eco_outlined,
-                                                size: 8,
-                                                color: primaryGreen,
-                                              ),
-                                              SizedBox(width: 2),
-                                              Text(
-                                                'Organic',
-                                                style: TextStyle(
-                                                  fontSize: 8,
-                                                  color: primaryGreen,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                '${item['title']} (${item['unit'].replaceAll('/', '').trim()})',
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 14,
-                                                  color: darkText,
-                                                ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                            GestureDetector(
-                                              onTap: () =>
-                                                  _removeFromCart(item['id']),
-                                              child: const Icon(
-                                                Icons.delete_outline,
-                                                size: 20,
-                                                color: greyText,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Row(
-                                          children: [
-                                            const Icon(
-                                              Icons.local_shipping_outlined,
-                                              size: 12,
-                                              color: primaryGreen,
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Expanded(
-                                              child: Text(
-                                                'From ${item['farmerName']}',
-                                                style: const TextStyle(
-                                                  fontSize: 11,
-                                                  color: greyText,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  'Rs. $rowTotal',
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.w800,
-                                                    fontSize: 16,
-                                                    color: primaryGreen,
-                                                  ),
-                                                ),
-                                                if (qty > 1)
-                                                  Text(
-                                                    '(Rs. $unitPrice each)',
-                                                    style: const TextStyle(
-                                                      fontSize: 9,
-                                                      color: greyText,
-                                                    ),
-                                                  ),
-                                              ],
-                                            ),
-                                            Container(
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFFF9FBF9),
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                                border: Border.all(
-                                                  color: const Color(
-                                                    0xFFE5E7EB,
-                                                  ),
-                                                ),
-                                              ),
-                                              child: Row(
-                                                children: [
-                                                  InkWell(
-                                                    onTap: () =>
-                                                        _updateQuantity(index, -1),
-                                                    child: const Padding(
-                                                      padding:
-                                                          EdgeInsets.symmetric(
-                                                            horizontal: 8,
-                                                            vertical: 4,
-                                                          ),
-                                                      child: Icon(
-                                                        Icons.remove,
-                                                        size: 16,
-                                                        color: darkText,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    '$qty',
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 14,
-                                                      color: darkText,
-                                                    ),
-                                                  ),
-                                                  InkWell(
-                                                    onTap: () =>
-                                                        _updateQuantity(index, 1),
-                                                    child: const Padding(
-                                                      padding:
-                                                          EdgeInsets.symmetric(
-                                                            horizontal: 8,
-                                                            vertical: 4,
-                                                          ),
-                                                      child: Icon(
-                                                        Icons.add,
-                                                        size: 16,
-                                                        color: darkText,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-
-                      const SizedBox(height: 24),
-
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.02),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Column(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(6),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFF3F4F6),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: const Icon(
-                                        Icons.calendar_today_outlined,
-                                        size: 16,
-                                        color: primaryGreen,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    const Text(
-                                      'Pickup Slot Selection',
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                        color: darkText,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFE5E7EB),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Text(
-                                    'Today, Oct 24',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: darkText,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'Available collection windows:',
-                              style: TextStyle(fontSize: 12, color: greyText),
-                            ),
-                            const SizedBox(height: 12),
-
-                            GestureDetector(
-                              onTap: () => setState(() => _selectedSlot = 0),
-                              child: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: _selectedSlot == 0
-                                      ? const Color(0xFFE8F5E9)
-                                      : Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: _selectedSlot == 0
-                                        ? primaryGreen.withOpacity(0.3)
-                                        : Colors.transparent,
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      _selectedSlot == 0
-                                          ? Icons.check_circle
-                                          : Icons.circle_outlined,
-                                      color: _selectedSlot == 0
-                                          ? primaryGreen
-                                          : Colors.grey[300],
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const Text(
-                                            '5:30 PM — 6:00 PM',
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.bold,
-                                              color: darkText,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            'Recommended • Farmer crates arrive by 5:15 PM',
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              color: primaryGreen.withOpacity(
-                                                0.8,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    if (_selectedSlot == 0)
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                        ),
-                                        child: const Text(
-                                          'SELECTED',
-                                          style: TextStyle(
-                                            fontSize: 9,
-                                            fontWeight: FontWeight.bold,
-                                            color: darkText,
-                                          ),
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            
-                            GestureDetector(
-                              onTap: () => setState(() => _selectedSlot = 1),
-                              child: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: _selectedSlot == 1
-                                      ? const Color(0xFFE8F5E9)
-                                      : const Color(0xFFF9FBF9),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      _selectedSlot == 1
-                                          ? Icons.check_circle
-                                          : Icons.circle_outlined,
-                                      color: _selectedSlot == 1
-                                          ? primaryGreen
-                                          : Colors.grey[300],
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: const [
-                                          Text(
-                                            '6:00 PM — 6:30 PM',
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.bold,
-                                              color: darkText,
-                                            ),
-                                          ),
-                                          SizedBox(height: 2),
-                                          Text(
-                                            'Evening collection',
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              color: greyText,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    if (_selectedSlot == 1)
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                        ),
-                                        child: const Text(
-                                          'SELECTED',
-                                          style: TextStyle(
-                                            fontSize: 9,
-                                            fontWeight: FontWeight.bold,
-                                            color: darkText,
-                                          ),
-                                        ),
-                                      )
-                                    else
-                                      const Text(
-                                        'Open',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: greyText,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF3F4F6),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Icon(
-                                    Icons.location_on_outlined,
-                                    size: 16,
-                                    color: primaryGreen,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          'Karachi Farmers Market - Stall 14B & Hub Counter',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.bold,
-                                            color: darkText,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        const Text(
-                                          'Plot 12-C, Khayaban-e-Seher, Phase 6, DHA, Karachi',
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            color: greyText,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Row(
-                                          children: const [
-                                            Icon(
-                                              Icons.directions_outlined,
-                                              size: 12,
-                                              color: primaryGreen,
-                                            ),
-                                            SizedBox(width: 4),
-                                            Text(
-                                              'Open in navigation map',
-                                              style: TextStyle(
-                                                fontSize: 10,
-                                                color: primaryGreen,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.02),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(6),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFF3F4F6),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: const Icon(
-                                        Icons.contact_mail_outlined,
-                                        size: 16,
-                                        color: primaryGreen,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    const Text(
-                                      'Pickup Contact Details',
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                        color: darkText,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const Text(
-                                  'Edit',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: primaryGreen,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: const [
-                                Icon(
-                                  Icons.person_outline,
-                                  size: 18,
-                                  color: darkText,
-                                ),
-                                SizedBox(width: 12),
-                                Text(
-                                  'Ubaid Rehman • +92 300 1234567',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: darkText,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Icon(
-                                  Icons.chat_bubble_outline,
-                                  size: 18,
-                                  color: darkText,
+                                  Icons.eco,
+                                  color: primaryGreen,
+                                  size: 16,
                                 ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        'Pickup Contact: Notification will be sent via SMS when packed',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: darkText,
-                                          height: 1.3,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Row(
-                                        children: const [
-                                          CircleAvatar(
-                                            radius: 3,
-                                            backgroundColor: primaryGreen,
-                                          ),
-                                          SizedBox(width: 4),
-                                          Text(
-                                            'SMS order PIN code will be required at counter',
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              color: primaryGreen,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.02),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF3F4F6),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(
-                                    Icons.receipt_long_outlined,
-                                    size: 16,
-                                    color: primaryGreen,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'Bill Breakdown',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: darkText,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  'Items Total',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: darkText,
-                                  ),
-                                ),
-                                Text(
-                                  'Rs. $_itemsTotal',
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: darkText,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: const [
-                                    Text(
-                                      'Marketplace Service Fee',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color: darkText,
-                                      ),
-                                    ),
-                                    SizedBox(width: 4),
-                                    Icon(
-                                      Icons.info_outline,
-                                      size: 12,
-                                      color: greyText,
-                                    ),
-                                  ],
-                                ),
-                                const Text(
-                                  'Rs. 20',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: darkText,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  'Farmer Packaging (Bio-Crates)',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: darkText,
-                                  ),
-                                ),
+                                const SizedBox(width: 4),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
+                                    horizontal: 6,
                                     vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFE8F5E9),
-                                    borderRadius: BorderRadius.circular(12),
+                                    color: primaryGreen.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: const Text(
-                                    'FREE',
+                                    'HARVEST HUB',
                                     style: TextStyle(
-                                      fontSize: 10,
+                                      fontSize: 6,
                                       fontWeight: FontWeight.bold,
-                                      color: primaryGreen,
+                                      color: greyText,
+                                      letterSpacing: 0.5,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF9FBF9),
-                                borderRadius: BorderRadius.circular(8),
+                            const Text(
+                              'Cart',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: darkText,
                               ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: const [
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    if (items.isEmpty)
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(32.0),
+                          child: Text('Your cart is empty', style: TextStyle(color: greyText)),
+                        ),
+                      )
+                    else
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: items.length,
+                        itemBuilder: (context, index) {
+                          final item = items[index];
+                          final int qty = (item['quantity'] is num)
+                              ? (item['quantity'] as num).toInt()
+                              : 1;
+                          final int unitPrice = (double.tryParse(item['price']?.toString().replaceAll(RegExp(r'[^0-9.]'), '') ?? '0') ?? 0.0).toInt();
+                          final int rowTotal = unitPrice * qty;
+
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.02),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(
+                                    item['imageUrl'] ?? 'https://via.placeholder.com/80',
+                                    width: 80,
+                                    height: 80,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) =>
+                                        Container(
+                                      width: 80,
+                                      height: 80,
+                                      color: Colors.grey[200],
+                                      child: const Icon(
+                                        Icons.image_not_supported,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
                                       Text(
-                                        'Total Payable at Pickup',
-                                        style: TextStyle(
-                                          fontSize: 13,
+                                        item['name'] ?? 'Product',
+                                        style: const TextStyle(
                                           fontWeight: FontWeight.bold,
+                                          fontSize: 16,
                                           color: darkText,
                                         ),
                                       ),
-                                      SizedBox(height: 2),
+                                      const SizedBox(height: 4),
                                       Text(
-                                        'Inclusive of all local hub surcharges',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          color: greyText,
+                                        'Rs. $unitPrice / ${item['unit'] ?? 'kg'}',
+                                        style: const TextStyle(
+                                          color: primaryGreen,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
                                         ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            'Qty: $qty',
+                                            style: const TextStyle(color: greyText),
+                                          ),
+                                          Text(
+                                            'Rs. $rowTotal',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                              color: darkText,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                  Text(
-                                    'Rs. $totalPayable',
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w900,
-                                      color: primaryGreen,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          ],
+                          );
+                        },
+                      ),
+                    const SizedBox(height: 32),
+                  ],
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, -5),
+                  ),
+                ],
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(32),
+                  topRight: Radius.circular(32),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Total Amount',
+                        style: TextStyle(
+                          color: greyText,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-
-                      const SizedBox(height: 24),
-
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE8F5E9),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: const BoxDecoration(
-                                color: primaryGreen,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.money,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: const [
-                                  Text(
-                                    'Pay on Pickup Guaranteed',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: darkText,
-                                    ),
-                                  ),
-                                  SizedBox(height: 4),
-                                  Text(
-                                    'No advance online payment required. Pay farmer directly via Cash or QR upon collecting fresh produce.',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: darkText,
-                                      height: 1.3,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                      Text(
+                        'Rs. $total',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: primaryGreen,
                         ),
                       ),
-
-                      const SizedBox(height: 100), 
                     ],
                   ),
-                ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: items.isEmpty ? null : () => _proceedToCheckout(items, total),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryGreen,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Proceed to Checkout',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
       ),
-      
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: _cartItems.isNotEmpty
-          ? Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF9FBF9),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    blurRadius: 20,
-                    spreadRadius: 10,
-                    offset: const Offset(0, -10),
-                  ),
-                ],
-              ),
-              child: SizedBox(
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: _isPlacingOrder
-                      ? null
-                      : () => _handleConfirmOrder(totalPayable),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryGreen,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: _isPlacingOrder
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Row(
-                              children: [
-                                Icon(Icons.check_circle_outline, size: 20),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Confirm Pickup Order',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Text(
-                              '• Rs. $totalPayable',
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                ),
-              ),
-            )
-          : null,
     );
   }
 }

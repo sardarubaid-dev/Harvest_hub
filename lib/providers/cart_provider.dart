@@ -1,89 +1,52 @@
 import 'package:flutter/foundation.dart';
-
-import '../models/product_model.dart';
-import '../models/cart_item_model.dart';
-import '../models/order_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CartProvider with ChangeNotifier {
-  final Map<String, CartItemModel> _items = {};
+  List<dynamic> _cartItems = [];
 
-  Map<String, CartItemModel> get items => {..._items};
+  List<dynamic> get items => _cartItems;
+  int get itemCount => _cartItems.length;
 
-  int get itemCount => _items.length;
-
-  double get totalAmount {
-    double total = 0.0;
-    _items.forEach((key, cartItem) {
-      total += cartItem.subtotal;
-    });
-    return total;
-  }
-
-  void addItem(ProductModel product, {double quantity = 1.0}) {
-    if (product.quantity <= 0) return;
-
-    if (_items.containsKey(product.id)) {
-      double currentQty = _items[product.id]!.quantity;
-      double newQty = currentQty + quantity;
-      if (newQty > product.quantity) {
-        newQty = product.quantity;
+  CartProvider() {
+    FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user != null) {
+        _subscribeToCart(user.uid);
+      } else {
+        _cartItems = [];
+        notifyListeners();
       }
-      _items.update(
-        product.id,
-        (existing) => CartItemModel(product: product, quantity: newQty),
-      );
-    } else {
-      double initialQty = quantity > product.quantity
-          ? product.quantity
-          : quantity;
-      _items.putIfAbsent(
-        product.id,
-        () => CartItemModel(product: product, quantity: initialQty),
-      );
-    }
-    notifyListeners();
+    });
   }
 
-  void updateQuantity(String productId, double quantity) {
-    if (!_items.containsKey(productId)) return;
+  String? _currentUid;
 
-    if (quantity <= 0) {
-      _items.remove(productId);
-    } else {
-      CartItemModel item = _items[productId]!;
-      double maxAllowed = item.product.quantity;
-      double finalQty = quantity > maxAllowed ? maxAllowed : quantity;
-
-      _items.update(
-        productId,
-        (existing) =>
-            CartItemModel(product: existing.product, quantity: finalQty),
-      );
-    }
-    notifyListeners();
+  void _subscribeToCart(String uid) {
+    _currentUid = uid;
+    FirebaseFirestore.instance
+        .collection('carts')
+        .doc(uid)
+        .snapshots()
+        .listen((doc) {
+      if (doc.exists) {
+        _cartItems = List<dynamic>.from(doc.data()?['items'] ?? []);
+        notifyListeners();
+      } else {
+        _cartItems = [];
+        notifyListeners();
+      }
+    });
   }
 
-  void removeItem(String productId) {
-    _items.remove(productId);
+  Future<void> clearCart() async {
+    final uid = _currentUid ?? FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    await FirebaseFirestore.instance.collection('carts').doc(uid).set({
+      'userId': uid,
+      'items': [],
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+    _cartItems = [];
     notifyListeners();
-  }
-
-  void clearCart() {
-    _items.clear();
-    notifyListeners();
-  }
-
-  List<OrderItem> toOrderItems() {
-    return _items.values.map((item) {
-      return OrderItem(
-        productId: item.product.id,
-        farmerId: item.product.farmerId,
-        productName: item.product.name,
-        price: item.product.price,
-        quantity: item.quantity,
-        unit: item.product.unit,
-        imageUrl: item.product.imageUrl,
-      );
-    }).toList();
   }
 }

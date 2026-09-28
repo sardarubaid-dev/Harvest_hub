@@ -362,7 +362,7 @@ class DatabaseService {
     }
   }
 
-  Future<OrderModel> placeOrder({
+  Future<void> placeOrder({
     required String customerId,
     required String customerName,
     required String customerPhone,
@@ -371,25 +371,20 @@ class DatabaseService {
     String? pickupSlotId,
     String? pickupSlotTime,
     String? marketId,
+    String? deliveryAddress,
   }) async {
     for (var item in items) {
-      DocumentSnapshot productDoc = await _productsRef
-          .doc(item.productId)
-          .get();
+      DocumentSnapshot productDoc = await _productsRef.doc(item.productId).get();
       if (productDoc.exists) {
         double currentStock = (productDoc.get('quantity') ?? 0).toDouble();
         if (currentStock < item.quantity) {
-          throw Exception(
-            "Insufficient stock for ${item.productName}. Available: $currentStock",
-          );
+          throw Exception("Insufficient stock for ${item.productName}. Available: $currentStock");
         }
       }
     }
 
     for (var item in items) {
-      DocumentSnapshot productDoc = await _productsRef
-          .doc(item.productId)
-          .get();
+      DocumentSnapshot productDoc = await _productsRef.doc(item.productId).get();
       if (productDoc.exists) {
         double currentStock = (productDoc.get('quantity') ?? 0).toDouble();
         double newStock = currentStock - item.quantity;
@@ -397,49 +392,57 @@ class DatabaseService {
       }
     }
 
-    String primaryFarmerId = items.isNotEmpty ? items.first.farmerId : '';
+    Map<String, List<OrderItem>> groupedItems = {};
+    for (var item in items) {
+      String fId = item.farmerId.isNotEmpty ? item.farmerId : 'unknown_farmer';
+      groupedItems.putIfAbsent(fId, () => []).add(item);
+    }
 
-    DocumentReference orderRef = _ordersRef.doc();
-    OrderModel newOrder = OrderModel(
-      id: orderRef.id,
-      customerId: customerId,
-      customerName: customerName,
-      customerPhone: customerPhone,
-      farmerId: primaryFarmerId,
-      items: items,
-      totalAmount: totalAmount,
-      pickupSlotId: pickupSlotId,
-      pickupSlotTime: pickupSlotTime,
-      marketId: marketId,
-      status: 'Pending',
-      paymentMethod: 'Simulated Cash on Pickup',
-      createdAt: DateTime.now(),
-    );
+    for (var entry in groupedItems.entries) {
+      String farmerId = entry.key;
+      List<OrderItem> farmerItems = entry.value;
+      
+      double farmerTotal = 0;
+      for (var item in farmerItems) {
+        farmerTotal += (item.price * item.quantity);
+      }
 
-    await orderRef.set(newOrder.toMap());
+      DocumentReference orderRef = _ordersRef.doc();
+      OrderModel newOrder = OrderModel(
+        id: orderRef.id,
+        customerId: customerId,
+        customerName: customerName,
+        customerPhone: customerPhone,
+        farmerId: farmerId,
+        items: farmerItems,
+        totalAmount: farmerTotal,
+        pickupSlotId: pickupSlotId,
+        pickupSlotTime: pickupSlotTime,
+        marketId: marketId,
+        deliveryAddress: deliveryAddress,
+        status: 'Pending',
+        paymentMethod: deliveryAddress != null && deliveryAddress.isNotEmpty ? 'Cash on Delivery' : 'Simulated Cash on Pickup',
+        createdAt: DateTime.now(),
+      );
+      await orderRef.set(newOrder.toMap());
 
-    await sendNotification(
-      userId: customerId,
-      title: "Order Placed Successfully! ",
-      message:
-          "Your order #${newOrder.id.substring(0, 6)} totaling \$${totalAmount.toStringAsFixed(2)} has been placed.",
-      type: "order_status",
-    );
-
-    if (primaryFarmerId.isNotEmpty) {
-      FarmerModel? farmer = await getFarmerById(primaryFarmerId);
+      FarmerModel? farmer = await getFarmerById(farmerId);
       if (farmer != null) {
         await sendNotification(
           userId: farmer.userId,
-          title: "New Order Received! ",
-          message:
-              "You have a new order #${newOrder.id.substring(0, 6)} for \$${totalAmount.toStringAsFixed(2)}.",
+          title: "New Order Received!",
+          message: "You have a new order #${newOrder.id.substring(0, 6)}.",
           type: "order_status",
         );
       }
     }
 
-    return newOrder;
+    await sendNotification(
+      userId: customerId,
+      title: "Orders Placed Successfully!",
+      message: "Your orders have been split by farmer and placed successfully.",
+      type: "order_status",
+    );
   }
 
   Stream<List<OrderModel>> streamCustomerOrders(String customerId) {
@@ -520,7 +523,7 @@ class DatabaseService {
     }
   }
 
-  Stream<List<PickupSlotModel>> streamPickupSlots(String marketId) {
+  Stream<List<PickupSlotModel>> streamPickupSlots({required String marketId, String? farmerId}) {
     return _pickupSlotsRef
         .where('marketId', isEqualTo: marketId)
         .snapshots()
@@ -851,5 +854,9 @@ class DatabaseService {
       'items': <Map<String, dynamic>>[],
     });
   }
+  Stream<List<NotificationModel>> streamNotifications(String userId) {
+    return FirebaseFirestore.instance.collection('notifications').where('userId', isEqualTo: userId).orderBy('createdAt', descending: true).snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) => NotificationModel.fromMap(doc.id, doc.data() as Map<String, dynamic>)).toList();
+    });
+  }
 }
-

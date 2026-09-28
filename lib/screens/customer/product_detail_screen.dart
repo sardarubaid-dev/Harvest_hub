@@ -6,6 +6,7 @@ import '../../services/database_service.dart';
 import 'farmer_profile_screen.dart';
 import '../../models/product_model.dart';
 import '../../providers/cart_provider.dart';
+import '../../providers/wishlist_provider.dart';
 import 'package:provider/provider.dart';
 
 class ProductDetailScreen extends StatefulWidget {
@@ -20,17 +21,17 @@ class ProductDetailScreen extends StatefulWidget {
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int _quantity = 1;
   late int _pricePerUnit;
-  bool _isFavorite = false;
+  
 
   @override
   void initState() {
     super.initState();
     
     final p = widget.product;
-    _pricePerUnit = p != null
-        ? int.tryParse(p['price'].toString()) ?? 280
+    _pricePerUnit = widget.product != null
+        ? int.tryParse(widget.product?['price']?.toString() ?? '280') ?? 280
         : 280;
-    _isFavorite = p != null ? (p['isFavorite'] ?? false) : false;
+    
   }
 
   void _increment() {
@@ -43,6 +44,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final p = widget.product;
     const Color primaryGreen = Color(0xFF2E7D32);
     const Color darkText = Color(0xFF1F2937);
     const Color greyText = Color(0xFF6B7280);
@@ -170,23 +172,32 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           right: 16,
                           child: GestureDetector(
                             onTap: () => AuthInterceptor.executeAction(
-                              context,
-                              () => setState(() => _isFavorite = !_isFavorite),
-                            ),
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
+                                context,
+                                () {
+                                  final id = p != null ? p['id']?.toString() : null;
+                                  if (id != null) {
+                                    Provider.of<WishlistProvider>(context, listen: false).toggleWishlist(id);
+                                  }
+                                },
                               ),
-                              child: Icon(
-                                _isFavorite
-                                    ? Icons.favorite
-                                    : Icons.favorite_border,
-                                color: _isFavorite ? Colors.red : darkText,
-                                size: 20,
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Consumer<WishlistProvider>(
+                                  builder: (context, wishlistProvider, _) {
+                                    final id = p != null ? p['id']?.toString() : null;
+                                    final isFav = id != null && wishlistProvider.isFavorite(id);
+                                    return Icon(
+                                      isFav ? Icons.favorite : Icons.favorite_border,
+                                      color: isFav ? Colors.red : darkText,
+                                      size: 20,
+                                    );
+                                  },
+                                ),
                               ),
-                            ),
                           ),
                         ),
                         Positioned(

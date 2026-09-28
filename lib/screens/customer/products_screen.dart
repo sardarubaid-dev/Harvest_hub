@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/auth_interceptor.dart';
 
 import '../../models/category_model.dart';
 import '../../models/product_model.dart';
 import '../../services/database_service.dart';
 import '../../providers/cart_provider.dart';
+import '../../providers/wishlist_provider.dart';
 import 'package:provider/provider.dart';
 import 'product_detail_screen.dart';
 
@@ -375,11 +377,23 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                         GestureDetector(
                                           onTap: () {
                                             AuthInterceptor.executeAction(context, () async {
-                                              await _dbService.addToCart(
-                                                uid: null,
-                                                product: data,
-                                                quantityDelta: 1,
-                                              );
+                                              final user = FirebaseAuth.instance.currentUser;
+                                              if (user != null) {
+                                                final p = data['productModel'] as ProductModel;
+                                                await _dbService.addToCart(
+                                                  uid: user.uid,
+                                                  product: {
+                                                    'id': p.id,
+                                                    'title': p.name,
+                                                    'price': p.price,
+                                                    'unit': p.unit,
+                                                    'imageUrl': p.imageUrl ?? '',
+                                                    'farmerName': p.farmerName ?? '',
+                                                    'farmerId': p.farmerId,
+                                                  },
+                                                  quantityDelta: 1,
+                                                );
+                                              }
                                               if (!context.mounted) return;
                                               ScaffoldMessenger.of(context).hideCurrentSnackBar();
                                               ScaffoldMessenger.of(context).showSnackBar(
