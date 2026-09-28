@@ -655,4 +655,201 @@ class DatabaseService {
     await _reviewsRef.doc(reviewId).delete();
   }
 
+  Stream<List<ReviewModel>> streamAllReviews() {
+    return _reviewsRef.snapshots().map((snapshot) {
+      List<ReviewModel> reviews = snapshot.docs
+          .map(
+            (doc) => ReviewModel.fromMap(
+              doc.id,
+              doc.data() as Map<String, dynamic>,
+            ),
+          )
+          .toList();
+      reviews.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return reviews;
+    });
+  }
+
+  // ===========================================================================
+  // FULL-STACK FIRESTORE CART SYSTEM ('carts' collection in Firestore)
+  // ===========================================================================
+
+  CollectionReference get _cartsRef => _firestore.collection('carts');
+
+  String _resolveCartDocId(String? uid) {
+    if (uid != null && uid.trim().isNotEmpty) {
+      return uid.trim();
+    }
+    return 'guest_cart';
+  }
+
+  Map<String, dynamic> _sanitizeCartItemForFirestore(Map<String, dynamic> raw) {
+    Color? imgColor = raw['imageColor'] is Color ? raw['imageColor'] as Color : null;
+    return {
+      'id': (raw['id'] ?? raw['title'] ?? '').toString(),
+      'title': (raw['title'] ?? raw['name'] ?? 'Fresh Produce').toString(),
+      'category': (raw['category'] ?? 'PRODUCE').toString(),
+      'farmerId': (raw['farmerId'] ?? '').toString(),
+      'farmerName': (raw['farmerName'] ?? 'Verified Local Farm').toString(),
+      'price': (raw['price'] ?? '0').toString().replaceAll(RegExp(r'[^0-9.]'), ''),
+      'unit': (raw['unit'] ?? '/ kg').toString(),
+      'quantity': (raw['quantity'] is num) ? (raw['quantity'] as num).toInt() : 1,
+      'imageUrl': (raw['imageUrl'] ?? '').toString(),
+      'stockBadge': (raw['stockBadge'] ?? 'In Stock').toString(),
+      'colorValue': imgColor != null ? imgColor.toARGB32() : 0xFFA5D6A7,
+    };
+  }
+
+  Map<String, dynamic> _hydrateCartItemFromFirestore(Map<String, dynamic> data) {
+    final int colorVal = (data['colorValue'] is int)
+        ? data['colorValue'] as int
+        : 0xFFA5D6A7;
+    return {
+      'id': (data['id'] ?? data['title'] ?? '').toString(),
+      'title': (data['title'] ?? 'Fresh Produce').toString(),
+      'category': (data['category'] ?? 'PRODUCE').toString(),
+      'farmerId': (data['farmerId'] ?? '').toString(),
+      'farmerName': (data['farmerName'] ?? 'Verified Local Farm').toString(),
+      'price': (data['price'] ?? '0').toString(),
+      'unit': (data['unit'] ?? '/ kg').toString(),
+      'quantity': (data['quantity'] is num) ? (data['quantity'] as num).toInt() : 1,
+      'imageUrl': (data['imageUrl'] ?? '').toString(),
+      'stockBadge': (data['stockBadge'] ?? 'In Stock').toString(),
+      'imageColor': Color(colorVal),
+    };
+  }
+
+  Stream<List<Map<String, dynamic>>> streamCart(String? uid) {
+    final String docId = _resolveCartDocId(uid);
+    return _cartsRef.doc(docId).snapshots().map((doc) {
+      if (!doc.exists || doc.data() == null) {
+        return <Map<String, dynamic>>[];
+      }
+      final Map<String, dynamic> map = doc.data() as Map<String, dynamic>;
+      final List<dynamic> rawList = (map['items'] as List<dynamic>?) ?? [];
+      return rawList
+          .whereType<Map>()
+          .map((e) => _hydrateCartItemFromFirestore(Map<String, dynamic>.from(e)))
+          .toList();
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getCartOnce(String? uid) async {
+    final String docId = _resolveCartDocId(uid);
+    final doc = await _cartsRef.doc(docId).get();
+    if (!doc.exists || doc.data() == null) return [];
+    final Map<String, dynamic> map = doc.data() as Map<String, dynamic>;
+    final List<dynamic> rawList = (map['items'] as List<dynamic>?) ?? [];
+    return rawList
+        .whereType<Map>()
+        .map((e) => _hydrateCartItemFromFirestore(Map<String, dynamic>.from(e)))
+        .toList();
+  }
+
+  Future<void> addToCart({
+    required String? uid,
+    required Map<String, dynamic> product,
+    int quantityDelta = 1,
+  }) async {
+    final String docId = _resolveCartDocId(uid);
+    final DocumentReference docRef = _cartsRef.doc(docId);
+    final DocumentSnapshot snap = await docRef.get();
+
+    List<Map<String, dynamic>> currentItems = [];
+    if (snap.exists && snap.data() != null) {
+      final Map<String, dynamic> data = snap.data() as Map<String, dynamic>;
+      final List<dynamic> raw = (data['items'] as List<dynamic>?) ?? [];
+      currentItems = raw
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+    }
+
+    final Map<String, dynamic> sanitized = _sanitizeCartItemForFirestore(product);
+    final String targetId = sanitized['id'].toString();
+    final String targetTitle = sanitized['title'].toString();
+
+    final int existingIndex = currentItems.indexWhere(
+      (item) =>
+          (targetId.isNotEmpty && item['id'].toString() == targetId) ||
+          item['title'].toString() == targetTitle,
+    );
+
+    if (existingIndex != -1) {
+      final int currentQty = (currentItems[existingIndex]['quantity'] is num)
+          ? (currentItems[existingIndex]['quantity'] as num).toInt()
+          : 1;
+      currentItems[existingIndex]['quantity'] = currentQty + quantityDelta;
+    } else {
+      sanitized['quantity'] = quantityDelta;
+      currentItems.add(sanitized);
+    }
+
+    await docRef.set({
+      'userId': docId,
+      'updatedAt': FieldValue.serverTimestamp(),
+      'items': currentItems,
+    });
+  }
+
+  Future<void> updateCartItemQuantity({
+    required String? uid,
+    required String productId,
+    required String title,
+    required int newQuantity,
+  }) async {
+    final String docId = _resolveCartDocId(uid);
+    final DocumentReference docRef = _cartsRef.doc(docId);
+    final DocumentSnapshot snap = await docRef.get();
+    if (!snap.exists || snap.data() == null) return;
+
+    final Map<String, dynamic> data = snap.data() as Map<String, dynamic>;
+    final List<dynamic> raw = (data['items'] as List<dynamic>?) ?? [];
+    final List<Map<String, dynamic>> currentItems = raw
+        .whereType<Map>()
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
+
+    final int index = currentItems.indexWhere(
+      (item) =>
+          (productId.isNotEmpty && item['id'].toString() == productId) ||
+          item['title'].toString() == title,
+    );
+    if (index == -1) return;
+
+    if (newQuantity <= 0) {
+      currentItems.removeAt(index);
+    } else {
+      currentItems[index]['quantity'] = newQuantity;
+    }
+
+    await docRef.set({
+      'userId': docId,
+      'updatedAt': FieldValue.serverTimestamp(),
+      'items': currentItems,
+    });
+  }
+
+  Future<void> removeFromCart({
+    required String? uid,
+    required String productId,
+    required String title,
+  }) async {
+    await updateCartItemQuantity(
+      uid: uid,
+      productId: productId,
+      title: title,
+      newQuantity: 0,
+    );
+  }
+
+  Future<void> clearCart(String? uid) async {
+    final String docId = _resolveCartDocId(uid);
+    await _cartsRef.doc(docId).set({
+      'userId': docId,
+      'updatedAt': FieldValue.serverTimestamp(),
+      'items': <Map<String, dynamic>>[],
+    });
+  }
 }
+

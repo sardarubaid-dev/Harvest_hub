@@ -159,10 +159,24 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     },
   ];
 
+  StreamSubscription<List<Map<String, dynamic>>>? _cartSub;
+  StreamSubscription<dynamic>? _farmersSub;
+  StreamSubscription<dynamic>? _reviewsSub;
+
+  String? get _currentUid {
+    try {
+      final authProv = Provider.of<AuthProvider>(context, listen: false);
+      if (authProv.currentUser != null && authProv.currentUser!.uid.isNotEmpty) {
+        return authProv.currentUser!.uid;
+      }
+    } catch (_) {}
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
-    
+
     _freshProducts = List<Map<String, dynamic>>.from(
       DummyData.freshProducts.map((e) => Map<String, dynamic>.from(e)),
     );
@@ -176,10 +190,70 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     // Start live deals countdown timer
     _startCountdownTimer();
 
-    // Stream live products from Firestore / DatabaseService
+    // 1. Stream live Cart from Firestore ('carts' collection)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _cartSub = _dbService.streamCart(_currentUid).listen((cartItems) {
+        if (!mounted) return;
+        setState(() {
+          DummyData.cart
+            ..clear()
+            ..addAll(cartItems);
+        });
+      });
+    });
+
+    // 2. Stream live Products from Firestore ('products' collection)
     _productsSub = _dbService.streamAllProducts().listen((products) {
       if (!mounted) return;
       _updateProductsFromStream(products);
+    });
+
+    // 3. Stream live Farmers from Firestore ('farmers' collection)
+    _farmersSub = _dbService.streamAllFarmers().listen((farmers) {
+      if (!mounted || farmers.isEmpty) return;
+      setState(() {
+        _popularFarmers = farmers.map((f) {
+          return {
+            'id': f.id,
+            'name': f.farmName.isNotEmpty ? f.farmName : 'Verified Local Farm',
+            'specialty': f.description.isNotEmpty
+                ? f.description
+                : 'Fresh Regional Produce',
+            'location': f.location.isNotEmpty ? f.location : 'Pakistan',
+            'rating': f.rating.toStringAsFixed(1),
+            'reviews': '(Verified)',
+            'isVerified': f.isApproved,
+            'isFollowing': false,
+            'avatarColor': const Color(0xFFA5D6A7),
+            'imageUrl': f.profileImageUrl ?? '',
+          };
+        }).toList();
+      });
+    });
+
+    // 4. Stream live Reviews from Firestore ('reviews' collection)
+    _reviewsSub = _dbService.streamAllReviews().listen((reviews) {
+      if (!mounted || reviews.isEmpty) return;
+      setState(() {
+        _customerReviews
+          ..clear()
+          ..addAll(
+            reviews.map((r) {
+              return {
+                'name': r.customerName.isNotEmpty ? r.customerName : 'Verified Buyer',
+                'location': 'Verified Order',
+                'rating': r.rating.round().clamp(1, 5),
+                'date': 'Recent',
+                'avatar':
+                    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop',
+                'review': r.comment,
+                'product': 'Farm Fresh Produce',
+                'farm': 'HarvestHub Partner Farm',
+              };
+            }),
+          );
+      });
     });
   }
 
@@ -199,6 +273,9 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   @override
   void dispose() {
     _productsSub?.cancel();
+    _cartSub?.cancel();
+    _farmersSub?.cancel();
+    _reviewsSub?.cancel();
     _countdownTimer?.cancel();
     super.dispose();
   }
@@ -208,27 +285,62 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
     final sorted = LocationService.sortByNearest(products);
 
+    final mappedProducts = sorted.map((p) {
+      final dist = LocationService.getDistanceForProduct(p);
+      return {
+        'id': p.id,
+        'farmerId': p.farmerId,
+        'title': p.name,
+        'category': p.categoryName.isNotEmpty
+            ? p.categoryName.toUpperCase()
+            : 'PRODUCE',
+        'farmerName': p.farmerName ?? 'Green Valley Farm',
+        'price': p.price.toStringAsFixed(0),
+        'unit': '/ ${p.unit}',
+        'stockBadge': '${p.quantity.toInt()} ${p.unit} available',
+        'isFavorite': false,
+        'imageColor': _getColorForCategory(p.categoryName),
+        'imageUrl': p.imageUrl ?? '',
+        'distance': LocationService.formatDistance(dist),
+        'isOrganic': p.isOrganic,
+        'description': p.description,
+      };
+    }).toList();
+
     setState(() {
-      _freshProducts = sorted.map((p) {
-        final dist = LocationService.getDistanceForProduct(p);
+      _freshProducts = mappedProducts;
+
+      // Sync global DummyData.freshProducts so ProductsScreen & CategoriesScreen also use live Firestore data
+      DummyData.freshProducts
+        ..clear()
+        ..addAll(mappedProducts);
+
+      // Dynamically derive Recently Restocked from live in-stock Firestore products
+      _recentlyRestocked = mappedProducts.reversed.take(6).map((item) {
         return {
-          'id': p.id,
-          'title': p.name,
-          'category': p.categoryName.isNotEmpty
-              ? p.categoryName.toUpperCase()
-              : 'PRODUCE',
-          'farmerName': p.farmerName ?? 'Green Valley Farm',
-          'price': p.price.toStringAsFixed(0),
-          'unit': '/ ${p.unit}',
-          'stockBadge': '${p.quantity.toInt()} ${p.unit} available',
-          'isFavorite': false,
-          'imageColor': _getColorForCategory(p.categoryName),
-          'imageUrl': p.imageUrl ?? '',
-          'distance': LocationService.formatDistance(dist),
-          'isOrganic': p.isOrganic,
-          'description': p.description,
+          ...item,
+          'restockTime': 'Freshly restocked',
         };
       }).toList();
+
+      // Dynamically derive Deals Of The Day from live Firestore products
+      if (mappedProducts.isNotEmpty) {
+        _dealsOfTheDay
+          ..clear()
+          ..addAll(
+            mappedProducts.take(4).map((item) {
+              final int basePrice = int.tryParse(item['price'].toString()) ?? 200;
+              final int originalPrice = (basePrice * 1.25).round();
+              return {
+                ...item,
+                'originalPrice': originalPrice.toString(),
+                'discountBadge': '20% OFF',
+                'unit': item['unit'].toString().replaceAll('/', '').trim(),
+                'stockBadge': 'Deal of the Day',
+              };
+            }),
+          );
+      }
     });
   }
 
@@ -250,17 +362,22 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   }
 
   void _toggleFavorite(List<Map<String, dynamic>> list, int index) {
-    AuthInterceptor.executeAction(context, () {
+    AuthInterceptor.executeAction(context, () async {
+      final bool nextState = !(list[index]['isFavorite'] as bool);
       setState(() {
-        list[index]['isFavorite'] = !(list[index]['isFavorite'] as bool);
+        list[index]['isFavorite'] = nextState;
       });
+      final String? uid = _currentUid;
+      final String prodId = (list[index]['id'] ?? '').toString();
+      if (uid != null && prodId.isNotEmpty) {
+        await _dbService.toggleWishlistProduct(uid, prodId);
+      }
+      if (!mounted) return;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            list[index]['isFavorite']
-                ? 'Added to Wishlist'
-                : 'Removed from Wishlist',
+            nextState ? 'Added to Wishlist' : 'Removed from Wishlist',
           ),
           duration: const Duration(seconds: 1),
         ),
@@ -269,34 +386,53 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   }
 
   void _addToCart(Map<String, dynamic> product) {
-    AuthInterceptor.executeAction(context, () {
+    AuthInterceptor.executeAction(context, () async {
       setState(() {
-        int index = DummyData.cart.indexWhere((p) => p['id'] == product['id']);
+        int index = DummyData.cart.indexWhere(
+          (p) => p['id'] == product['id'] || p['title'] == product['title'],
+        );
         if (index != -1) {
           DummyData.cart[index]['quantity'] =
-              (DummyData.cart[index]['quantity'] as int) + 1;
+              ((DummyData.cart[index]['quantity'] as num?)?.toInt() ?? 1) + 1;
         } else {
-          Map<String, dynamic> cartItem = Map.from(product);
+          Map<String, dynamic> cartItem = Map<String, dynamic>.from(product);
           cartItem['quantity'] = 1;
           DummyData.cart.add(cartItem);
         }
       });
+
+      await _dbService.addToCart(
+        uid: _currentUid,
+        product: product,
+        quantityDelta: 1,
+      );
+
+      if (!mounted) return;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Added \ to Cart!')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Added ${product['title'] ?? 'item'} to Cart!'),
+          duration: const Duration(seconds: 1),
+        ),
+      );
     });
   }
 
   void _toggleFollow(int index) {
+    final bool nextFollow = !(_popularFarmers[index]['isFollowing'] as bool);
     setState(() {
-      _popularFarmers[index]['isFollowing'] =
-          !(_popularFarmers[index]['isFollowing'] as bool);
+      _popularFarmers[index]['isFollowing'] = nextFollow;
     });
+    final String? uid = _currentUid;
+    final String farmerId = (_popularFarmers[index]['id'] ?? '').toString();
+    if (uid != null && farmerId.isNotEmpty) {
+      _dbService.toggleFollowFarmer(uid, farmerId);
+    }
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          _popularFarmers[index]['isFollowing']
+          nextFollow
               ? 'Following ${_popularFarmers[index]['name']}'
               : 'Unfollowed ${_popularFarmers[index]['name']}',
         ),

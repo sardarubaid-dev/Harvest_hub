@@ -342,7 +342,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                               crossAxisAlignment: CrossAxisAlignment.end,
                                               children: [
                                                 Text(
-                                                  'Rs. ',
+                                                  'Rs. ${data['price']} ',
                                                   style: const TextStyle(
                                                     fontSize: 16,
                                                     fontWeight: FontWeight.bold,
@@ -362,8 +362,33 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                         ),
                                         GestureDetector(
                                           onTap: () {
-                                            AuthInterceptor.executeAction(context, () {
-                                              
+                                            AuthInterceptor.executeAction(context, () async {
+                                              int idx = DummyData.cart.indexWhere(
+                                                (p) =>
+                                                    p['id'] == data['id'] ||
+                                                    p['title'] == data['title'],
+                                              );
+                                              if (idx != -1) {
+                                                DummyData.cart[idx]['quantity'] =
+                                                    ((DummyData.cart[idx]['quantity'] as num?)?.toInt() ?? 1) + 1;
+                                              } else {
+                                                final item = Map<String, dynamic>.from(data);
+                                                item['quantity'] = 1;
+                                                DummyData.cart.add(item);
+                                              }
+                                              await _dbService.addToCart(
+                                                uid: null,
+                                                product: data,
+                                                quantityDelta: 1,
+                                              );
+                                              if (!context.mounted) return;
+                                              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text('Added ${data['title']} to Cart!'),
+                                                  duration: const Duration(seconds: 1),
+                                                ),
+                                              );
                                             });
                                           },
                                           child: Container(

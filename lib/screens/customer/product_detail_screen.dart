@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../core/dummy_data.dart';
 import '../../core/auth_interceptor.dart';
+import '../../services/database_service.dart';
 import 'farmer_profile_screen.dart';
 
 class ProductDetailScreen extends StatefulWidget {
@@ -968,30 +970,40 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () {
-                    
-                    if (widget.product != null) {
-                      int index = DummyData.cart.indexWhere(
-                        (p) => p['id'] == widget.product!['id'],
-                      );
-                      if (index != -1) {
-                        DummyData.cart[index]['quantity'] =
-                            (DummyData.cart[index]['quantity'] as int) +
-                            _quantity;
-                      } else {
-                        Map<String, dynamic> cartItem = Map.from(
-                          widget.product!,
+                    AuthInterceptor.executeAction(context, () async {
+                      if (widget.product != null) {
+                        int index = DummyData.cart.indexWhere(
+                          (p) =>
+                              p['id'] == widget.product!['id'] ||
+                              p['title'] == widget.product!['title'],
                         );
-                        cartItem['quantity'] = _quantity;
-                        DummyData.cart.add(cartItem);
+                        if (index != -1) {
+                          DummyData.cart[index]['quantity'] =
+                              ((DummyData.cart[index]['quantity'] as num?)?.toInt() ?? 1) +
+                              _quantity;
+                        } else {
+                          Map<String, dynamic> cartItem = Map<String, dynamic>.from(
+                            widget.product!,
+                          );
+                          cartItem['quantity'] = _quantity;
+                          DummyData.cart.add(cartItem);
+                        }
+
+                        await DatabaseService().addToCart(
+                          uid: FirebaseAuth.instance.currentUser?.uid,
+                          product: widget.product!,
+                          quantityDelta: _quantity,
+                        );
                       }
-                    }
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Added $_quantity ${widget.product?['title'] ?? 'Tomatoes'} to Cart!',
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Added $_quantity ${widget.product?['title'] ?? 'item'} to Cart!',
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    });
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryGreen,
