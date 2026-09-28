@@ -251,6 +251,23 @@ class DatabaseService {
         });
   }
 
+  Stream<List<ProductModel>> streamDealsOfTheDay() {
+    return _productsRef
+        .where('isDealOfTheDay', isEqualTo: true)
+        .where('quantity', isGreaterThan: 0)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs
+              .map(
+                (doc) => ProductModel.fromMap(
+                  doc.id,
+                  doc.data() as Map<String, dynamic>,
+                ),
+              )
+              .toList();
+        });
+  }
+
   Future<void> addProduct(ProductModel product) async {
     DocumentReference ref = _productsRef.doc();
     ProductModel newProduct = product.copyWith(id: ref.id);

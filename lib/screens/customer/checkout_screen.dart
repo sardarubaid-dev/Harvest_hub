@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:async';
 
-import '../../models/market_model.dart';
-import '../../models/pickup_slot_model.dart';
 import '../../models/order_model.dart';
 import '../../providers/auth_provider.dart' as app_auth;
 import '../../providers/cart_provider.dart';
@@ -28,25 +25,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final TextEditingController _addressController = TextEditingController();
 
   bool _isProcessing = false;
-  String _deliveryType = 'Delivery';
-
-  List<MarketModel> _markets = [];
-  List<PickupSlotModel> _pickupSlots = [];
-  PickupSlotModel? _selectedSlot;
-  StreamSubscription? _marketsSub;
-  StreamSubscription? _slotsSub;
+  String _deliveryType = 'Delivery'; // 'Delivery' or 'Pickup'
 
   @override
   void initState() {
     super.initState();
     _prefillAddress();
-    _subscribeToMarkets();
   }
 
   @override
   void dispose() {
-    _marketsSub?.cancel();
-    _slotsSub?.cancel();
     _addressController.dispose();
     super.dispose();
   }
@@ -59,43 +47,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
   }
 
-  void _subscribeToMarkets() {
-    _marketsSub = _dbService.streamMarkets().listen((markets) {
-      if (!mounted) return;
-      setState(() => _markets = markets);
-      if (markets.isNotEmpty) {
-        _slotsSub?.cancel();
-        _slotsSub = _dbService
-            .streamPickupSlots(marketId: markets.first.id)
-            .listen((slots) {
-          if (!mounted) return;
-          setState(() {
-            _pickupSlots = slots;
-            if (!slots.any((s) => s.id == _selectedSlot?.id)) {
-              _selectedSlot = null;
-            }
-          });
-        });
-      }
-    });
-  }
-
   Future<void> _handleConfirmOrder() async {
     if (_deliveryType == 'Delivery' && _addressController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please enter a delivery address'),
           backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    if (_deliveryType == 'Pickup' && _selectedSlot == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a pickup slot'),
-          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
         ),
       );
       return;
@@ -121,9 +79,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             (item['quantity'] is num) ? (item['quantity'] as num).toDouble() : 1.0;
 
         return OrderItem(
-          productId: item['productId'] ?? '',
+          productId: item['productId'] ?? item['id'] ?? '',
           farmerId: item['farmerId'] ?? '',
-          productName: item['name'] ?? 'Unknown Item',
+          productName: item['name'] ?? item['title'] ?? 'Unknown Item',
           price: price,
           quantity: qty,
           unit: item['unit'] ?? 'kg',
@@ -131,18 +89,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         );
       }).toList();
 
+      // Total with shipping logic
+      double finalTotal = widget.totalAmount.toDouble();
+      if (_deliveryType == 'Delivery') {
+        finalTotal += 150.0; // standard delivery fee
+      }
+
       await _dbService.placeOrder(
         customerId: customerId,
         customerName: customerName,
         customerPhone: customerPhone,
         items: items,
-        totalAmount: widget.totalAmount.toDouble(),
-        pickupSlotId: _deliveryType == 'Pickup' ? _selectedSlot?.id : null,
-        pickupSlotTime:
-            _deliveryType == 'Pickup' ? _selectedSlot?.startTime : null,
-        marketId: (_deliveryType == 'Pickup' && _markets.isNotEmpty)
-            ? _markets.first.id
-            : null,
+        totalAmount: finalTotal,
+        pickupSlotId: null,
+        pickupSlotTime: null,
+        marketId: null, // Bypassed
         deliveryAddress:
             _deliveryType == 'Delivery' ? _addressController.text.trim() : null,
       );
@@ -158,7 +119,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Order Placed Successfully!'),
-          backgroundColor: Colors.green,
+          backgroundColor: Color(0xFF2E7D32),
+          behavior: SnackBarBehavior.floating,
         ),
       );
 
@@ -170,6 +132,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         SnackBar(
           content: Text('Error: $e'),
           backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     } finally {
@@ -180,273 +143,339 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   @override
   Widget build(BuildContext context) {
     const Color primaryGreen = Color(0xFF2E7D32);
-    const Color darkText = Color(0xFF1F2937);
+    const Color darkText = Color(0xFF191D19);
     const Color greyText = Color(0xFF6B7280);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FBF9),
+      backgroundColor: const Color(0xFFF4F7F4),
       appBar: AppBar(
-        title: const Text('Checkout',
-            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: Colors.black),
-        elevation: 0.5,
+        title: const Text('Checkout', style: TextStyle(color: darkText, fontWeight: FontWeight.w900, fontSize: 22)),
+        backgroundColor: Colors.transparent,
+        iconTheme: const IconThemeData(color: darkText),
+        elevation: 0,
+        centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // --- Delivery Method Toggle ---
-            const Text('Delivery Method',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: darkText)),
-            const SizedBox(height: 12),
-            Row(
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: _DeliveryTypeCard(
-                    label: 'Home Delivery',
-                    icon: Icons.delivery_dining,
-                    isSelected: _deliveryType == 'Delivery',
-                    onTap: () => setState(() => _deliveryType = 'Delivery'),
+                // Delivery Option Toggle
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => setState(() => _deliveryType = 'Delivery'),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: _deliveryType == 'Delivery' ? primaryGreen : Colors.transparent,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Wrap(
+                              alignment: WrapAlignment.center,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: 6,
+                              children: [
+                                Icon(Icons.local_shipping, size: 18, color: _deliveryType == 'Delivery' ? Colors.white : greyText),
+                                Text(
+                                  'Delivery',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: _deliveryType == 'Delivery' ? Colors.white : greyText,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => setState(() => _deliveryType = 'Pickup'),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: _deliveryType == 'Pickup' ? primaryGreen : Colors.transparent,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Wrap(
+                              alignment: WrapAlignment.center,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: 6,
+                              children: [
+                                Icon(Icons.storefront, size: 18, color: _deliveryType == 'Pickup' ? Colors.white : greyText),
+                                Text(
+                                  'Farm Pickup',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: _deliveryType == 'Pickup' ? Colors.white : greyText,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _DeliveryTypeCard(
-                    label: 'Self Pickup',
-                    icon: Icons.store,
-                    isSelected: _deliveryType == 'Pickup',
-                    onTap: () => setState(() => _deliveryType = 'Pickup'),
+                const SizedBox(height: 28),
+
+                // Dynamic Section based on selection
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: _deliveryType == 'Delivery' ? _buildDeliverySection(primaryGreen) : _buildPickupSection(primaryGreen),
+                ),
+
+                const SizedBox(height: 32),
+
+                // Order Summary Receipt
+                const Text('Order Details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: darkText)),
+                const SizedBox(height: 16),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 8)),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          color: Colors.white,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ...widget.cartItems.map((item) {
+                                final int qty = (item['quantity'] is num) ? (item['quantity'] as num).toInt() : 1;
+                                final int unitPrice = (double.tryParse(item['price']?.toString().replaceAll(RegExp(r'[^0-9.]'), '') ?? '0') ?? 0.0).toInt();
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        width: 32,
+                                        height: 32,
+                                        decoration: BoxDecoration(color: const Color(0xFFF4F7F4), borderRadius: BorderRadius.circular(8)),
+                                        alignment: Alignment.center,
+                                        child: Text('${qty}x', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFF40493D))),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(item['name'] ?? item['title'] ?? 'Item', style: const TextStyle(color: darkText, fontWeight: FontWeight.bold, fontSize: 15)),
+                                            Text(item['farmerName'] ?? 'Farm', style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+                                          ],
+                                        ),
+                                      ),
+                                      Text('Rs. ${unitPrice * qty}', style: const TextStyle(color: darkText, fontWeight: FontWeight.w900, fontSize: 15)),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            ],
+                          ),
+                        ),
+                        // Dashed divider
+                        Row(
+                          children: List.generate(
+                            30,
+                            (index) => Expanded(
+                              child: Container(
+                                height: 1.5,
+                                color: index % 2 == 0 ? Colors.grey.shade300 : Colors.transparent,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFF9FBF9),
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('Subtotal', style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
+                                  Text('Rs. ${widget.totalAmount}', style: const TextStyle(color: darkText, fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('Delivery Fee', style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
+                                  Text(_deliveryType == 'Delivery' ? 'Rs. 150' : 'Free', style: TextStyle(color: _deliveryType == 'Delivery' ? darkText : primaryGreen, fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('Total Amount', style: TextStyle(color: darkText, fontWeight: FontWeight.w900, fontSize: 18)),
+                                  Text('Rs. ${widget.totalAmount + (_deliveryType == 'Delivery' ? 150 : 0)}', style: TextStyle(color: primaryGreen, fontWeight: FontWeight.w900, fontSize: 22)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-
-            // --- Conditional Section ---
-            if (_deliveryType == 'Delivery') ...[
-              const Text('Delivery Address',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: darkText)),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _addressController,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  hintText: 'Enter your complete delivery address...',
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: const EdgeInsets.all(16),
-                ),
-              ),
-            ] else ...[
-              const Text('Select Pickup Slot',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: darkText)),
-              const SizedBox(height: 12),
-              if (_pickupSlots.isEmpty)
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text('No pickup slots available at the moment.',
-                      style: TextStyle(color: greyText)),
-                )
-              else
-                ...(_pickupSlots.map((slot) {
-                  final isSelected = _selectedSlot?.id == slot.id;
-                  return GestureDetector(
-                    onTap: () => setState(() => _selectedSlot = slot),
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? primaryGreen.withOpacity(0.06)
-                            : Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isSelected ? primaryGreen : Colors.grey.shade200,
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.access_time,
-                              color: isSelected ? primaryGreen : greyText),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              '${slot.startTime} - ${slot.endTime}',
-                              style: TextStyle(
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                                color: isSelected ? primaryGreen : darkText,
-                              ),
-                            ),
-                          ),
-                          if (isSelected)
-                            const Icon(Icons.check_circle,
-                                color: primaryGreen, size: 20),
-                        ],
-                      ),
-                    ),
-                  );
-                }).toList()),
-            ],
-
-            const SizedBox(height: 32),
-
-            // --- Order Items Summary ---
-            const Text('Order Summary',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: darkText)),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(16),
+          ),
+          
+          // Fixed Bottom Bar
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, -5))],
               ),
-              child: Column(
-                children: [
-                  ...widget.cartItems.map((item) {
-                    final int qty = (item['quantity'] is num)
-                        ? (item['quantity'] as num).toInt()
-                        : 1;
-                    final int unitPrice = (double.tryParse(item['price']
-                                    ?.toString()
-                                    .replaceAll(RegExp(r'[^0-9.]'), '') ??
-                                '0') ??
-                            0.0)
-                        .toInt();
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              '${item['name'] ?? 'Item'} x$qty',
-                              style: const TextStyle(color: darkText),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          Text(
-                            'Rs. ${unitPrice * qty}',
-                            style: const TextStyle(
-                                color: darkText, fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                  const Divider(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Total',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: darkText)),
-                      Text(
-                        'Rs. ${widget.totalAmount}',
-                        style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: primaryGreen),
-                      ),
-                    ],
+              child: SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _isProcessing ? null : _handleConfirmOrder,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryGreen,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 5,
+                    shadowColor: primaryGreen.withOpacity(0.5),
                   ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 32),
-
-            // --- Place Order Button ---
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: _isProcessing ? null : _handleConfirmOrder,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryGreen,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
-                  elevation: 0,
+                  child: _isProcessing
+                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('Confirm Order', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                            const SizedBox(width: 8),
+                            const Icon(Icons.arrow_forward_rounded, size: 20),
+                          ],
+                        ),
                 ),
-                child: _isProcessing
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2))
-                    : const Text('Place Order',
-                        style: TextStyle(
-                            fontSize: 17, fontWeight: FontWeight.bold)),
               ),
             ),
-            const SizedBox(height: 32),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
-}
 
-class _DeliveryTypeCard extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _DeliveryTypeCard({
-    required this.label,
-    required this.icon,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    const Color primaryGreen = Color(0xFF2E7D32);
-
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: isSelected ? primaryGreen : Colors.white,
-          border: Border.all(
-              color: isSelected ? primaryGreen : Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            Icon(icon,
-                color: isSelected ? Colors.white : Colors.grey.shade600,
-                size: 28),
-            const SizedBox(height: 6),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.black87,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
+  Widget _buildDeliverySection(Color primaryGreen) {
+    return Column(
+      key: const ValueKey('Delivery'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Delivery Address', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF191D19))),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+          ),
+          child: TextField(
+            controller: _addressController,
+            maxLines: 3,
+            style: const TextStyle(fontSize: 15, height: 1.4),
+            decoration: InputDecoration(
+              hintText: 'Enter your complete house/apartment address...',
+              hintStyle: TextStyle(color: Colors.grey.shade400),
+              prefixIcon: const Padding(
+                padding: EdgeInsets.only(bottom: 40),
+                child: Icon(Icons.location_on, color: Color(0xFF388E3C)),
               ),
+              filled: true,
+              fillColor: Colors.transparent,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+              contentPadding: const EdgeInsets.all(16),
             ),
-          ],
+          ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildPickupSection(Color primaryGreen) {
+    return Container(
+      key: const ValueKey('Pickup'),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFFE8F5E9), Color(0xFFF1F8F1)]),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFC8E6C9), width: 1.5),
+        boxShadow: [BoxShadow(color: const Color(0x0F2E7D32), blurRadius: 10, offset: const Offset(0, 4))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                child: Icon(Icons.maps_home_work, color: primaryGreen, size: 24),
+              ),
+              const SizedBox(width: 16),
+              const Expanded(
+                child: Text('Farm Gate Pickup', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF191D19))),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Skip the delivery fee! You can pick up your fresh order directly from the farmer. Farm location and contact details will be shared on the order confirmation screen.',
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade800, height: 1.4),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Icon(Icons.info_outline, color: primaryGreen, size: 16),
+                const SizedBox(width: 8),
+                const Expanded(child: Text('Available 9:00 AM - 6:00 PM', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2E7D32)), overflow: TextOverflow.ellipsis)),
+              ],
+            ),
+          )
+        ],
       ),
     );
   }
