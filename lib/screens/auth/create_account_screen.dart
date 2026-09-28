@@ -113,7 +113,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.of(context).pop();
-                        context.go('/');
+                        if (widget.role == 'Farmer') {
+                          context.go('/farmer/dashboard');
+                        } else {
+                          context.go('/customer');
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF2E7D32),

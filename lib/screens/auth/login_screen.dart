@@ -186,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             obscureText: _obscurePassword,
                             decoration: InputDecoration(
                               labelText: "Password",
-                              prefixIcon: const Icon(Icons.lock_outline),
+                              prefixIcon: const Icon(Icons.lock_outlined),
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _obscurePassword

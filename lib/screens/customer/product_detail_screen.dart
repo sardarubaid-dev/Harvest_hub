@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../core/auth_interceptor.dart';
+import '../../services/database_service.dart';
 import 'farmer_profile_screen.dart';
 import '../../models/product_model.dart';
 import '../../providers/cart_provider.dart';
@@ -965,20 +967,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () {
-                    
-                    if (widget.product != null && widget.product!['model'] != null) {
-                      Provider.of<CartProvider>(context, listen: false).addItem(
-                        widget.product!['model'] as ProductModel,
-                        quantity: _quantity.toDouble(),
-                      );
-                    }
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Added $_quantity ${widget.product?['title'] ?? 'Tomatoes'} to Cart!',
+                    AuthInterceptor.executeAction(context, () async {
+                      if (widget.product != null) {
+                        await DatabaseService().addToCart(
+                          uid: FirebaseAuth.instance.currentUser?.uid,
+                          product: widget.product!,
+                          quantityDelta: _quantity,
+                        );
+                      }
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Added $_quantity ${widget.product?['title'] ?? 'item'} to Cart!',
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    });
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryGreen,

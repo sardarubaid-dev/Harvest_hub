@@ -252,6 +252,27 @@ class RoleSelectionScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  const Text(
+                    'Already have an account? ',
+                    style: TextStyle(color: Colors.black54, fontSize: 14),
+                  ),
+                  GestureDetector(
+                    onTap: () => context.go('/login'),
+                    child: const Text(
+                      'Sign In >',
+                      style: TextStyle(
+                        color: primaryGreen,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
                   const Icon(
                     Icons.shield_outlined,
                     color: primaryGreen,

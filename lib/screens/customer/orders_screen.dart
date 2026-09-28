@@ -1,14 +1,190 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../../providers/auth_provider.dart';
-import '../../services/database_service.dart';
 import '../../models/order_model.dart';
+import '../../providers/auth_provider.dart' as app_auth;
+import '../../services/database_service.dart';
 
 class OrdersScreen extends StatelessWidget {
   final VoidCallback onShopNow;
 
   const OrdersScreen({Key? key, required this.onShopNow}) : super(key: key);
+
+  String _resolveCustomerId(BuildContext context) {
+    final fbUid = FirebaseAuth.instance.currentUser?.uid;
+    if (fbUid != null && fbUid.isNotEmpty) return fbUid;
+    try {
+      final authProv = Provider.of<app_auth.AuthProvider>(context, listen: false);
+      if (authProv.currentUser != null && authProv.currentUser!.uid.isNotEmpty) {
+        return authProv.currentUser!.uid;
+      }
+    } catch (_) {}
+    return 'guest_customer';
+  }
+
+  Color _statusColor(String status) {
+    final s = status.toLowerCase();
+    if (s.contains('complete') || s.contains('deliver')) {
+      return const Color(0xFF2E7D32);
+    }
+    if (s.contains('confirm') || s.contains('ready')) {
+      return const Color(0xFF0288D1);
+    }
+    if (s.contains('cancel')) {
+      return const Color(0xFFD32F2F);
+    }
+    return const Color(0xFFFF9800);
+  }
+
+  void _showOrderDetailsSheet(BuildContext context, OrderModel order) {
+    final dateStr = DateFormat('dd MMM yyyy, hh:mm a').format(order.createdAt);
+    final Color badgeColor = _statusColor(order.status);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 42,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Order #${order.id.length > 6 ? order.id.substring(0, 6).toUpperCase() : order.id}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: badgeColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      order.status,
+                      style: TextStyle(
+                        color: badgeColor,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Placed on $dateStr',
+                style: const TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+              ),
+              if (order.pickupSlotTime != null && order.pickupSlotTime!.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(Icons.schedule, size: 15, color: Color(0xFF2E7D32)),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'Pickup Slot: ${order.pickupSlotTime}',
+                        style: const TextStyle(
+                          color: Color(0xFF2E7D32),
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+              const Divider(height: 24),
+              const Text(
+                'Ordered Items',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1F2937),
+                ),
+              ),
+              const SizedBox(height: 10),
+              ...order.items.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '${item.productName} (${item.quantity.toInt()} ${item.unit})',
+                          style: const TextStyle(
+                            fontSize: 13.5,
+                            color: Color(0xFF374151),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        'Rs. ${(item.price * item.quantity).toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1F2937),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const Divider(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Total Payable',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                  Text(
+                    'Rs. ${order.totalAmount.toStringAsFixed(0)}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF2E7D32),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,27 +193,19 @@ class OrdersScreen extends StatelessWidget {
     const Color greyText = Color(0xFF6B7280);
     const Color background = Color(0xFFF9FBF9);
 
-    final authProvider = Provider.of<AuthProvider>(context);
-    final user = authProvider.currentUser;
-
-    if (user == null) {
-      return const Scaffold(
-        backgroundColor: background,
-        body: Center(child: Text('Please log in to view your orders.')),
-      );
-    }
+    final dbService = DatabaseService();
+    final customerId = _resolveCustomerId(context);
 
     return Scaffold(
       backgroundColor: background,
       body: StreamBuilder<List<OrderModel>>(
-        stream: DatabaseService().streamCustomerOrders(user.uid),
+        stream: dbService.streamCustomerOrders(customerId),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: primaryGreen));
-          }
-
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+          if (snapshot.connectionState == ConnectionState.waiting &&
+              !snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(color: primaryGreen),
+            );
           }
 
           final orders = snapshot.data ?? [];
@@ -72,7 +240,7 @@ class OrdersScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     const Text(
-                      'You haven\'t placed any orders. Start exploring fresh local produce and support your regional farmers!',
+                      'You haven\'t placed any orders yet. Start exploring fresh local produce and support your regional farmers!',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
@@ -112,6 +280,19 @@ class OrdersScreen extends StatelessWidget {
             itemCount: orders.length,
             itemBuilder: (context, index) {
               final order = orders[index];
+              final Color badgeColor = _statusColor(order.status);
+              final String shortId = order.id.length > 6
+                  ? '#ORD-${order.id.substring(0, 6).toUpperCase()}'
+                  : '#ORD-${order.id.toUpperCase()}';
+              final String dateStr =
+                  DateFormat('dd MMM yyyy, hh:mm a').format(order.createdAt);
+              final String itemsSummary = order.items
+                  .map((i) => '${i.productName} (${i.quantity.toInt()} ${i.unit})')
+                  .join(', ');
+              final String? firstImageUrl = order.items.isNotEmpty
+                  ? order.items.first.imageUrl
+                  : null;
+
               return Container(
                 margin: const EdgeInsets.only(bottom: 16.0),
                 padding: const EdgeInsets.all(16),
@@ -120,7 +301,7 @@ class OrdersScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
+                      color: Colors.black.withValues(alpha: 0.03),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -133,7 +314,7 @@ class OrdersScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '#${order.id.substring(0, order.id.length > 8 ? 8 : order.id.length)}',
+                          shortId,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -146,13 +327,13 @@ class OrdersScreen extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.green.withOpacity(0.1),
+                            color: badgeColor.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            order.status.toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.green,
+                            order.status,
+                            style: TextStyle(
+                              color: badgeColor,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
@@ -162,7 +343,7 @@ class OrdersScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Placed on: ${order.createdAt.toLocal().toString().split('.')[0]}',
+                      'Placed on: $dateStr',
                       style: const TextStyle(color: greyText, fontSize: 13),
                     ),
                     const Padding(
@@ -176,28 +357,28 @@ class OrdersScreen extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (order.items.isNotEmpty && (order.items.first.imageUrl?.isNotEmpty ?? false))
+                        if (firstImageUrl != null && firstImageUrl.isNotEmpty)
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: Image.network(
-                              order.items.first.imageUrl ?? '',
+                              firstImageUrl,
                               width: 50,
                               height: 50,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) =>
                                   Container(
-                                    width: 50,
-                                    height: 50,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF3F4F6),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Icon(
-                                      Icons.shopping_bag,
-                                      color: Colors.white.withOpacity(0.8),
-                                      size: 24,
-                                    ),
-                                  ),
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE8F5E9),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(
+                                  Icons.shopping_bag,
+                                  color: primaryGreen,
+                                  size: 24,
+                                ),
+                              ),
                             ),
                           )
                         else
@@ -205,12 +386,12 @@ class OrdersScreen extends StatelessWidget {
                             width: 50,
                             height: 50,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF3F4F6),
+                              color: const Color(0xFFE8F5E9),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Icon(
+                            child: const Icon(
                               Icons.shopping_bag,
-                              color: Colors.white.withOpacity(0.8),
+                              color: primaryGreen,
                               size: 24,
                             ),
                           ),
@@ -228,7 +409,7 @@ class OrdersScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                order.items.map((e) => '${e.productName} (${e.quantity} ${e.unit.replaceAll('/', '').trim()})').join(', '),
+                                itemsSummary,
                                 style: const TextStyle(
                                   fontSize: 13,
                                   color: darkText,
@@ -273,13 +454,7 @@ class OrdersScreen extends StatelessWidget {
                           ],
                         ),
                         GestureDetector(
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Viewing details for ${order.id}'),
-                              ),
-                            );
-                          },
+                          onTap: () => _showOrderDetailsSheet(context, order),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,

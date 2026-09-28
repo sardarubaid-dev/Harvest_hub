@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:harvest_hub/screens/auth/create_account_screen.dart';
 import 'package:harvest_hub/screens/role_selection_screen.dart';
@@ -12,7 +13,6 @@ import '../screens/farmer/farmer_categories_screen.dart';
 import '../screens/farmer/add_product_screen.dart';
 import '../screens/farmer/farmer_market_pickup_screen.dart';
 import '../screens/farmer/farmer_notifications_screen.dart';
-import '../screens/farmer/farmer_waiting_screen.dart';
 import '../screens/customer/customer_home_screen.dart';
 import '../screens/customer/search_filter_screen.dart';
 
@@ -37,15 +37,7 @@ class AppRouter {
 
         if (isAuthenticated && user != null) {
           if (user.isAdmin && !uriStr.startsWith('/admin')) return '/admin/dashboard';
-          if (user.isFarmer) {
-            final farmer = authProvider.currentFarmer;
-            if (farmer != null && !farmer.isApproved) {
-              if (uriStr != '/farmer/waiting') return '/farmer/waiting';
-            } else {
-              if (!uriStr.startsWith('/farmer')) return '/farmer/dashboard';
-              if (uriStr == '/farmer/waiting') return '/farmer/dashboard'; // Shouldn't be on waiting screen if approved
-            }
-          }
+          if (user.isFarmer && !uriStr.startsWith('/farmer')) return '/farmer/dashboard';
           
           if (user.isCustomer) {
             
@@ -108,10 +100,6 @@ class AppRouter {
         GoRoute(
           path: '/farmer/notifications',
           builder: (context, state) => const FarmerNotificationsScreen(),
-        ),
-        GoRoute(
-          path: '/farmer/waiting',
-          builder: (context, state) => const FarmerWaitingScreen(),
         ),
         GoRoute(
           path: '/farmer/:tab',

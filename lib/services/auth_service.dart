@@ -6,12 +6,15 @@ import '../models/customer_model.dart';
 import '../models/farmer_model.dart';
 
 class AuthService {
+  static const String adminEmail = 'admin@harvesthub.com';
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
   String? get currentUserId => _auth.currentUser?.uid;
+
+  static String get adminPassword => 'admin123';
 
 
 
@@ -132,32 +135,56 @@ class AuthService {
       );
 
       String uid = credential.user!.uid;
-      DocumentSnapshot userDoc = await _firestore
-          .collection('users')
-          .doc(uid)
-          .get();
+      try {
+        DocumentSnapshot userDoc = await _firestore
+            .collection('users')
+            .doc(uid)
+            .get();
 
-      if (!userDoc.exists) {
-        UserModel fallbackUser = UserModel(
+        if (!userDoc.exists) {
+          UserModel fallbackUser = UserModel(
+            uid: uid,
+            name: credential.user?.displayName?.trim().isNotEmpty == true
+                ? credential.user!.displayName!
+                : email.split('@').first,
+            email: email.trim(),
+            role: 'Customer',
+            isActive: true,
+          );
+          try {
+            await _firestore
+                .collection('users')
+                .doc(uid)
+                .set(fallbackUser.toMap());
+          } catch (_) {}
+          return fallbackUser;
+        }
+
+        Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
+        UserModel user = UserModel.fromMap(uid, data);
+
+        if (!user.isActive) {
+          await _auth.signOut();
+          throw Exception(
+            "Your account has been deactivated by administrator.",
+          );
+        }
+
+        return user;
+      } catch (innerError) {
+        if (innerError.toString().contains('deactivated')) {
+          rethrow;
+        }
+        return UserModel(
           uid: uid,
-          name: credential.user?.displayName ?? 'User',
+          name: credential.user?.displayName?.trim().isNotEmpty == true
+              ? credential.user!.displayName!
+              : email.split('@').first,
           email: email.trim(),
           role: 'Customer',
           isActive: true,
         );
-        await _firestore.collection('users').doc(uid).set(fallbackUser.toMap());
-        return fallbackUser;
       }
-
-      Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
-      UserModel user = UserModel.fromMap(uid, data);
-
-      if (!user.isActive) {
-        await _auth.signOut();
-        throw Exception("Your account has been deactivated by administrator.");
-      }
-
-      return user;
     } catch (e) {
       rethrow;
     }
@@ -170,13 +197,27 @@ class AuthService {
           .collection('users')
           .doc(uid)
           .get();
-      if (doc.exists) {
+      if (doc.exists && doc.data() != null) {
         return UserModel.fromMap(uid, doc.data() as Map<String, dynamic>);
       }
-      return null;
-    } catch (e) {
-      return null;
+    } catch (_) {}
+
+    final fbUser = _auth.currentUser;
+    if (fbUser != null && fbUser.uid == uid) {
+      final email = fbUser.email ?? '';
+      return UserModel(
+        uid: uid,
+        name: fbUser.displayName?.trim().isNotEmpty == true
+            ? fbUser.displayName!
+            : (email.isNotEmpty ? email.split('@').first : 'Customer'),
+        email: email,
+        role: email.toLowerCase() == AuthService.adminEmail.toLowerCase()
+            ? 'Admin'
+            : 'Customer',
+        isActive: true,
+      );
     }
+    return null;
   }
 
   Future<UserModel?> getCurrentUserModel() async {

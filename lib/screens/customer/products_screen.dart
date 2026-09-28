@@ -21,10 +21,15 @@ class _ProductsScreenState extends State<ProductsScreen> {
   late String _selectedCategory;
   final DatabaseService _dbService = DatabaseService();
 
+  late Stream<List<CategoryModel>> _categoriesStream;
+  late Stream<List<ProductModel>> _productsStream;
+
   @override
   void initState() {
     super.initState();
     _selectedCategory = widget.initialCategory ?? 'All';
+    _categoriesStream = _dbService.streamCategories();
+    _productsStream = _dbService.streamAllProducts();
   }
 
   @override
@@ -45,7 +50,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
     const Color background = Color(0xFFF9FBF9);
 
     return StreamBuilder<List<CategoryModel>>(
-      stream: _dbService.streamCategories(),
+      stream: _categoriesStream,
       builder: (context, catSnapshot) {
         final categories = [
           'All',
@@ -56,7 +61,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
         ];
 
         return StreamBuilder<List<ProductModel>>(
-          stream: _dbService.streamAllProducts(),
+          stream: _productsStream,
           builder: (context, snapshot) {
             List<Map<String, dynamic>> products = [];
 
@@ -164,7 +169,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                       crossAxisCount: 2,
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,
-                      childAspectRatio: 0.8,
+                      childAspectRatio: 0.65,
                     ),
                     itemCount: products.length,
                     itemBuilder: (context, index) {
@@ -344,20 +349,16 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                                   color: Color(0xFF6B7280),
                                                 ),
                                               ),
-                                              Row(
-                                                crossAxisAlignment: CrossAxisAlignment.end,
-                                                children: [
-                                                  Expanded(
-                                                    child: Text(
-                                                      'Rs. ${data['price']}',
-                                                      style: const TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight: FontWeight.bold,
-                                                        color: Color(0xFF1F2937),
-                                                      ),
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
-                                                    ),
+                                            Row(
+                                              crossAxisAlignment: CrossAxisAlignment.end,
+                                              children: [
+                                                Text(
+                                                  'Rs. ${data['price']} ',
+                                                  style: const TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Color(0xFF1F2937),
+                                                  ),
                                                   ),
                                                   Text(
                                                     data['unit'],
@@ -373,8 +374,20 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                         ),
                                         GestureDetector(
                                           onTap: () {
-                                            AuthInterceptor.executeAction(context, () {
-                                              Provider.of<CartProvider>(context, listen: false).addItem(data['productModel']);
+                                            AuthInterceptor.executeAction(context, () async {
+                                              await _dbService.addToCart(
+                                                uid: null,
+                                                product: data,
+                                                quantityDelta: 1,
+                                              );
+                                              if (!context.mounted) return;
+                                              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text('Added ${data['title']} to Cart!'),
+                                                  duration: const Duration(seconds: 1),
+                                                ),
+                                              );
                                             });
                                           },
                                           child: Container(

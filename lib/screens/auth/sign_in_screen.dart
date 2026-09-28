@@ -6,7 +6,8 @@ import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 
 class SignInScreen extends StatefulWidget {
-  const SignInScreen({super.key});
+  final bool isModal;
+  const SignInScreen({super.key, this.isModal = false});
 
   @override
   State<SignInScreen> createState() => _SignInScreenState();
@@ -45,8 +46,13 @@ class _SignInScreenState extends State<SignInScreen> {
         ),
       );
     } else if (success && mounted) {
-      if (Navigator.canPop(context)) {
+      final user = authProvider.currentUser;
+      if (widget.isModal && Navigator.canPop(context)) {
         Navigator.pop(context, true);
+      } else if (user != null && user.isAdmin) {
+        context.go('/admin/dashboard');
+      } else if (user != null && user.isFarmer) {
+        context.go('/farmer/dashboard');
       } else {
         context.go('/customer');
       }
@@ -157,14 +163,6 @@ class _SignInScreenState extends State<SignInScreen> {
                   color: primaryGreen.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Text(
-                  '? Fresh ? Direct ? Community',
-                  style: TextStyle(
-                    color: primaryGreen,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
               ),
               const SizedBox(height: 24),
 
@@ -252,7 +250,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         controller: _passwordController,
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
-                          hintText: '������������',
+                          hintText: '........',
                           hintStyle: TextStyle(color: Colors.grey.shade400),
                           prefixIcon: const Icon(
                             Icons.lock_outline,

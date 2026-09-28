@@ -1,14 +1,14 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../core/auth_interceptor.dart';
-
-import '../../providers/cart_provider.dart';
-import '../../providers/auth_provider.dart';
-import '../../services/database_service.dart';
-import '../../models/order_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 
-
-import '../auth/sign_in_screen.dart';
+import '../../providers/cart_provider.dart';
+import '../../models/order_model.dart';
+import '../../models/market_model.dart';
+import '../../models/pickup_slot_model.dart';
+import '../../providers/auth_provider.dart' as app_auth;
+import '../../services/database_service.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({Key? key}) : super(key: key);
@@ -18,10 +18,89 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  int _selectedSlot = 0; 
+  final DatabaseService _dbService = DatabaseService();
+  StreamSubscription<List<Map<String, dynamic>>>? _cartSub;
+  StreamSubscription<List<MarketModel>>? _marketsSub;
+  StreamSubscription<List<PickupSlotModel>>? _slotsSub;
 
-  void _removeFromCart(String productId) {
-    Provider.of<CartProvider>(context, listen: false).removeItem(productId);
+  List<Map<String, dynamic>> _cartItems = [];
+  List<MarketModel> _markets = [];
+  List<PickupSlotModel> _pickupSlots = [];
+  int _selectedSlot = 0;
+  bool _isPlacingOrder = false;
+
+  String? get _currentUid {
+    final fbUid = FirebaseAuth.instance.currentUser?.uid;
+    if (fbUid != null && fbUid.isNotEmpty) return fbUid;
+    try {
+      final authProv = Provider.of<app_auth.AuthProvider>(context, listen: false);
+      return authProv.currentUser?.uid;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _cartItems = [];
+    _subscribeToFirestoreCart();
+    _subscribeToMarketsAndSlots();
+  }
+
+  void _subscribeToFirestoreCart() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    _cartSub = _dbService.streamCart(uid).listen((items) {
+      if (!mounted) return;
+      setState(() {
+        _cartItems = items;
+      });
+    });
+  }
+
+  void _subscribeToMarketsAndSlots() {
+    _marketsSub = _dbService.streamMarkets().listen((markets) {
+      if (!mounted) return;
+      setState(() {
+        _markets = markets;
+      });
+      if (markets.isNotEmpty) {
+        _slotsSub?.cancel();
+        _slotsSub = _dbService.streamPickupSlots(markets.first.id).listen((slots) {
+          if (!mounted) return;
+          setState(() {
+            _pickupSlots = slots;
+          });
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _cartSub?.cancel();
+    _marketsSub?.cancel();
+    _slotsSub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _removeFromCart(int index) async {
+    if (index < 0 || index >= _cartItems.length) return;
+    final item = _cartItems[index];
+    final String prodId = (item['id'] ?? '').toString();
+    final String title = (item['title'] ?? '').toString();
+
+    setState(() {
+      _cartItems.removeAt(index);
+    });
+
+    await _dbService.removeFromCart(
+      uid: _currentUid,
+      productId: prodId,
+      title: title,
+    );
+
+    if (!mounted) return;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -31,8 +110,130 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  void _updateQuantity(String productId, double quantity, double delta) {
-    Provider.of<CartProvider>(context, listen: false).updateQuantity(productId, quantity + delta);
+  Future<void> _updateQuantity(int index, int delta) async {
+    if (index < 0 || index >= _cartItems.length) return;
+    final item = _cartItems[index];
+    final int currentQty = (item['quantity'] is num)
+        ? (item['quantity'] as num).toInt()
+        : 1;
+    final int newQuantity = currentQty + delta;
+    if (newQuantity <= 0) {
+      await _removeFromCart(index);
+      return;
+    }
+
+    setState(() {
+      _cartItems[index]['quantity'] = newQuantity;
+    });
+
+    await _dbService.updateCartItemQuantity(
+      uid: _currentUid,
+      productId: (item['id'] ?? '').toString(),
+      title: (item['title'] ?? '').toString(),
+      newQuantity: newQuantity,
+    );
+  }
+
+  int get _itemsTotal {
+    int total = 0;
+    for (var item in _cartItems) {
+      int price = int.tryParse(
+            item['price'].toString().replaceAll(RegExp(r'[^0-9]'), ''),
+          ) ??
+          0;
+      int qty = (item['quantity'] is num) ? (item['quantity'] as num).toInt() : 1;
+      total += (price * qty);
+    }
+    return total;
+  }
+
+  Future<void> _handleConfirmOrder(int totalPayable) async {
+    if (_cartItems.isEmpty || _isPlacingOrder) return;
+
+    setState(() {
+      _isPlacingOrder = true;
+    });
+
+    try {
+      final authProv = Provider.of<app_auth.AuthProvider>(context, listen: false);
+      final user = authProv.currentUser;
+      final String customerId = user?.uid ?? FirebaseAuth.instance.currentUser?.uid ?? 'guest_customer';
+      final String customerName = (user != null && user.name.trim().isNotEmpty)
+          ? user.name
+          : (FirebaseAuth.instance.currentUser?.displayName ?? 'Customer');
+      final String customerPhone = (user?.phone != null && user!.phone!.trim().isNotEmpty)
+          ? user.phone!
+          : '0300-0000000';
+
+      final List<OrderItem> orderItems = _cartItems.map((item) {
+        final double price = double.tryParse(
+              item['price'].toString().replaceAll(RegExp(r'[^0-9.]'), ''),
+            ) ??
+            0.0;
+        final double qty = (item['quantity'] is num)
+            ? (item['quantity'] as num).toDouble()
+            : 1.0;
+        return OrderItem(
+          productId: (item['id'] ?? '').toString(),
+          farmerId: (item['farmerId'] ?? '').toString(),
+          productName: (item['title'] ?? 'Produce').toString(),
+          price: price,
+          quantity: qty,
+          unit: (item['unit'] ?? 'kg').toString().replaceAll('/', '').trim(),
+          imageUrl: (item['imageUrl'] ?? '').toString(),
+        );
+      }).toList();
+
+      final List<String> slotLabels = _pickupSlots.isNotEmpty
+          ? _pickupSlots.map((s) => '${s.date} (${s.startTime} - ${s.endTime})').toList()
+          : [
+              'Today (09:00 AM - 12:00 PM)',
+              'Today (04:00 PM - 07:00 PM)',
+              'Tomorrow (09:00 AM - 12:00 PM)',
+            ];
+      final String selectedSlotLabel =
+          slotLabels[_selectedSlot.clamp(0, slotLabels.length - 1)];
+      final String? selectedMarketId =
+          _markets.isNotEmpty ? _markets.first.id : 'karachi_farmers_market';
+
+      await _dbService.placeOrder(
+        customerId: customerId,
+        customerName: customerName,
+        customerPhone: customerPhone,
+        items: orderItems,
+        totalAmount: totalPayable.toDouble(),
+        pickupSlotId: _pickupSlots.isNotEmpty && _selectedSlot < _pickupSlots.length
+            ? _pickupSlots[_selectedSlot].id
+            : 'slot_${_selectedSlot + 1}',
+        pickupSlotTime: selectedSlotLabel,
+        marketId: selectedMarketId,
+      );
+
+      await _dbService.clearCart(_currentUid);
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Order placed and saved to database successfully!'),
+          backgroundColor: Color(0xFF2E7D32),
+        ),
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isPlacingOrder = false;
+        });
+      }
+    }
   }
 
   @override
@@ -209,7 +410,7 @@ class _CartScreenState extends State<CartScreen> {
                             ),
                           ),
                           Text(
-                            '${cartItems.length} local items',
+                            '${_cartItems.length} local items',
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
@@ -220,7 +421,7 @@ class _CartScreenState extends State<CartScreen> {
                       ),
                       const SizedBox(height: 12),
 
-                      if (cartItems.isEmpty)
+                      if (_cartItems.isEmpty)
                         Center(
                           child: Padding(
                             padding: const EdgeInsets.all(32.0),
@@ -244,11 +445,14 @@ class _CartScreenState extends State<CartScreen> {
                         ListView.builder(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          itemCount: cartItems.length,
+                          itemCount: _cartItems.length,
                           itemBuilder: (context, index) {
-                            final item = cartItems[index];
-                            final int qty = item.quantity.toInt();
-                            final int unitPrice = item.product.price.toInt();
+                            final item = _cartItems[index];
+                            final int qty = (item['quantity'] is num)
+                                ? (item['quantity'] as num).toInt()
+                                : 1;
+                            final int unitPrice =
+                                int.tryParse(item['price'].toString()) ?? 0;
                             final int rowTotal = unitPrice * qty;
 
                             return Container(
@@ -285,9 +489,9 @@ class _CartScreenState extends State<CartScreen> {
                                             12,
                                           ),
                                           child:
-                                              (item.product.imageUrl?.isNotEmpty ?? false)
+                                              (item['imageUrl']?.isNotEmpty ?? false)
                                               ? Image.network(
-                                                  item.product.imageUrl ?? '',
+                                                  item['imageUrl'] ?? '',
                                                   fit: BoxFit.cover,
                                                   width: double.infinity,
                                                   height: double.infinity,
@@ -351,7 +555,7 @@ class _CartScreenState extends State<CartScreen> {
                                           children: [
                                             Expanded(
                                               child: Text(
-                                                '${item.product.name} (${item.product.unit.replaceAll('/', '').trim()})',
+                                                '${item['title']} (${item['unit'].replaceAll('/', '').trim()})',
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.bold,
                                                   fontSize: 14,
@@ -363,7 +567,7 @@ class _CartScreenState extends State<CartScreen> {
                                             ),
                                             GestureDetector(
                                               onTap: () =>
-                                                  _removeFromCart(item.product.id),
+                                                  _removeFromCart(item['id']),
                                               child: const Icon(
                                                 Icons.delete_outline,
                                                 size: 20,
@@ -383,7 +587,7 @@ class _CartScreenState extends State<CartScreen> {
                                             const SizedBox(width: 4),
                                             Expanded(
                                               child: Text(
-                                                'From ${item.product.farmerId}',
+                                                'From ${item['farmerName']}',
                                                 style: const TextStyle(
                                                   fontSize: 11,
                                                   color: greyText,
@@ -436,11 +640,7 @@ class _CartScreenState extends State<CartScreen> {
                                                 children: [
                                                   InkWell(
                                                     onTap: () =>
-                                                        _updateQuantity(
-                                                          item.product.id,
-                                                          qty.toDouble(),
-                                                          -1.0,
-                                                        ),
+                                                        _updateQuantity(index, -1),
                                                     child: const Padding(
                                                       padding:
                                                           EdgeInsets.symmetric(
@@ -465,11 +665,7 @@ class _CartScreenState extends State<CartScreen> {
                                                   ),
                                                   InkWell(
                                                     onTap: () =>
-                                                        _updateQuantity(
-                                                          item.product.id,
-                                                          qty.toDouble(),
-                                                          1.0,
-                                                        ),
+                                                        _updateQuantity(index, 1),
                                                     child: const Padding(
                                                       padding:
                                                           EdgeInsets.symmetric(
@@ -1153,7 +1349,7 @@ class _CartScreenState extends State<CartScreen> {
       ),
       
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: cartItems.isNotEmpty
+      floatingActionButton: _cartItems.isNotEmpty
           ? Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
@@ -1161,7 +1357,7 @@ class _CartScreenState extends State<CartScreen> {
                 color: const Color(0xFFF9FBF9),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     blurRadius: 20,
                     spreadRadius: 10,
                     offset: const Offset(0, -10),
@@ -1171,35 +1367,9 @@ class _CartScreenState extends State<CartScreen> {
               child: SizedBox(
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: () async {
-                    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-                    final user = authProvider.currentUser;
-                    if (user == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please log in to place an order')),
-                      );
-                      return;
-                    }
-
-                    final orderItems = cartProvider.toOrderItems();
-                    final orderTotal = cartProvider.totalAmount + 20.0;
-
-                    await DatabaseService().placeOrder(
-                      customerId: user.uid,
-                      customerName: user.name,
-                      customerPhone: user.phone ?? '',
-                      items: orderItems,
-                      totalAmount: orderTotal,
-                    );
-                    cartProvider.clearCart();
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Order Confirmed!')),
-                    );
-                    if (mounted) {
-                      Navigator.pop(context);
-                    }
-                  },
+                  onPressed: _isPlacingOrder
+                      ? null
+                      : () => _handleConfirmOrder(totalPayable),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryGreen,
                     foregroundColor: Colors.white,
@@ -1208,31 +1378,40 @@ class _CartScreenState extends State<CartScreen> {
                     ),
                     elevation: 0,
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: const [
-                          Icon(Icons.check_circle_outline, size: 20),
-                          SizedBox(width: 8),
-                          Text(
-                            'Confirm Pickup Order',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
+                  child: _isPlacingOrder
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
                           ),
-                        ],
-                      ),
-                      Text(
-                        '• Rs. $totalPayable',
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Row(
+                              children: [
+                                Icon(Icons.check_circle_outline, size: 20),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Confirm Pickup Order',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              '• Rs. $totalPayable',
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
             )

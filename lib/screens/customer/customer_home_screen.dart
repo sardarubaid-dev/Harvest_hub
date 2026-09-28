@@ -165,6 +165,19 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     },
   ];
 
+  StreamSubscription<List<Map<String, dynamic>>>? _cartSub;
+  StreamSubscription<dynamic>? _reviewsSub;
+
+  String? get _currentUid {
+    try {
+      final authProv = Provider.of<AuthProvider>(context, listen: false);
+      if (authProv.currentUser != null && authProv.currentUser!.uid.isNotEmpty) {
+        return authProv.currentUser!.uid;
+      }
+    } catch (_) {}
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -193,10 +206,67 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     });
     _startCountdownTimer();
 
-    // Stream live products from Firestore / DatabaseService
+    // 1. Stream live Cart from Firestore ('carts' collection)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _cartSub = _dbService.streamCart(_currentUid).listen((cartItems) {
+        if (!mounted) return;
+        setState(() {
+        });
+      });
+    });
+
+    // 2. Stream live Products from Firestore ('products' collection)
     _productsSub = _dbService.streamAllProducts().listen((products) {
       if (!mounted) return;
       _updateProductsFromStream(products);
+    });
+
+    // 3. Stream live Farmers from Firestore ('farmers' collection)
+    _farmersSub = _dbService.streamAllFarmers().listen((farmers) {
+      if (!mounted || farmers.isEmpty) return;
+      setState(() {
+        _popularFarmers = farmers.map((f) {
+          return {
+            'id': f.id,
+            'name': f.farmName.isNotEmpty ? f.farmName : 'Verified Local Farm',
+            'specialty': f.description.isNotEmpty
+                ? f.description
+                : 'Fresh Regional Produce',
+            'location': f.location.isNotEmpty ? f.location : 'Pakistan',
+            'rating': f.rating.toStringAsFixed(1),
+            'reviews': '(Verified)',
+            'isVerified': f.isApproved,
+            'isFollowing': false,
+            'avatarColor': const Color(0xFFA5D6A7),
+            'imageUrl': f.profileImageUrl ?? '',
+          };
+        }).toList();
+      });
+    });
+
+    // 4. Stream live Reviews from Firestore ('reviews' collection)
+    _reviewsSub = _dbService.streamAllReviews().listen((reviews) {
+      if (!mounted || reviews.isEmpty) return;
+      setState(() {
+        _customerReviews
+          ..clear()
+          ..addAll(
+            reviews.map((r) {
+              return {
+                'name': r.customerName.isNotEmpty ? r.customerName : 'Verified Buyer',
+                'location': 'Verified Order',
+                'rating': r.rating.round().clamp(1, 5),
+                'date': 'Recent',
+                'avatar':
+                    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop',
+                'review': r.comment,
+                'product': 'Farm Fresh Produce',
+                'farm': 'HarvestHub Partner Farm',
+              };
+            }),
+          );
+      });
     });
   }
 
@@ -227,29 +297,32 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
     final sorted = LocationService.sortByNearest(products);
 
+    final mappedProducts = sorted.map((p) {
+      final dist = LocationService.getDistanceForProduct(p);
+      return {
+        'id': p.id,
+        'farmerId': p.farmerId,
+        'title': p.name,
+        'category': p.categoryName.isNotEmpty
+            ? p.categoryName.toUpperCase()
+            : 'PRODUCE',
+        'farmerName': p.farmerName ?? 'Green Valley Farm',
+        'price': p.price.toStringAsFixed(0),
+        'unit': '/ ${p.unit}',
+        'stockBadge': '${p.quantity.toInt()} ${p.unit} available',
+        'isFavorite': false,
+        'imageColor': _getColorForCategory(p.categoryName),
+        'imageUrl': p.imageUrl ?? '',
+        'distance': LocationService.formatDistance(dist),
+        'isOrganic': p.isOrganic,
+        'description': p.description,
+      };
+    }).toList();
+
     setState(() {
-      _freshProducts = sorted.map((p) {
-        final dist = LocationService.getDistanceForProduct(p);
-        return {
-          'id': p.id,
-          'title': p.name,
-          'category': p.categoryName.isNotEmpty
-              ? p.categoryName.toUpperCase()
-              : 'PRODUCE',
-          'farmerName': p.farmerName ?? 'Green Valley Farm',
-          'price': p.price.toStringAsFixed(0),
-          'unit': '/ ${p.unit}',
-          'stockBadge': '${p.quantity.toInt()} ${p.unit} available',
-          'isFavorite': false,
-          'imageColor': _getColorForCategory(p.categoryName),
-          'imageUrl': p.imageUrl ?? '',
-          'distance': LocationService.formatDistance(dist),
-          'isOrganic': p.isOrganic,
-          'description': p.description,
-          'model': p,
-        };
-      }).toList();
-      
+      _freshProducts = mappedProducts;
+
+      // Dynamically derive Recently Restocked from live in-stock Firestore products
       _recentlyRestocked = List.from(_freshProducts);
     });
   }
@@ -285,17 +358,22 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   }
 
   void _toggleFavorite(List<Map<String, dynamic>> list, int index) {
-    AuthInterceptor.executeAction(context, () {
+    AuthInterceptor.executeAction(context, () async {
+      final bool nextState = !(list[index]['isFavorite'] as bool);
       setState(() {
-        list[index]['isFavorite'] = !(list[index]['isFavorite'] as bool);
+        list[index]['isFavorite'] = nextState;
       });
+      final String? uid = _currentUid;
+      final String prodId = (list[index]['id'] ?? '').toString();
+      if (uid != null && prodId.isNotEmpty) {
+        await _dbService.toggleWishlistProduct(uid, prodId);
+      }
+      if (!mounted) return;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            list[index]['isFavorite']
-                ? 'Added to Wishlist'
-                : 'Removed from Wishlist',
+            nextState ? 'Added to Wishlist' : 'Removed from Wishlist',
           ),
           duration: const Duration(seconds: 1),
         ),
@@ -315,15 +393,20 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   }
 
   void _toggleFollow(int index) {
+    final bool nextFollow = !(_popularFarmers[index]['isFollowing'] as bool);
     setState(() {
-      _popularFarmers[index]['isFollowing'] =
-          !(_popularFarmers[index]['isFollowing'] as bool);
+      _popularFarmers[index]['isFollowing'] = nextFollow;
     });
+    final String? uid = _currentUid;
+    final String farmerId = (_popularFarmers[index]['id'] ?? '').toString();
+    if (uid != null && farmerId.isNotEmpty) {
+      _dbService.toggleFollowFarmer(uid, farmerId);
+    }
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          _popularFarmers[index]['isFollowing']
+          nextFollow
               ? 'Following ${_popularFarmers[index]['name']}'
               : 'Unfollowed ${_popularFarmers[index]['name']}',
         ),

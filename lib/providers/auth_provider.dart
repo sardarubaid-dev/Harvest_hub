@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '../models/user_model.dart';
@@ -13,6 +14,7 @@ class AuthProvider with ChangeNotifier {
   UserModel? _currentUser;
   FarmerModel? _currentFarmer;
   CustomerModel? _currentCustomer;
+  StreamSubscription<CustomerModel?>? _customerSub;
 
   bool _isLoading = true;
   String? _errorMessage;
@@ -23,8 +25,9 @@ class AuthProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  bool get isAuthenticated => _currentUser != null;
-  bool get isCustomer => _currentUser?.isCustomer ?? false;
+  bool get isAuthenticated =>
+      _currentUser != null || _authService.currentUserId != null;
+  bool get isCustomer => _currentUser?.isCustomer ?? true;
   bool get isFarmer => _currentUser?.isFarmer ?? false;
   bool get isAdmin => _currentUser?.isAdmin ?? false;
 
@@ -35,30 +38,34 @@ class AuthProvider with ChangeNotifier {
   void _init() {
     _authService.authStateChanges.listen((firebaseUser) async {
       if (firebaseUser == null) {
+        await _customerSub?.cancel();
+        _customerSub = null;
         _currentUser = null;
         _currentFarmer = null;
         _currentCustomer = null;
         _isLoading = false;
         notifyListeners();
       } else {
-        await fetchUserData(firebaseUser.uid);
+        if (_currentUser == null || _currentUser!.uid != firebaseUser.uid) {
+          await fetchUserData(firebaseUser.uid);
+        }
       }
     });
   }
 
   Future<void> fetchUserData(String uid) async {
-    _isLoading = true;
-    notifyListeners();
-
     try {
-      _currentUser = await _authService.getUserModel(uid);
+      final fetched = await _authService.getUserModel(uid);
+      if (fetched != null) {
+        _currentUser = fetched;
+      }
       if (_currentUser != null) {
         if (_currentUser!.isFarmer) {
           _currentFarmer = await _databaseService.getFarmerByUserId(uid);
         } else if (_currentUser!.isCustomer) {
-          _databaseService.streamCustomer(uid).listen((customer) {
+          await _customerSub?.cancel();
+          _customerSub = _databaseService.streamCustomer(uid).listen((customer) {
             _currentCustomer = customer;
-            notifyListeners();
           });
         }
       }
@@ -76,9 +83,13 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _currentUser = await _authService.login(email: email, password: password);
-      if (_currentUser != null) {
-        await fetchUserData(_currentUser!.uid);
+      final loggedInUser = await _authService.login(
+        email: email,
+        password: password,
+      );
+      if (loggedInUser != null) {
+        _currentUser = loggedInUser;
+        await fetchUserData(loggedInUser.uid);
         return true;
       }
       return false;
