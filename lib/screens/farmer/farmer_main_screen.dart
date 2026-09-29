@@ -9,6 +9,7 @@ import 'farmer_inventory_tab.dart';
 import 'farmer_orders_tab.dart';
 import 'farmer_profile_tab.dart';
 import 'farmer_reviews_tab.dart';
+import 'approval_pending_view.dart';
 
 class FarmerMainScreen extends StatefulWidget {
   final String initialTab;
@@ -108,6 +109,10 @@ class _FarmerMainScreenState extends State<FarmerMainScreen> {
           ),
         ),
       );
+    }
+
+    if (!farmer.isApproved) {
+      return ApprovalPendingView(farmer: farmer);
     }
 
     return Scaffold(

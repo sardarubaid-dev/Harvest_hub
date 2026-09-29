@@ -13,6 +13,7 @@ class FarmerModel {
   final double? longitude;
   final bool isSuspended;
   final DateTime? createdAt;
+  final List<String> verificationDocs;
 
   FarmerModel({
     required this.id,
@@ -29,6 +30,7 @@ class FarmerModel {
     this.longitude,
     this.isSuspended = false,
     this.createdAt,
+    this.verificationDocs = const [],
   });
 
   factory FarmerModel.fromMap(String id, Map<String, dynamic> map) {
@@ -51,6 +53,9 @@ class FarmerModel {
       createdAt: map['createdAt'] != null
           ? DateTime.tryParse(map['createdAt'].toString())
           : null,
+      verificationDocs: map['verificationDocs'] != null
+          ? List<String>.from(map['verificationDocs'])
+          : (map['VerificationDocs'] != null ? List<String>.from(map['VerificationDocs']) : []),
     );
   }
 
@@ -71,6 +76,7 @@ class FarmerModel {
       'isSuspended': isSuspended,
       'createdAt':
           createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
+      'verificationDocs': verificationDocs,
     };
   }
 
@@ -89,6 +95,7 @@ class FarmerModel {
     double? longitude,
     bool? isSuspended,
     DateTime? createdAt,
+    List<String>? verificationDocs,
   }) {
     return FarmerModel(
       id: id ?? this.id,
@@ -105,6 +112,7 @@ class FarmerModel {
       longitude: longitude ?? this.longitude,
       isSuspended: isSuspended ?? this.isSuspended,
       createdAt: createdAt ?? this.createdAt,
+      verificationDocs: verificationDocs ?? this.verificationDocs,
     );
   }
 }

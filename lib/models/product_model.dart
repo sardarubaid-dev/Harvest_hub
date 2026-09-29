@@ -22,6 +22,11 @@ class ProductModel {
   final double? originalPrice;
   final bool isDealOfTheDay;
 
+  // Rating metrics
+  final double averageRating;
+  final int totalReviews;
+  final Map<String, int> ratingBreakdown;
+
   ProductModel({
     required this.id,
     required this.farmerId,
@@ -41,6 +46,9 @@ class ProductModel {
     this.createdAt,
     this.originalPrice,
     this.isDealOfTheDay = false,
+    this.averageRating = 0.0,
+    this.totalReviews = 0,
+    this.ratingBreakdown = const {},
   });
 
   factory ProductModel.fromMap(String id, Map<String, dynamic> map) {
@@ -67,6 +75,11 @@ class ProductModel {
           : null,
       originalPrice: map['originalPrice'] != null ? (map['originalPrice'] as num).toDouble() : null,
       isDealOfTheDay: map['isDealOfTheDay'] ?? false,
+      averageRating: (map['averageRating'] ?? 0).toDouble(),
+      totalReviews: map['totalReviews'] ?? 0,
+      ratingBreakdown: map['ratingBreakdown'] != null 
+          ? Map<String, int>.from(map['ratingBreakdown']) 
+          : {},
     );
   }
 
@@ -89,6 +102,9 @@ class ProductModel {
       'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : FieldValue.serverTimestamp(),
       'originalPrice': originalPrice,
       'isDealOfTheDay': isDealOfTheDay,
+      'averageRating': averageRating,
+      'totalReviews': totalReviews,
+      'ratingBreakdown': ratingBreakdown,
     };
   }
 
@@ -109,6 +125,11 @@ class ProductModel {
     String? farmerName,
     String? marketName,
     DateTime? createdAt,
+    double? originalPrice,
+    bool? isDealOfTheDay,
+    double? averageRating,
+    int? totalReviews,
+    Map<String, int>? ratingBreakdown,
   }) {
     return ProductModel(
       id: id ?? this.id,
@@ -126,8 +147,12 @@ class ProductModel {
       isOrganic: isOrganic ?? this.isOrganic,
       farmerName: farmerName ?? this.farmerName,
       marketName: marketName ?? this.marketName,
-
       createdAt: createdAt ?? this.createdAt,
+      originalPrice: originalPrice ?? this.originalPrice,
+      isDealOfTheDay: isDealOfTheDay ?? this.isDealOfTheDay,
+      averageRating: averageRating ?? this.averageRating,
+      totalReviews: totalReviews ?? this.totalReviews,
+      ratingBreakdown: ratingBreakdown ?? this.ratingBreakdown,
     );
   }
 }

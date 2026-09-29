@@ -64,13 +64,7 @@ class _AdminManageTabState extends State<AdminManageTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildFinancialSettings(),
-            const SizedBox(height: 32),
             _buildDealsSection(),
-            const SizedBox(height: 32),
-            _buildOffersSection(),
-            const SizedBox(height: 32),
-            _buildBannersSection(),
             const SizedBox(height: 60),
           ],
         ),

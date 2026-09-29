@@ -5,6 +5,7 @@ import 'package:harvest_hub/services/database_service.dart';
 import 'package:harvest_hub/models/farmer_model.dart';
 import 'package:intl/intl.dart';
 import 'admin_onboard_farmer_screen.dart';
+import 'admin_farmer_detail_screen.dart';
 
 class AdminFarmerManagementTab extends StatefulWidget {
   const AdminFarmerManagementTab({super.key});
@@ -331,26 +332,31 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 16),
-            child: _buildApplicantCard(
-              name: f.farmName,
-              owner: f.contactNumber,
-              location: f.location,
-              time: timeStr,
-              products: 'Multiple', 
-              status: f.isApproved ? 'Verified' : 'Pending',
-              isStatusGreen: f.isApproved,
-              button1Label: 'Review Docs',
-              button1Icon: Icons.visibility_outlined,
-              button2Label: 'Approve & Stall',
-              button2Icon: Icons.check_circle_outline,
-              isButton2Primary: true,
-              imageInitials: initials,
-              onButton2Pressed: () async {
-                await _dbService.updateFarmer(f.copyWith(isApproved: true));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('${f.farmName} approved successfully')),
-                );
+            child: InkWell(
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => AdminFarmerDetailScreen(farmer: f)));
               },
+              child: _buildApplicantCard(
+                name: f.farmName,
+                owner: f.contactNumber,
+                location: f.location,
+                time: timeStr,
+                products: 'Multiple', 
+                status: f.isApproved ? 'Verified' : 'Pending',
+                isStatusGreen: f.isApproved,
+                button1Label: 'Review Docs',
+                button1Icon: Icons.visibility_outlined,
+                button2Label: 'Approve & Stall',
+                button2Icon: Icons.check_circle_outline,
+                isButton2Primary: true,
+                imageInitials: initials,
+                onButton2Pressed: () async {
+                  await _dbService.updateFarmer(f.copyWith(isApproved: true));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('${f.farmName} approved successfully')),
+                  );
+                },
+              ),
             ),
           );
         }).toList(),
@@ -553,28 +559,33 @@ class _AdminFarmerManagementTabState extends State<AdminFarmerManagementTab> {
           final initials = f.farmName.length >= 2 ? f.farmName.substring(0, 2).toUpperCase() : 'F';
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: _buildDirectoryCard(
-              name: f.farmName,
-              owner: f.contactNumber,
-              location: f.location,
-              rating: f.rating.toStringAsFixed(1),
-              reviews: '(0)',
-              productsCount: 'Products Active',
-              revenue: 'Rs. 0/mo',
-              status: f.isSuspended ? 'Suspended' : 'Active & Selling',
-              stall: 'Stall',
-              isStatusGreen: !f.isSuspended,
-              initials: initials,
-              isSuspended: f.isSuspended,
-              onActionSelected: (action) async {
-                if (action == 'suspend') {
-                  await _dbService.updateFarmer(f.copyWith(isSuspended: true));
-                } else if (action == 'reactivate') {
-                  await _dbService.updateFarmer(f.copyWith(isSuspended: false));
-                } else if (action == 'delete') {
-                  await _dbService.deleteFarmer(f.id);
-                }
+            child: InkWell(
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => AdminFarmerDetailScreen(farmer: f)));
               },
+              child: _buildDirectoryCard(
+                name: f.farmName,
+                owner: f.contactNumber,
+                location: f.location,
+                rating: f.rating.toStringAsFixed(1),
+                reviews: '(0)',
+                productsCount: 'Products Active',
+                revenue: 'Rs. 0/mo',
+                status: f.isSuspended ? 'Suspended' : 'Active & Selling',
+                stall: 'Stall',
+                isStatusGreen: !f.isSuspended,
+                initials: initials,
+                isSuspended: f.isSuspended,
+                onActionSelected: (action) async {
+                  if (action == 'suspend') {
+                    await _dbService.updateFarmer(f.copyWith(isSuspended: true));
+                  } else if (action == 'reactivate') {
+                    await _dbService.updateFarmer(f.copyWith(isSuspended: false));
+                  } else if (action == 'delete') {
+                    await _dbService.deleteFarmer(f.id);
+                  }
+                },
+              ),
             ),
           );
         }).toList(),
