@@ -57,7 +57,7 @@ class _AdminReviewsScreenState extends State<AdminReviewsScreen> {
                     Row(
                       children: [
                         Text(
-                          r.customerName.isEmpty ? 'Unknown User' : r.customerName,
+                          r.userName.isEmpty ? 'Unknown User' : r.userName,
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                         const Spacer(),

@@ -148,7 +148,7 @@ class AuthService {
                 ? credential.user!.displayName!
                 : email.split('@').first,
             email: email.trim(),
-            role: 'Customer',
+            role: email.trim().toLowerCase() == adminEmail.toLowerCase() ? 'Admin' : 'Customer',
             isActive: true,
           );
           try {

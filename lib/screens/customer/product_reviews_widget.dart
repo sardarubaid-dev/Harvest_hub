@@ -364,7 +364,6 @@ class _WriteReviewModalState extends State<WriteReviewModal> {
         mediaUrls: uploadedUrls,
         isVerifiedPurchase: true, // Mock logic, ideally check orders collection
         createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
       );
 
       await DatabaseService().addReview(review);

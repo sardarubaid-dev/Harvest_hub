@@ -169,7 +169,7 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
                     Icon(Icons.eco_outlined, size: 14, color: primaryGreen),
                     SizedBox(width: 6),
                     Text(
-                      'FRESH • DIRECT • HONEST',
+                      'FRESH - DIRECT - HONEST',
                       style: TextStyle(
                         color: primaryGreen,
                         fontSize: 11,
@@ -542,7 +542,7 @@ class _RegisterCustomerScreenState extends State<RegisterCustomerScreen> {
                       ), 
                       SizedBox(width: 8),
                       Text(
-                        '100% Free registration • No hidden fees',
+                        '100% Free registration - No hidden fees',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,

@@ -216,7 +216,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
-                          hintText: 'e.g. ubaid@example.com',
+                          hintText: 'email@example.com',
                           hintStyle: TextStyle(color: Colors.grey.shade400),
                           prefixIcon: const Icon(
                             Icons.mail_outline,
@@ -250,7 +250,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         controller: _passwordController,
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
-                          hintText: '........',
+                          hintText: 'Enter password',
                           hintStyle: TextStyle(color: Colors.grey.shade400),
                           prefixIcon: const Icon(
                             Icons.lock_outline,
@@ -478,57 +478,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 32),
-
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: primaryGreen.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: primaryGreen.withOpacity(0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.notifications_active_outlined,
-                        color: primaryGreen,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Harvest Update',
-                            style: TextStyle(
-                              color: Colors.black87,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            '32 local regional farms just updated their early morning harvest boxes!',
-                            style: TextStyle(
-                              color: Colors.black54,
-                              fontSize: 11,
-                              height: 1.3,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+                          ],
           ),
         ),
       ),

@@ -122,9 +122,16 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     );
                   }
 
-                  final allCategories = snapshot.data!
+                  final rawCategories = snapshot.data!
                       .where((c) => c.name != 'All')
                       .toList();
+                  final uniqueMap = <String, CategoryModel>{};
+                  for (var c in rawCategories) {
+                    if (!uniqueMap.containsKey(c.name)) {
+                      uniqueMap[c.name] = c;
+                    }
+                  }
+                  final allCategories = uniqueMap.values.toList();
 
                   return GridView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -166,16 +173,28 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Container(
-                                padding: const EdgeInsets.all(20),
+                                width: 80,
+                                height: 80,
                                 decoration: BoxDecoration(
                                   color: bgColor,
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(
-                                  Icons.category,
-                                  size: 40,
-                                  color: primaryGreen,
-                                ),
+                                clipBehavior: Clip.hardEdge,
+                                child: (cat.imageUrl != null && cat.imageUrl!.trim().isNotEmpty)
+                                  ? Image.network(
+                                      cat.imageUrl!.trim(),
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) => const Icon(
+                                        Icons.eco,
+                                        size: 40,
+                                        color: primaryGreen,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.eco,
+                                      size: 40,
+                                      color: primaryGreen,
+                                    ),
                               ),
                               const SizedBox(height: 14),
                               Text(

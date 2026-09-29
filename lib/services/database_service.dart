@@ -221,17 +221,16 @@ class DatabaseService {
   }
 
   Stream<List<ProductModel>> streamProductsByFarmer(String farmerId) {
-    return _productsRef.where('farmerId', isEqualTo: farmerId).snapshots().map((
-      snapshot,
-    ) {
-      return snapshot.docs
-          .map(
-            (doc) => ProductModel.fromMap(
-              doc.id,
-              doc.data() as Map<String, dynamic>,
-            ),
-          )
-          .toList();
+    return _productsRef.where('farmerId', isEqualTo: farmerId).snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) {
+        try {
+          return ProductModel.fromMap(doc.id, doc.data() as Map<String, dynamic>);
+        } catch (e, stack) {
+          print('Error mapping product ${doc.id}: $e');
+          print(stack);
+          return null;
+        }
+      }).whereType<ProductModel>().toList();
     });
   }
 

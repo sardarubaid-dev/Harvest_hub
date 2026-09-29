@@ -49,14 +49,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _fillAdminCredentials() {
-    setState(() {
-      _selectedRoleTab = 'Admin';
-      _emailController.text = AuthService.adminEmail;
-      _passwordController.text = AuthService.adminPassword;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -298,18 +290,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
 
-                if (_selectedRoleTab == 'Admin')
-                  TextButton.icon(
-                    onPressed: _fillAdminCredentials,
-                    icon: const Icon(
-                      Icons.admin_panel_settings,
-                      color: Colors.green,
-                    ),
-                    label: const Text(
-                      "Fill Pre-configured Admin Credentials",
-                      style: TextStyle(color: Colors.green),
-                    ),
-                  ),
               ],
             ),
           ),

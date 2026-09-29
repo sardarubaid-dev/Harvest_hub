@@ -368,24 +368,6 @@ class RoleSelectionScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // Footer
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(top: 2.0),
-                    child: Icon(Icons.lock_outline, color: primaryGreen, size: 14),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '256-bit encrypted decentralized farmer\ndirect channel',
-                      style: const TextStyle(color: greyText, fontSize: 12, height: 1.4),
-                    ),
-                  ),
-                ],
-              ),
               const SizedBox(height: 20),
             ],
           ),

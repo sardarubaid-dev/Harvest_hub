@@ -1,4 +1,4 @@
-class ReviewModel {
+content = """class ReviewModel {
   final String id;
   final String productId;
   final String farmerId;
@@ -119,3 +119,8 @@ class ReviewModel {
     );
   }
 }
+"""
+
+with open('lib/models/review_model.dart', 'w', encoding='utf-8') as f:
+    f.write(content)
+print("File rewritten.")

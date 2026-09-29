@@ -59,9 +59,9 @@ class ProductModel {
       categoryName: map['categoryName'] ?? '',
       name: map['name'] ?? map['Name'] ?? '',
       description: map['description'] ?? map['Description'] ?? '',
-      price: (map['price'] ?? map['Price'] ?? 0).toDouble(),
+      price: double.tryParse((map['price'] ?? map['Price'] ?? 0).toString()) ?? 0.0,
       unit: map['unit'] ?? map['Unit'] ?? 'kg',
-      quantity: (map['quantity'] ?? map['Quantity'] ?? 0).toDouble(),
+      quantity: double.tryParse((map['quantity'] ?? map['Quantity'] ?? 0).toString()) ?? 0.0,
       imageUrl: map['imageUrl'] ?? map['Image_Url'],
       imageUrls: map['imageUrls'] != null ? List<String>.from(map['imageUrls']) : null,
       isAvailable: map['isAvailable'] ?? map['Is_Available'] ?? true,
@@ -73,10 +73,10 @@ class ProductModel {
               ? (map['createdAt'] as Timestamp).toDate()
               : DateTime.tryParse(map['createdAt'].toString()) ?? DateTime.now())
           : null,
-      originalPrice: map['originalPrice'] != null ? (map['originalPrice'] as num).toDouble() : null,
+      originalPrice: map['originalPrice'] != null ? double.tryParse(map['originalPrice'].toString()) : null,
       isDealOfTheDay: map['isDealOfTheDay'] ?? false,
-      averageRating: (map['averageRating'] ?? 0).toDouble(),
-      totalReviews: map['totalReviews'] ?? 0,
+      averageRating: double.tryParse((map['averageRating'] ?? 0).toString()) ?? 0.0,
+      totalReviews: int.tryParse((map['totalReviews'] ?? 0).toString()) ?? 0,
       ratingBreakdown: map['ratingBreakdown'] != null 
           ? Map<String, int>.from(map['ratingBreakdown']) 
           : {},

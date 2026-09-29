@@ -20,6 +20,7 @@ class ProductDetailScreen extends StatefulWidget {
 }
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  int _currentImageIndex = 0;
   int _quantity = 1;
   late int _pricePerUnit;
   
@@ -151,20 +152,51 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           color: widget.product?['imageColor'] ?? const Color(0xFFA5D6A7),
                           child: Builder(
                             builder: (context) {
-                              final imageUrl = widget.product?['imageUrl'] ??
-                                  widget.product?['Image_Url'];
-                              if (imageUrl != null &&
-                                  imageUrl.toString().trim().isNotEmpty) {
+                              final p = widget.product;
+                              List<String> images = [];
+                              
+                              if (p != null) {
+                                if (p['imageUrls'] != null && p['imageUrls'] is List) {
+                                  images = List<String>.from(p['imageUrls']);
+                                } else {
+                                  final singleImage = p['imageUrl'] ?? p['Image_Url'];
+                                  if (singleImage != null && singleImage.toString().trim().isNotEmpty) {
+                                    images = [singleImage.toString().trim()];
+                                  }
+                                }
+                              }
+
+                              if (images.isEmpty) {
+                                return _buildImagePlaceholder();
+                              }
+
+                              if (images.length == 1) {
                                 return Image.network(
-                                  imageUrl.toString().trim(),
+                                  images.first,
                                   fit: BoxFit.cover,
                                   width: double.infinity,
                                   height: 300,
-                                  errorBuilder: (_, __, ___) =>
-                                      _buildImagePlaceholder(),
+                                  errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
                                 );
                               }
-                              return _buildImagePlaceholder();
+
+                              return PageView.builder(
+                                itemCount: images.length,
+                                onPageChanged: (index) {
+                                  setState(() {
+                                    _currentImageIndex = index;
+                                  });
+                                },
+                                itemBuilder: (context, index) {
+                                  return Image.network(
+                                    images[index],
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: 300,
+                                    errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
+                                  );
+                                },
+                              );
                             },
                           ),
                         ),
@@ -201,90 +233,103 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               ),
                           ),
                         ),
-                        Positioned(
-                          bottom: 16,
-                          left: 16,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.6),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Row(
-                              children: const [
-                                Icon(
-                                  Icons.photo_library_outlined,
-                                  color: Colors.white,
-                                  size: 14,
+                        // Only show indicators if there are multiple images
+                        Builder(
+                          builder: (context) {
+                            final p = widget.product;
+                            List<String> images = [];
+                            if (p != null) {
+                              if (p['imageUrls'] != null && p['imageUrls'] is List) {
+                                images = List<String>.from(p['imageUrls']);
+                              } else {
+                                final singleImage = p['imageUrl'] ?? p['Image_Url'];
+                                if (singleImage != null && singleImage.toString().trim().isNotEmpty) {
+                                  images = [singleImage.toString().trim()];
+                                }
+                              }
+                            }
+
+                            if (images.length <= 1) return const SizedBox.shrink();
+
+                            return Positioned(
+                              bottom: 16,
+                              left: 16,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
                                 ),
-                                SizedBox(width: 6),
-                                Text(
-                                  '1 / 4',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.6),
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
-                              ],
-                            ),
-                          ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.photo_library_outlined,
+                                      color: Colors.white,
+                                      size: 14,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '${_currentImageIndex + 1} / ${images.length}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }
                         ),
-                        Positioned(
-                          bottom: 16,
-                          right: 16,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.8),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 6,
-                                  height: 6,
-                                  decoration: const BoxDecoration(
-                                    color: primaryGreen,
-                                    shape: BoxShape.circle,
-                                  ),
+                        Builder(
+                          builder: (context) {
+                            final p = widget.product;
+                            List<String> images = [];
+                            if (p != null) {
+                              if (p['imageUrls'] != null && p['imageUrls'] is List) {
+                                images = List<String>.from(p['imageUrls']);
+                              } else {
+                                final singleImage = p['imageUrl'] ?? p['Image_Url'];
+                                if (singleImage != null && singleImage.toString().trim().isNotEmpty) {
+                                  images = [singleImage.toString().trim()];
+                                }
+                              }
+                            }
+
+                            if (images.length <= 1) return const SizedBox.shrink();
+
+                            return Positioned(
+                              bottom: 16,
+                              right: 16,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 6,
                                 ),
-                                const SizedBox(width: 4),
-                                Container(
-                                  width: 6,
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[400],
-                                    shape: BoxShape.circle,
-                                  ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.8),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                const SizedBox(width: 4),
-                                Container(
-                                  width: 6,
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[400],
-                                    shape: BoxShape.circle,
-                                  ),
+                                child: Row(
+                                  children: List.generate(images.length, (index) {
+                                    return Container(
+                                      margin: EdgeInsets.only(right: index == images.length - 1 ? 0 : 4),
+                                      width: 6,
+                                      height: 6,
+                                      decoration: BoxDecoration(
+                                        color: _currentImageIndex == index ? primaryGreen : Colors.grey[400],
+                                        shape: BoxShape.circle,
+                                      ),
+                                    );
+                                  }),
                                 ),
-                                const SizedBox(width: 4),
-                                Container(
-                                  width: 6,
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[400],
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                              ),
+                            );
+                          }
                         ),
                       ],
                     ),
@@ -747,10 +792,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   height: 40,
                                   child: ElevatedButton(
                                     onPressed: () {
-                                      final farmerName =
-                                          widget.product?['farmerName'] ?? '';
+                                      final p = widget.product;
+                                      final farmerName = p?['farmerName'] ?? p?['Farmer_Name'] ?? 'Farm';
+                                      final farmerId = p?['farmerId'] ?? p?['Farmer_Id'] ?? 'f0';
                                       final farmerData = <String, dynamic>{
-                                        'id': 'f0',
+                                        'id': farmerId,
                                         'name': farmerName,
                                         'rating': '5.0',
                                         'reviews': '120 reviews',
