@@ -621,55 +621,40 @@ class DatabaseService {
     }
   }
 
-  Stream<List<ReviewModel>> streamReviewsByTarget(String targetId) {
-    return _reviewsRef.where('targetId', isEqualTo: targetId).snapshots().map((
-      snapshot,
-    ) {
-      List<ReviewModel> reviews = snapshot.docs
-          .map(
-            (doc) => ReviewModel.fromMap(
-              doc.id,
-              doc.data() as Map<String, dynamic>,
-            ),
-          )
-          .toList();
-      reviews.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      return reviews;
-    });
-  }
-
-  Stream<List<ReviewModel>> streamFarmerReviews(String farmerId) {
+  Stream<List<ReviewModel>> streamProductReviews(String productId) {
     return _reviewsRef
-        .where('targetType', isEqualTo: 'farmer')
-        .where('targetId', isEqualTo: farmerId)
+        .where('productId', isEqualTo: productId)
+        .where('status', isEqualTo: 'published')
         .snapshots()
         .map((snapshot) {
           List<ReviewModel> reviews = snapshot.docs
-              .map(
-                (doc) => ReviewModel.fromMap(
-                  doc.id,
-                  doc.data() as Map<String, dynamic>,
-                ),
-              )
+              .map((doc) => ReviewModel.fromMap(doc.id, doc.data() as Map<String, dynamic>))
               .toList();
           reviews.sort((a, b) => b.createdAt.compareTo(a.createdAt));
           return reviews;
         });
   }
 
-  Stream<List<ReviewModel>> streamProductReviews(String productId) {
+  Stream<List<ReviewModel>> streamAllReviews() {
     return _reviewsRef
-        .where('targetType', isEqualTo: 'product')
-        .where('targetId', isEqualTo: productId)
+        .where('status', isEqualTo: 'published')
+        .orderBy('createdAt', descending: true)
+        .limit(20)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs
+              .map((doc) => ReviewModel.fromMap(doc.id, doc.data() as Map<String, dynamic>))
+              .toList();
+        });
+  }
+
+  Stream<List<ReviewModel>> streamFarmerReviews(String farmerId) {
+    return _reviewsRef
+        .where('farmerId', isEqualTo: farmerId)
         .snapshots()
         .map((snapshot) {
           List<ReviewModel> reviews = snapshot.docs
-              .map(
-                (doc) => ReviewModel.fromMap(
-                  doc.id,
-                  doc.data() as Map<String, dynamic>,
-                ),
-              )
+              .map((doc) => ReviewModel.fromMap(doc.id, doc.data() as Map<String, dynamic>))
               .toList();
           reviews.sort((a, b) => b.createdAt.compareTo(a.createdAt));
           return reviews;
@@ -677,9 +662,75 @@ class DatabaseService {
   }
 
   Future<void> addReview(ReviewModel review) async {
-    DocumentReference ref = _reviewsRef.doc();
-    ReviewModel newReview = review.copyWith(id: ref.id);
-    await ref.set(newReview.toMap());
+    final reviewRef = _reviewsRef.doc();
+    final newReview = review.copyWith(id: reviewRef.id);
+    final productRef = _productsRef.doc(review.productId);
+
+    await _firestore.runTransaction((transaction) async {
+      final productDoc = await transaction.get(productRef);
+      if (!productDoc.exists) {
+        throw Exception("Product not found");
+      }
+
+      // Add the review document
+      transaction.set(reviewRef, newReview.toMap());
+
+      // Atomically update product aggregates
+      final data = productDoc.data() as Map<String, dynamic>;
+      final int totalReviews = (data['totalReviews'] ?? 0).toInt();
+      final double averageRating = (data['averageRating'] ?? 0.0).toDouble();
+      final Map<String, dynamic> breakdown = data['ratingBreakdown'] != null
+          ? Map<String, dynamic>.from(data['ratingBreakdown'])
+          : {'5': 0, '4': 0, '3': 0, '2': 0, '1': 0};
+
+      final int newTotal = totalReviews + 1;
+      final int currentBreakdownCount = (breakdown[review.rating.toString()] ?? 0).toInt();
+      breakdown[review.rating.toString()] = currentBreakdownCount + 1;
+
+      // Calculate new average
+      final double newAverage = ((averageRating * totalReviews) + review.rating) / newTotal;
+
+      transaction.update(productRef, {
+        'totalReviews': newTotal,
+        'averageRating': newAverage,
+        'ratingBreakdown': breakdown,
+      });
+    });
+  }
+
+  Future<void> toggleHelpfulVote(String reviewId, String userId) async {
+    final reviewRef = _reviewsRef.doc(reviewId);
+    await _firestore.runTransaction((transaction) async {
+      final doc = await transaction.get(reviewRef);
+      if (!doc.exists) return;
+      
+      final data = doc.data() as Map<String, dynamic>;
+      List<String> helpfulUsers = List<String>.from(data['helpfulUserIds'] ?? []);
+      int count = (data['helpfulCount'] ?? 0).toInt();
+
+      if (helpfulUsers.contains(userId)) {
+        helpfulUsers.remove(userId);
+        count = count > 0 ? count - 1 : 0;
+      } else {
+        helpfulUsers.add(userId);
+        count += 1;
+      }
+
+      transaction.update(reviewRef, {
+        'helpfulUserIds': helpfulUsers,
+        'helpfulCount': count,
+      });
+    });
+  }
+
+  Future<void> addFarmerReply(String reviewId, String farmerId, String replyComment) async {
+    final reviewRef = _reviewsRef.doc(reviewId);
+    final replyMap = {
+      'comment': replyComment,
+      'repliedAt': DateTime.now().toIso8601String(),
+      'updatedAt': DateTime.now().toIso8601String(),
+    };
+    await reviewRef.update({'farmerReply': replyMap});
   }
 
   Future<void> approveReview(String reviewId) async {
@@ -690,19 +741,30 @@ class DatabaseService {
     await _reviewsRef.doc(reviewId).delete();
   }
 
-  Stream<List<ReviewModel>> streamAllReviews() {
-    return _reviewsRef.snapshots().map((snapshot) {
-      List<ReviewModel> reviews = snapshot.docs
-          .map(
-            (doc) => ReviewModel.fromMap(
-              doc.id,
-              doc.data() as Map<String, dynamic>,
-            ),
-          )
-          .toList();
-      reviews.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      return reviews;
-    });
+  Future<Map<String, dynamic>> getPaginatedReviews({
+    required String productId,
+    required int limit,
+    DocumentSnapshot? startAfter,
+  }) async {
+    Query query = _reviewsRef
+        .where('productId', isEqualTo: productId)
+        .where('status', isEqualTo: 'published')
+        .orderBy('createdAt', descending: true)
+        .limit(limit);
+
+    if (startAfter != null) {
+      query = query.startAfterDocument(startAfter);
+    }
+
+    final snap = await query.get();
+    final reviews = snap.docs
+        .map((doc) => ReviewModel.fromMap(doc.id, doc.data() as Map<String, dynamic>))
+        .toList();
+    
+    return {
+      'reviews': reviews,
+      'lastDoc': snap.docs.isNotEmpty ? snap.docs.last : null,
+    };
   }
 
   // ===========================================================================

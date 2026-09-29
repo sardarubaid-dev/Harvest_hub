@@ -8,6 +8,8 @@ import 'farmer_dashboard_tab.dart';
 import 'farmer_inventory_tab.dart';
 import 'farmer_orders_tab.dart';
 import 'farmer_profile_tab.dart';
+import 'farmer_reviews_tab.dart';
+import 'approval_pending_view.dart';
 
 class FarmerMainScreen extends StatefulWidget {
   final String initialTab;
@@ -45,8 +47,10 @@ class _FarmerMainScreenState extends State<FarmerMainScreen> {
         return 1;
       case 'orders':
         return 2;
-      case 'profile':
+      case 'reviews':
         return 3;
+      case 'profile':
+        return 4;
       default:
         return 0;
     }
@@ -107,6 +111,10 @@ class _FarmerMainScreenState extends State<FarmerMainScreen> {
       );
     }
 
+    if (!farmer.isApproved) {
+      return ApprovalPendingView(farmer: farmer);
+    }
+
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
@@ -114,6 +122,7 @@ class _FarmerMainScreenState extends State<FarmerMainScreen> {
           FarmerDashboardTab(onNavigateTab: _onTabTapped),
           const FarmerInventoryTab(),
           const FarmerOrdersTab(),
+          const FarmerReviewsTab(),
           const FarmerProfileTab(),
         ],
       ),
@@ -138,6 +147,11 @@ class _FarmerMainScreenState extends State<FarmerMainScreen> {
             icon: Icon(Icons.receipt_long_outlined),
             activeIcon: Icon(Icons.receipt_long),
             label: 'Orders',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.star_outline),
+            activeIcon: Icon(Icons.star),
+            label: 'Reviews',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),

@@ -75,6 +75,7 @@ class AuthService {
     double? latitude,
     double? longitude,
     String? profileImageUrl,
+    List<String>? verificationDocs,
   }) async {
     try {
       UserCredential credential = await _auth.createUserWithEmailAndPassword(
@@ -109,6 +110,7 @@ class AuthService {
         latitude: latitude,
         longitude: longitude,
         profileImageUrl: profileImageUrl,
+        verificationDocs: verificationDocs ?? [],
         createdAt: DateTime.now(),
       );
 

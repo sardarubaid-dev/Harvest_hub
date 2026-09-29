@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    // Reviews Collection
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if request.auth != null 
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.rating >= 1
+                    && request.resource.data.rating <= 5;
+      // Allow updates for helpful votes and farmer replies
+      allow update: if request.auth != null 
+                    && (request.resource.data.diff(resource.data).affectedKeys()
+                        .hasOnly(['helpfulCount', 'helpfulUserIds', 'farmerReply', 'updatedAt']));
+      // Only author or admin can delete
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    // Products Collection
+    match /products/{productId} {
+      allow read: if true;
+      allow update: if request.auth != null; // Since reviews update product aggregates via transaction
+    }
+    
+    // Users Collection
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Farmers Collection
+    match /farmers/{farmerId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == farmerId;
+    }
+  }
+}

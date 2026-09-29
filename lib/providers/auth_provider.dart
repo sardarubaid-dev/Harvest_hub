@@ -147,6 +147,7 @@ class AuthProvider with ChangeNotifier {
     double? latitude,
     double? longitude,
     String? profileImageUrl,
+    List<String>? verificationDocs,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -165,6 +166,7 @@ class AuthProvider with ChangeNotifier {
         latitude: latitude,
         longitude: longitude,
         profileImageUrl: profileImageUrl,
+        verificationDocs: verificationDocs,
       );
       if (_currentUser != null) {
         await fetchUserData(_currentUser!.uid);

@@ -132,7 +132,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
           ..addAll(
             approvedReviews.map((r) {
               return {
-                'name': r.customerName.isNotEmpty ? r.customerName : 'Verified Buyer',
+                'name': r.userName.isNotEmpty ? r.userName : 'Verified Buyer',
                 'location': 'Verified Order',
                 'rating': r.rating.round().clamp(1, 5),
                 'date': 'Recent',
@@ -2151,13 +2151,14 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                     if (commentController.text.trim().isEmpty) return;
                     final newReview = ReviewModel(
                       id: '',
-                      customerId: user.uid,
-                      customerName: user.displayName ?? 'Verified Customer',
-                      targetType: 'app',
-                      targetId: 'harvesthub_app',
-                      rating: selectedRating.toDouble(),
+                      userId: user.uid,
+                      userName: user.displayName ?? 'Verified Customer',
+                      productId: 'harvesthub_app',
+                      farmerId: 'admin',
+                      rating: selectedRating,
                       comment: commentController.text.trim(),
                       createdAt: DateTime.now(),
+                      updatedAt: DateTime.now(),
                     );
                     await DatabaseService().addReview(newReview);
                     if (mounted) Navigator.pop(context);

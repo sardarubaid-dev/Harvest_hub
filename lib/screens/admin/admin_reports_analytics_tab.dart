@@ -446,7 +446,14 @@ class _AdminReportsAnalyticsTabState extends State<AdminReportsAnalyticsTab> {
                 const SizedBox(height: 2),
                 Row(
                   children: [
-                    Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
+                    Expanded(
+                      child: Text(
+                        subtitle,
+                        style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 4),
                       child: Text('•', style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),

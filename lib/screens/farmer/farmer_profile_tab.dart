@@ -581,6 +581,7 @@ class _FarmerProfileTabState extends State<FarmerProfileTab> {
                       builder: (context, mktSnap) {
                         final markets = mktSnap.data ?? [];
                         return DropdownButtonFormField<String>(
+                          isExpanded: true,
                           value: markets.any((m) => m.id == _selectedMarketId)
                               ? _selectedMarketId
                               : null,
