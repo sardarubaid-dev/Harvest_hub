@@ -8,6 +8,7 @@ class ReviewModel {
   final double rating;
   final String comment;
   final DateTime createdAt;
+  final bool isApproved;
 
   ReviewModel({
     required this.id,
@@ -19,6 +20,7 @@ class ReviewModel {
     this.rating = 5.0,
     required this.comment,
     required this.createdAt,
+    this.isApproved = false,
   });
 
   factory ReviewModel.fromMap(String id, Map<String, dynamic> map) {
@@ -36,6 +38,7 @@ class ReviewModel {
           : (map['Created_At'] != null
               ? DateTime.parse(map['Created_At'].toString())
               : DateTime.now()),
+      isApproved: map['isApproved'] ?? false,
     );
   }
 
@@ -50,6 +53,7 @@ class ReviewModel {
       'rating': rating,
       'comment': comment,
       'createdAt': createdAt.toIso8601String(),
+      'isApproved': isApproved,
     };
   }
 
@@ -63,6 +67,7 @@ class ReviewModel {
     double? rating,
     String? comment,
     DateTime? createdAt,
+    bool? isApproved,
   }) {
     return ReviewModel(
       id: id ?? this.id,
@@ -74,6 +79,7 @@ class ReviewModel {
       rating: rating ?? this.rating,
       comment: comment ?? this.comment,
       createdAt: createdAt ?? this.createdAt,
+      isApproved: isApproved ?? this.isApproved,
     );
   }
 }

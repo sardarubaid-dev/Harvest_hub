@@ -609,6 +609,10 @@ class DatabaseService {
     await _notificationsRef.doc(notificationId).update({'isRead': true});
   }
 
+  Future<void> deleteNotification(String notificationId) async {
+    await _notificationsRef.doc(notificationId).delete();
+  }
+
   Future<void> markAllNotificationsAsRead(String userId) async {
     QuerySnapshot snap =
         await _notificationsRef.where('userId', isEqualTo: userId).get();
@@ -678,6 +682,10 @@ class DatabaseService {
     await ref.set(newReview.toMap());
   }
 
+  Future<void> approveReview(String reviewId) async {
+    await _reviewsRef.doc(reviewId).update({'isApproved': true});
+  }
+  
   Future<void> deleteReview(String reviewId) async {
     await _reviewsRef.doc(reviewId).delete();
   }

@@ -1,3 +1,4 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -5,8 +6,7 @@ import 'package:go_router/go_router.dart';
 class OnboardingScreen extends StatefulWidget {
   /// Tracks whether onboarding has already been completed or skipped in the current session
   /// so returning/authenticated users are not forced through onboarding repeatedly.
-  static bool hasSeenOnboarding = false;
-
+  
   const OnboardingScreen({super.key});
 
   @override
@@ -83,14 +83,16 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     super.dispose();
   }
 
-  void _handleSkipToGuestHome() {
-    OnboardingScreen.hasSeenOnboarding = true;
-    context.go('/customer');
+  void _handleSkipToGuestHome() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hasSeenOnboarding', true);
+    if (mounted) context.go('/customer');
   }
 
-  void _handleGetStartedAuth() {
-    OnboardingScreen.hasSeenOnboarding = true;
-    context.go('/role_selection');
+  void _handleGetStartedAuth() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hasSeenOnboarding', true);
+    if (mounted) context.go('/role_selection');
   }
 
   void _handleNext() {

@@ -1,8 +1,8 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../providers/auth_provider.dart';
 import 'onboarding_screen.dart';
@@ -14,21 +14,17 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
   VideoPlayerController? _videoController;
+  bool _isVideoReady = false;
+  bool _hasNavigated = false;
+
   late final AnimationController _headerController;
   late final Animation<double> _headerOpacity;
   late final Animation<Offset> _headerSlide;
 
   late final AnimationController _exitController;
-  late final Animation<double> _exitFade;
-  late final Animation<double> _exitScale;
-
-  bool _isVideoReady = false;
-  bool _isExiting = false;
-  bool _hasNavigated = false;
-  Timer? _safetyTimer;
+  late final Animation<double> _exitOpacity;
 
   @override
   void initState() {
@@ -36,121 +32,118 @@ class _SplashScreenState extends State<SplashScreen>
 
     _headerController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 750),
+      duration: const Duration(milliseconds: 1200),
     );
-    _headerOpacity = CurvedAnimation(
-      parent: _headerController,
-      curve: Curves.easeOutCubic,
+
+    _headerOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _headerController, curve: const Interval(0.3, 1.0, curve: Curves.easeOut)),
     );
-    _headerSlide = Tween<Offset>(
-      begin: const Offset(0, -0.18),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _headerController,
-        curve: Curves.easeOutCubic,
-      ),
+
+    _headerSlide = Tween<Offset>(begin: const Offset(0, 20), end: Offset.zero).animate(
+      CurvedAnimation(parent: _headerController, curve: const Interval(0.3, 1.0, curve: Curves.easeOutQuart)),
     );
 
     _exitController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 480),
-    );
-    _exitFade = CurvedAnimation(
-      parent: _exitController,
-      curve: Curves.easeInOutCubic,
-    );
-    _exitScale = Tween<double>(begin: 1.0, end: 1.04).animate(
-      CurvedAnimation(
-        parent: _exitController,
-        curve: Curves.easeInOutCubic,
-      ),
+      duration: const Duration(milliseconds: 400),
     );
 
-    _initSplashVideo();
+    _exitOpacity = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(parent: _exitController, curve: Curves.easeOut),
+    );
+
+    _initializeVideo();
   }
 
-  Future<void> _initSplashVideo() async {
-    final controller = VideoPlayerController.asset(
-      'assets/Splash.mp4',
-      videoPlayerOptions: VideoPlayerOptions(
-        mixWithOthers: true,
-        allowBackgroundPlayback: false,
-      ),
-    );
-    _videoController = controller;
-
-    _safetyTimer = Timer(const Duration(milliseconds: 6000), _startSmoothExit);
-
+  Future<void> _initializeVideo() async {
     try {
-      await controller.initialize();
-      await controller.setVolume(0.0);
-      await controller.setLooping(false);
-      controller.addListener(_onVideoTick);
+      _videoController = VideoPlayerController.asset('assets/Splash.mp4');
+      await _videoController!.initialize();
+      
+      if (!mounted) return;
 
-      if (mounted) {
-        setState(() {
-          _isVideoReady = true;
-        });
-        await controller.play();
-        _headerController.forward();
-      }
-    } catch (_) {
+      setState(() {
+        _isVideoReady = true;
+      });
+
+      _videoController!.setVolume(0.0);
+      _videoController!.play();
       _headerController.forward();
-      Timer(const Duration(milliseconds: 1600), _startSmoothExit);
+
+      _videoController!.addListener(_onVideoTick);
+
+      final duration = _videoController!.value.duration;
+      final timeout = duration.inMilliseconds > 0 ? duration + const Duration(milliseconds: 500) : const Duration(seconds: 4);
+      
+      Future.delayed(timeout, () {
+        if (!_hasNavigated && mounted) {
+          _triggerExit();
+        }
+      });
+    } catch (e) {
+      debugPrint('Error loading splash video: $e');
+      if (mounted) {
+        Future.delayed(const Duration(seconds: 2), _navigateNext);
+      }
     }
   }
 
   void _onVideoTick() {
-    final controller = _videoController;
-    if (controller == null || !controller.value.isInitialized || _isExiting) {
-      return;
-    }
-    final position = controller.value.position;
-    final duration = controller.value.duration;
-
-    // Trigger the smooth cross-dissolve 480ms before the end of the video
-    // while the 3D camera is still moving, avoiding any end-of-stream freeze.
-    if (duration > Duration.zero &&
-        position >= duration - const Duration(milliseconds: 480)) {
-      _startSmoothExit();
+    if (_videoController == null || !mounted) return;
+    
+    final position = _videoController!.value.position;
+    final duration = _videoController!.value.duration;
+    
+    if (duration > Duration.zero && position >= duration - const Duration(milliseconds: 300)) {
+      _videoController!.removeListener(_onVideoTick);
+      _triggerExit();
     }
   }
 
-  Future<void> _startSmoothExit() async {
-    if (_isExiting || !mounted) return;
-    _isExiting = true;
-    _safetyTimer?.cancel();
-
-    await _exitController.forward();
+  void _triggerExit() {
+    if (_hasNavigated || !mounted) return;
+    // DO NOT PAUSE! Let the video play its final milliseconds naturally 
+    // while the fade transition overlaps it. This prevents the abrupt stutter/halt.
     _navigateNext();
   }
 
-  void _navigateNext() {
+  Future<void> _navigateNext() async {
     if (_hasNavigated || !mounted) return;
     _hasNavigated = true;
 
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final user = authProvider.currentUser;
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final user = authProvider.currentUser;
 
-    if (authProvider.isAuthenticated && user != null) {
-      if (user.isAdmin) {
-        context.go('/admin/dashboard');
-      } else if (user.isFarmer) {
-        context.go('/farmer/dashboard');
-      } else {
+      if (authProvider.isAuthenticated && user != null) {
+        if (user.isAdmin) {
+          context.go('/admin/dashboard');
+        } else if (user.isFarmer) {
+          context.go('/farmer/dashboard');
+        } else {
+          context.go('/customer');
+        }
+        return;
+      } 
+      
+      // Attempt to read from SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+
+      if (hasSeenOnboarding) {
         context.go('/customer');
+      } else {
+        context.go('/onboarding');
       }
-    } else if (OnboardingScreen.hasSeenOnboarding) {
+    } catch (e) {
+      debugPrint('Navigation error (likely missing native plugin): $e');
+      // Failsafe fallback if plugin crashes
       context.go('/customer');
-    } else {
-      context.go('/onboarding');
     }
   }
 
   @override
   void dispose() {
-    _safetyTimer?.cancel();
     _videoController?.removeListener(_onVideoTick);
     _videoController?.dispose();
     _headerController.dispose();
@@ -167,145 +160,64 @@ class _SplashScreenState extends State<SplashScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // 1. Hardware-Accelerated 3D Video Canvas with Smooth Exit Scale
           if (_isVideoReady && controller != null)
-            AnimatedBuilder(
-              animation: _exitScale,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _exitScale.value,
-                  child: child,
-                );
-              },
-              child: RepaintBoundary(
-                child: SizedBox.expand(
-                  child: FittedBox(
-                    fit: BoxFit.cover,
-                    clipBehavior: Clip.hardEdge,
-                    child: SizedBox(
-                      width: controller.value.size.width,
-                      height: controller.value.size.height,
-                      child: VideoPlayer(controller),
-                    ),
-                  ),
+            SizedBox.expand(
+              child: FittedBox(
+                fit: BoxFit.cover,
+                child: SizedBox(
+                  width: controller.value.size.width,
+                  height: controller.value.size.height,
+                  child: VideoPlayer(controller),
                 ),
               ),
             ),
-
-          // 2. Soft Translucent Sky Feather & Editorial Top Branding (Zero Emojis)
-          // Confined strictly to the top sky zone so the 3D scene remains 100% unobstructed
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xE6F6FAF5),
-                    Color(0xB3F6FAF5),
-                    Color(0x00F6FAF5),
-                  ],
-                  stops: [0.0, 0.62, 1.0],
-                ),
-              ),
-              child: SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 18, 24, 28),
-                  child: FadeTransition(
-                    opacity: _headerOpacity,
-                    child: SlideTransition(
-                      position: _headerSlide,
-                      child: Column(
+          
+          SafeArea(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 40.0),
+                child: AnimatedBuilder(
+                  animation: _headerController,
+                  builder: (context, child) {
+                    return Opacity(
+                      opacity: _headerOpacity.value,
+                      child: Transform.translate(
+                        offset: _headerSlide.value,
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
                         mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 5,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE5F5E7),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: const Color(0xFFBFE2C4),
-                                width: 1,
-                              ),
-                            ),
-                            child: const Text(
-                              'FARM  •  MARKETPLACE  •  DOORSTEP',
-                              style: TextStyle(
-                                color: Color(0xFF21802D),
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 1.5,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          RichText(
-                            textAlign: TextAlign.center,
-                            text: const TextSpan(
-                              style: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: -0.6,
-                                height: 1.1,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: 'Harvest',
-                                  style: TextStyle(color: Color(0xFF162418)),
-                                ),
-                                TextSpan(
-                                  text: 'Hub',
-                                  style: TextStyle(color: Color(0xFF238A30)),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          const Text(
-                            'Direct from local fields to your table',
-                            textAlign: TextAlign.center,
+                          Icon(Icons.eco, color: Theme.of(context).primaryColor, size: 40),
+                          const SizedBox(width: 12),
+                          Text(
+                            'HarvestHub',
                             style: TextStyle(
-                              color: Color(0xFF4C5F50),
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 0.1,
+                              fontSize: 36,
+                              fontWeight: FontWeight.w900,
+                              color: Theme.of(context).primaryColor,
+                              letterSpacing: -1,
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // 3. Seamless Exit Cross-Dissolve Veil into Next Screen's Exact Theme Gradient
-          IgnorePointer(
-            child: FadeTransition(
-              opacity: _exitFade,
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0xFF43B251),
-                      Color(0xFF6BC476),
-                      Color(0xFFBFE6C4),
-                      Color(0xFFEAF6EC),
-                      Color(0xFFF9FBF9),
-                      Color(0xFFF9FBF9),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Direct from farm to your table.',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF4B5563),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
                     ],
-                    stops: [0.00, 0.14, 0.28, 0.44, 0.62, 1.00],
                   ),
                 ),
               ),

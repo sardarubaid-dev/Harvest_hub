@@ -152,8 +152,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             // Items
             const Text('Purchased Products', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 8),
-            Container(
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+            Material(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              clipBehavior: Clip.antiAlias,
               child: ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),

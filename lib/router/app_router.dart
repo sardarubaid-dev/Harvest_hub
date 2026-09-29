@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
 import 'package:harvest_hub/screens/auth/create_account_screen.dart';
 import 'package:harvest_hub/screens/role_selection_screen.dart';
@@ -16,6 +17,16 @@ import '../screens/farmer/farmer_notifications_screen.dart';
 import '../screens/customer/customer_home_screen.dart';
 import '../screens/customer/search_filter_screen.dart';
 
+
+class _FadeTransitionPage extends CustomTransitionPage<void> {
+  _FadeTransitionPage({required super.child, required super.key})
+      : super(
+          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+              FadeTransition(opacity: animation, child: child),
+          transitionDuration: const Duration(milliseconds: 300),
+        );
+}
+
 class AppRouter {
   static GoRouter createRouter(AuthProvider authProvider) {
     return GoRouter(
@@ -30,7 +41,6 @@ class AppRouter {
         final bool isLogin = state.matchedLocation == '/login';
         final String uriStr = state.uri.toString();
 
-        // Never hijack /splash; let SplashScreen finish playing Splash.mp4 and navigate when done
         if (isSplash) {
           return null;
         }
@@ -40,13 +50,11 @@ class AppRouter {
           if (user.isFarmer && !uriStr.startsWith('/farmer')) return '/farmer/dashboard';
           
           if (user.isCustomer) {
-            
             if (isLogin) return null;
-            // Otherwise, keep them off onboarding/root
             if (isOnboarding || state.matchedLocation == '/') return '/customer';
           }
         } else {
-          
+          if (state.matchedLocation == '/') return '/customer';
           if (uriStr.startsWith('/farmer') || uriStr.startsWith('/admin')) {
             return '/login';
           }
@@ -61,60 +69,66 @@ class AppRouter {
         ),
         GoRoute(
           path: '/onboarding',
-          builder: (context, state) => const OnboardingScreen(),
-        ),
-        GoRoute(
-          path: '/login',
-          builder: (context, state) => const SignInScreen(),
+          pageBuilder: (context, state) => _FadeTransitionPage(
+            key: state.pageKey,
+            child: const OnboardingScreen(),
+          ),
         ),
         GoRoute(
           path: '/role_selection',
           builder: (context, state) => const RoleSelectionScreen(),
         ),
         GoRoute(
-          path: '/create_account/:role',
-          builder: (context, state) {
-            final role = state.pathParameters['role'] ?? 'Customer';
-            return CreateAccountScreen(role: role);
-          },
+          path: '/login',
+          pageBuilder: (context, state) => _FadeTransitionPage(
+            key: state.pageKey,
+            child: const SignInScreen(),
+          ),
         ),
         GoRoute(
-          path: '/admin/:tab',
-          builder: (context, state) {
-            final tabStr = state.pathParameters['tab'] ?? 'dashboard';
-            return AdminMainScreen(initialTab: tabStr);
-          },
+          path: '/create_account',
+          builder: (context, state) => const CreateAccountScreen(role: 'customer'),
+        ),
+        GoRoute(
+          path: '/customer',
+          pageBuilder: (context, state) => _FadeTransitionPage(
+            key: state.pageKey,
+            child: const CustomerHomeScreen(),
+          ),
+        ),
+        GoRoute(
+          path: '/customer/search',
+          builder: (context, state) => const SearchFilterScreen(),
+        ),
+        GoRoute(
+          path: '/admin/dashboard',
+          pageBuilder: (context, state) => _FadeTransitionPage(
+            key: state.pageKey,
+            child: const AdminMainScreen(initialTab: 'dashboard'),
+          ),
+        ),
+        GoRoute(
+          path: '/farmer/dashboard',
+          pageBuilder: (context, state) => _FadeTransitionPage(
+            key: state.pageKey,
+            child: const FarmerMainScreen(initialTab: 'home'),
+          ),
         ),
         GoRoute(
           path: '/farmer/categories',
           builder: (context, state) => const FarmerCategoriesScreen(),
         ),
         GoRoute(
-          path: '/farmer/add-product',
+          path: '/farmer/add_product',
           builder: (context, state) => const AddProductScreen(),
         ),
         GoRoute(
-          path: '/farmer/market-pickup',
+          path: '/farmer/market_pickup',
           builder: (context, state) => const FarmerMarketPickupScreen(),
         ),
         GoRoute(
           path: '/farmer/notifications',
           builder: (context, state) => const FarmerNotificationsScreen(),
-        ),
-        GoRoute(
-          path: '/farmer/:tab',
-          builder: (context, state) {
-            final tabStr = state.pathParameters['tab'] ?? 'dashboard';
-            return FarmerMainScreen(initialTab: tabStr);
-          },
-        ),
-        GoRoute(
-          path: '/customer',
-          builder: (context, state) => const CustomerHomeScreen(),
-        ),
-        GoRoute(
-          path: '/search',
-          builder: (context, state) => const SearchFilterScreen(),
         ),
       ],
     );

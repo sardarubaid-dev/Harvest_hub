@@ -8,6 +8,7 @@ import 'package:harvest_hub/models/order_model.dart';
 import 'admin_categories_screen.dart';
 import 'admin_broadcast_screen.dart';
 import 'admin_audit_logs_screen.dart';
+import 'admin_reviews_screen.dart';
 import 'package:harvest_hub/models/user_model.dart';
 import 'package:harvest_hub/models/product_model.dart';
 import 'admin_profile_screen.dart';
@@ -803,6 +804,9 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
             }),
             _buildActionButton(Icons.security_outlined, 'Audit Logs', AppColors.surfaceVariant, onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminAuditLogsScreen()));
+            }),
+            _buildActionButton(Icons.rate_review_outlined, 'Moderate\nReviews', AppColors.surfaceVariant, onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminReviewsScreen()));
             }),
           ],
         ),

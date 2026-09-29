@@ -374,25 +374,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       ),
                       const SizedBox(height: 24),
 
-                      Row(
-                        children: [
-                          Expanded(child: Divider(color: Colors.grey.shade300)),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(
-                              'OR CONTINUE WITH',
-                              style: TextStyle(
-                                color: Colors.grey.shade500,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Expanded(child: Divider(color: Colors.grey.shade300)),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-
+           
                       Row(
                         children: [
                           Expanded(
